@@ -165,6 +165,7 @@
   "descriptions.player.durabilityalert": "Alerts you when your armor is low.",
   "descriptions.player.elytrareplace": "Automatically replaces broken elytras with new ones.",
   "descriptions.player.elytraswap": "Automatically equips an elytra.",
+  "descriptions.player.echestfarmer": "Automatically farms ender chests.",
   "descriptions.player.fastuse": "Removes the item use delay.",
   "descriptions.player.hitboxtricks": "Jewish hitbox tricks.",
   "descriptions.player.hotbarreplenish": "Refills your items in the hotbar.",

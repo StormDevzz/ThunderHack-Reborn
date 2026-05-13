@@ -164,6 +164,7 @@
   "descriptions.player.durabilityalert": "Предупреждает тебя о низкой прочности брони.",
   "descriptions.player.elytrareplace": "Заменяет сломанные елитры на новые.",
   "descriptions.player.elytraswap": "Заменяет елитры на нагрудник.",
+  "descriptions.player.echestfarmer": "Автоматически фармит эндер сундуки.",
   "descriptions.player.fastuse": "Убирает задержку использования.",
   "descriptions.player.hitboxtricks": "Еврейские трюки с хитбоксом.",
   "descriptions.player.hotbarreplenish": "Пополняет твои предметы в хотбаре.",

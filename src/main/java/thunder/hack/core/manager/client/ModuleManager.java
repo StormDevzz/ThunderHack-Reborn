@@ -32,6 +32,7 @@ public class ModuleManager implements IManager {
     public static AutoDupe autoDupe = new AutoDupe();
     public static PenisESP penisESP = new PenisESP();
     public static ShiftInterp shiftInterp = new ShiftInterp();
+    public static EChestFarmer eChestFarmer = new EChestFarmer();
     public static DickAura dickAura = new DickAura();
     public static AntiPacketException antiPacketException = new AntiPacketException();
     public static LevitationControl levitationControl = new LevitationControl();
