@@ -87,6 +87,7 @@
   "descriptions.render.freecam": "Unhooks the camera from the player.",
   "descriptions.render.freelook": "Allows you to look around without turning your body.",
   "descriptions.render.fullbright": "Disables darkness.",
+  "descriptions.render.shiftinterp": "Like all shifts?",
   "descriptions.render.hitbubbles": "Highlights your hits.",
   "descriptions.render.hitparticles": "Spawns particles on hit.",
   "descriptions.render.holeesp": "Highlights safe holes.",

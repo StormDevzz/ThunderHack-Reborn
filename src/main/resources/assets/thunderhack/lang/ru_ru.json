@@ -87,6 +87,7 @@
   "descriptions.render.freecam": "Открепляет камеру от игрока.",
   "descriptions.render.freelook": "Позволяет свободно вращать камеру.",
   "descriptions.render.fullbright": "Отключает темноту.",
+  "descriptions.render.shiftinterp": "Типа все присели?",
   "descriptions.render.hitbubbles": "Подсвечивает место удара.",
   "descriptions.render.hitparticles": "Создаёт частицы при ударе.",
   "descriptions.render.holeesp": "Подсвечивает холки.",

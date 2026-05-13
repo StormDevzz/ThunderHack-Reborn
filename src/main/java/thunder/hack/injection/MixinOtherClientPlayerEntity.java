@@ -3,6 +3,7 @@ package thunder.hack.injection;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.OtherClientPlayerEntity;
+import net.minecraft.client.render.entity.model.ParrotEntityModel.Pose;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,6 +12,8 @@ import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.modules.combat.Aura;
 import thunder.hack.features.modules.misc.FakePlayer;
 import thunder.hack.utility.interfaces.IEntityLiving;
+
+import org.spongepowered.asm.mixin.injection.At;
 import thunder.hack.utility.interfaces.IOtherClientPlayerEntity;
 
 import static thunder.hack.features.modules.Module.mc;
