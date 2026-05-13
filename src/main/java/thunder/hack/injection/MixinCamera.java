@@ -49,7 +49,7 @@ private void setRotationHook(Args args) {
         return;
     }
     if (ModuleManager.freeLook != null && ModuleManager.freeLook.isEnabled()) {
-        // Передаём камере углы из Freelook
+        // Направляем камеру туда, куда смотрит Freelook
         args.setAll(ModuleManager.freeLook.getCameraYaw(), ModuleManager.freeLook.getCameraPitch());
     }
 }
