@@ -72,22 +72,6 @@
 
 ---
 
-## Что нового в ThunderHack Reborn? / What's New in ThunderHack Reborn?
-
-**RU:**
-- **Новые модули:** AutoDupe, улучшенный Parkour, AntiWeb, Spider с множеством режимов
-- **Исправления:** Обновление маппингов до 1.21, фикс совместимости с новым Fabric API
-- **Улучшенные режимы:** WaterSpeed Custom, Strafe с множителем скорости, Spider Custom с 10 настройками
-- **Активная поддержка:** Постоянные обновления и исправления от сообщества
-
-**EN:**
-- **New modules:** AutoDupe, improved Parkour, AntiWeb, Spider with multiple modes
-- **Fixes:** Updated mappings to 1.21, Fabric API compatibility fixes
-- **Enhanced modes:** WaterSpeed Custom, Strafe with speed multiplier, Spider Custom with 10 settings
-- **Active maintenance:** Regular updates and community-driven patches
-
----
-
 ## Благодарности / Credits
 
 **RU: Оригинальные разработчики ThunderHack:**
