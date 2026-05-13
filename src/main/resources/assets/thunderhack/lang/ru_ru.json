@@ -85,6 +85,7 @@
   "descriptions.render.esp": "Подсвечивает выбранные херни.",
   "descriptions.render.fov": "Модификация поля зрения.",
   "descriptions.render.freecam": "Открепляет камеру от игрока.",
+  "descriptions.render.freelook": "Позволяет свободно вращать камеру.",
   "descriptions.render.fullbright": "Отключает темноту.",
   "descriptions.render.hitbubbles": "Подсвечивает место удара.",
   "descriptions.render.hitparticles": "Создаёт частицы при ударе.",

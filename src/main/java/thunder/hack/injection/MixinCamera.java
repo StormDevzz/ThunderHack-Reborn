@@ -42,15 +42,15 @@ public abstract class MixinCamera {
         }
     }
 
-    @ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;setRotation(FF)V"))
-    private void setRotationHook(Args args) {
-        if(ModuleManager.freeCam.isEnabled())
-            args.setAll(ModuleManager.freeCam.getFakeYaw(), ModuleManager.freeCam.getFakePitch());
+@ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;setRotation(FF)V"))
+private void setRotationHook(Args args) {
+    if (ModuleManager.freeCam.isEnabled()) {
+        args.setAll(ModuleManager.freeCam.getFakeYaw(), ModuleManager.freeCam.getFakePitch());
+        return;
     }
-
-    @ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;setPos(DDD)V"))
-    private void setPosHook(Args args) {
-        if(ModuleManager.freeCam.isEnabled())
-            args.setAll(ModuleManager.freeCam.getFakeX(), ModuleManager.freeCam.getFakeY(), ModuleManager.freeCam.getFakeZ());
+    if (ModuleManager.freeLook != null && ModuleManager.freeLook.isEnabled()) {
+        // Передаём камере углы из Freelook
+        args.setAll(ModuleManager.freeLook.getCameraYaw(), ModuleManager.freeLook.getCameraPitch());
     }
+}
 }

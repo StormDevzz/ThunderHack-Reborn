@@ -21,7 +21,6 @@ import thunder.hack.features.modules.render.*;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -61,6 +60,7 @@ public class ModuleManager implements IManager {
     public static PortalGodMode portalGodMode = new PortalGodMode();
     public static OptifineCapes optifineCapes = new OptifineCapes();
     public static Notifications notifications = new Notifications();
+    public static FreeLook freeLook = new FreeLook();
     public static NoEntityTrace noEntityTrace = new NoEntityTrace();
     public static MessageAppend messageAppend = new MessageAppend();
     public static EntityControl entityControl = new EntityControl();
