@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://imgur.com/a/E5DmZwD.png" style="width: 69%">
+    <img src="https://i.imgur.com/i1PQHNw.png" style="width: 69%">
 </p>
 
 <div align="center">
@@ -71,6 +71,7 @@
 - [Setup guide by @DevilishRak](https://thunderguidemc.vercel.app/)
 
 ---
+
 
 ## Благодарности / Credits
 
