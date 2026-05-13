@@ -6,21 +6,29 @@
 
 # ThunderHack Reborn
 
-**Неофициальное продолжение легендарного ThunderHack Recode**
+**Неофициальное продолжение ThunderHack Recode от организации StormDevzz**
+<br>
+**Unofficial continuation of ThunderHack Recode by StormDevzz**
 
-[![Discord Mine](https://img.shields.io/discord/1140266441082404924?label=discord&logo=discord&logoColor=white)](https://discord.gg/PvBhPWdkVD)
-[![GitHub forks](https://img.shields.io/github/forks/Pan4ur/ThunderHack-Recode?style=social)](https://github.com/Pan4ur/ThunderHack-Recode)
-[![GitHub stars](https://img.shields.io/github/stars/Pan4ur/ThunderHack-Recode?style=social)](https://github.com/Pan4ur/ThunderHack-Recode)
+[![Discord](https://img.shields.io/discord/1140266441082404924?label=discord&logo=discord&logoColor=white)](https://discord.gg/PvBhPWdkVD)
+[![GitHub forks](https://img.shields.io/github/forums/stormdevzz/ThunderHack-Reborn?style=social)](https://github.com/stormdevzz/ThunderHack-Reborn)
+[![GitHub stars](https://img.shields.io/github/stars/stormdevzz/ThunderHack-Reborn?style=social)](https://github.com/stormdevzz/ThunderHack-Reborn)
 
 </div>
 
 ---
 
-> **ThunderHack Reborn** — это форк оригинального ThunderHack Recode, разрабатываемый сообществом.
-> Оригинальный проект был остановлен 09.10.2024, но мы продолжаем его развитие,
+> **ThunderHack Reborn** -- форк оригинального ThunderHack Recode, разрабатываемый организацией StormDevzz.
+> Оригинальный проект был остановлен 09.10.2024. Мы продолжаем его развитие,
 > добавляя новые модули, исправляя баги и поддерживая актуальные версии Minecraft.
 >
 > **Мы не аффилированы с оригинальными разработчиками ThunderHack.**
+
+> **ThunderHack Reborn** is a fork of the original ThunderHack Recode, maintained by StormDevzz.
+> The original project was discontinued on 09.10.2024. We carry on its legacy
+> by adding new modules, fixing bugs, and keeping up with modern Minecraft versions.
+>
+> **We are not affiliated with the original ThunderHack developers.**
 
 ---
 
@@ -30,61 +38,82 @@
 
 ---
 
-##  Information
+## Информация / Information
 
+**RU:**
+- **Версия Minecraft:** `Fabric` 1.21 / 1.21.1
+- **Кнопка открытия ClickGui:** `P`
+- **Префикс команд:** `@`
+- **Средняя кнопка мыши** по модулю назначает бинд
+
+**EN:**
 - **Minecraft version:** `Fabric` 1.21 / 1.21.1
-- **Default ClickGui keybind:** `P` (или уточняйте в Discord сервере)
+- **Default ClickGui keybind:** `P`
 - **Default prefix:** `@`
-- **Middle click** модуль для назначения бинда
+- **Middle click** a module to bind it
 
->  **Осторожно:** Expensive, DoxWare 2.0, gumballoff, Treoderia "Recode", Deluxe Client, и Quick Client являются рерайтами/ратами этого клиента.
+> **RU:** Осторожно: Expensive, DoxWare 2.0, gumballoff, Treoderia "Recode", Deluxe Client и Quick Client являются скидами/ратами этого клиента.
+>
+> **EN:** Warning: Expensive, DoxWare 2.0, gumballoff, Treoderia "Recode", Deluxe Client, and Quick Client are both skids and rats based on this client.
 
 ---
 
-##  Требования
+## Требования / Requirements
 
 - [Fabric API 1.21](https://www.curseforge.com/minecraft/mc-mods/fabric-api/files/5531908)
 - [Java 21+](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
 
 ---
 
-##  Рекомендуем к прочтению
+## Рекомендуем к прочтению / Recommended Reading
 
 - [Performance guide for Minecraft 1.20.4+ Clients](https://gist.github.com/HexedHero/aab340a84db51913cb1106c2d85f4e4f)
 - [Setup guide by @DevilishRak](https://thunderguidemc.vercel.app/)
 
 ---
 
-##  Что нового в ThunderHack Reborn?
+## Что нового в ThunderHack Reborn? / What's New in ThunderHack Reborn?
 
+**RU:**
 - **Новые модули:** AutoDupe, улучшенный Parkour, AntiWeb, Spider с множеством режимов
 - **Исправления:** Обновление маппингов до 1.21, фикс совместимости с новым Fabric API
 - **Улучшенные режимы:** WaterSpeed Custom, Strafe с множителем скорости, Spider Custom с 10 настройками
 - **Активная поддержка:** Постоянные обновления и исправления от сообщества
 
+**EN:**
+- **New modules:** AutoDupe, improved Parkour, AntiWeb, Spider with multiple modes
+- **Fixes:** Updated mappings to 1.21, Fabric API compatibility fixes
+- **Enhanced modes:** WaterSpeed Custom, Strafe with speed multiplier, Spider Custom with 10 settings
+- **Active maintenance:** Regular updates and community-driven patches
+
 ---
 
-##  Благодарности
+## Благодарности / Credits
 
-**Оригинальные разработчики ThunderHack:**
-- Pan4ur — создатель оригинального ThunderHack Recode
+**RU: Оригинальные разработчики ThunderHack:**
+- Pan4ur -- создатель оригинального ThunderHack Recode
 - Все контрибьюторы оригинального проекта
 
-**Библиотеки и фреймворки:**
-- [@meteordevelopment](https://github.com/meteordevelopment) за Orbit
-- [@ladysnake](https://github.com/ladysnake) за Satin
-- [@0x3C50](https://github.com/0x3C50/Renderer) за рендерер
+**EN: Original ThunderHack developers:**
+- Pan4ur -- creator of the original ThunderHack Recode
+- All contributors to the original project
 
-**Контрибьюторы ThunderHack Reborn:**
-- VFedTerV и другие участники сообщества
+**Библиотеки и фреймворки / Libraries and frameworks:**
+- [@meteordevelopment](https://github.com/meteordevelopment) за Orbit / for Orbit
+- [@ladysnake](https://github.com/ladysnake) за Satin / for Satin
+- [@0x3C50](https://github.com/0x3C50/Renderer) за рендерер / for the renderer
 
-**Медиа:**
-- [Ai_24](https://www.youtube.com/@Ai_24) за крутые обзоры
-- [KiLAB Gaming](https://www.youtube.com/@KiLABGaming) за полный обзор
+**Контрибьюторы ThunderHack Reborn / ThunderHack Reborn contributors:**
+- [StormDevzz](https://github.com/stormdevzz) -- организация-разработчик / maintaining organization
+- VFedTerV и другие участники / and other contributors
+
+**Медиа / Media:**
+- [Ai_24](https://www.youtube.com/@Ai_24) за обзоры / for showcases
+- [KiLAB Gaming](https://www.youtube.com/@KiLABGaming) за полный обзор / for the full overview
 
 ---
 
-##  Скриншоты
+## Скриншоты / Screenshots
 
 <details>
 <summary>GUI</summary>
@@ -108,23 +137,27 @@
 
 ---
 
-## 🧩 Аддоны
+## Аддоны / Addons
 
-### Ресурсы для разработчиков
+### Ресурсы для разработчиков / Developer Resources
 
-- [Addon Template](https://github.com/cvs0/ThunderHack-Recode-Addon-Template) от cvs0
-- [ThunderHack Addon Docs (COMING SOON)]()
+- [Addon Template](https://github.com/cvs0/ThunderHack-Recode-Addon-Template) от / by cvs0
+- ThunderHack Addon Docs (скоро / coming soon)
 
 ---
 
-## ⚖️ Дисклеймер
+## Дисклеймер / Disclaimer
 
-Этот форк является неофициальным продолжением и не связан с оригинальными разработчиками ThunderHack. Мы не несём ответственности за использование данного программного обеспечения. Используйте только на серверах, где это разрешено.
+**RU:** Этот форк является неофициальным продолжением и не связан с оригинальными разработчиками ThunderHack. Мы не несём ответственности за использование данного программного обеспечения. Используйте только на серверах, где это разрешено.
+
+**EN:** This fork is an unofficial continuation and is not affiliated with the original ThunderHack developers. We are not responsible for the use of this software. Use only on servers where it is allowed.
 
 ---
 
 <div align="center">
 
-**ThunderHack Reborn** — сообщество, продолжающее легенду
+**[StormDevzz](https://github.com/stormdevzz) -- организация, продолжающая легенду**
+<br>
+**[StormDevzz](https://github.com/stormdevzz) -- the organization carrying on the legacy**
 
 </div>
