@@ -1,10 +1,12 @@
 package thunder.hack.features.modules.player;
 
+//ThunderHack Plus by VFedTerV
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -41,24 +43,32 @@ public class EChestFarmer extends Module {
     public final Setting<Integer> placeDelay = new Setting<>("PlaceDelay", 200, 0, 1000, v -> page.is(Pages.Place) && autoPlace.getValue());
     public final Setting<Integer> distanceFromPlayer = new Setting<>("Distance", 2, 1, 5, v -> page.is(Pages.Place) && autoPlace.getValue());
 
+    /*   BREAK   */
+    public final Setting<Boolean> packetMine = new Setting<>("PacketMine", false, v -> page.is(Pages.Break));
+    public final Setting<Integer> startDelay = new Setting<>("StartDelay", 2, 0, 10, v -> page.is(Pages.Break) && !packetMine.getValue());
+    public final Setting<Integer> resetThreshold = new Setting<>("ResetThreshold", 20, 5, 50, v -> page.is(Pages.Break) && !packetMine.getValue());
+
     /*   RENDER   */
     public final Setting<Boolean> render = new Setting<>("Render", true, v -> page.is(Pages.Render));
     public final Setting<ColorSetting> fillColor = new Setting<>("Fill", new ColorSetting(HudEditor.getColor(0)), v -> page.is(Pages.Render) && render.getValue());
     public final Setting<ColorSetting> lineColor = new Setting<>("Line", new ColorSetting(HudEditor.getColor(0)), v -> page.is(Pages.Render) && render.getValue());
     public final Setting<Integer> lineWidth = new Setting<>("LineWidth", 2, 1, 5, v -> page.is(Pages.Render) && render.getValue());
 
+    /*   MISC   */
+    public final Setting<Boolean> autoDisable = new Setting<>("AutoDisable", false, v -> page.is(Pages.Misc));
+
     private final Timer actionTimer = new Timer();
     private final Timer placeTimer = new Timer();
     private BlockPos currentTarget;
     private int breakAttempts;
-    private int totalActions;
     private Stage stage;
-    private Vec3d targetVec;
+    private boolean mining;
+    private int startDelayCounter;
     private float targetYaw, targetPitch;
 
     private enum Stage { FINDING, PLACING, BREAKING }
     public enum RotMode { Off, Client, Server }
-    public enum Pages { Main, Place, Render }
+    public enum Pages { Main, Place, Break, Render, Misc }
 
     public EChestFarmer() {
         super("EChestFarmer", Category.PLAYER);
@@ -68,8 +78,9 @@ public class EChestFarmer extends Module {
     public void onEnable() {
         currentTarget = null;
         breakAttempts = 0;
-        totalActions = 0;
         stage = Stage.FINDING;
+        mining = false;
+        startDelayCounter = 0;
         actionTimer.reset();
         placeTimer.reset();
         if (mc.options != null) mc.options.attackKey.setPressed(false);
@@ -82,6 +93,7 @@ public class EChestFarmer extends Module {
             mc.interactionManager.cancelBlockBreaking();
         }
         currentTarget = null;
+        mining = false;
     }
 
     @EventHandler
@@ -95,40 +107,49 @@ public class EChestFarmer extends Module {
         }
     }
 
+    private void updateRotation() {
+        if (currentTarget == null) return;
+        Vec3d targetVec = currentTarget.toCenterPos();
+        float[] angles = InteractionUtility.calculateAngle(targetVec);
+        targetYaw = angles[0];
+        targetPitch = angles[1];
+
+        if (rotate.getValue() == RotMode.Client) {
+            // Клиент видит поворот, сервер не видит
+            mc.player.setYaw(targetYaw);
+            mc.player.setPitch(targetPitch);
+        } else if (rotate.getValue() == RotMode.Server) {
+            // Сервер видит поворот, клиент тоже видит (чтобы ломание шло в нужный блок)
+            mc.player.setYaw(targetYaw);
+            mc.player.setPitch(targetPitch);
+            // Отправляем пакет с ротацией на сервер
+            sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(targetYaw, targetPitch, mc.player.isOnGround()));
+        }
+        // RotMode.Off — ничего не делаем
+    }
+
     private void handleFinding() {
         currentTarget = findExistingEChest();
         if (currentTarget != null) {
-            updateTargetRotation();
+            updateRotation();
             stage = Stage.BREAKING;
             breakAttempts = 0;
+            mining = false;
+            startDelayCounter = 0;
             actionTimer.reset();
             return;
         }
         if (autoPlace.getValue()) {
             currentTarget = findPlacePosition();
             if (currentTarget != null) {
-                updateTargetRotation();
+                updateRotation();
                 stage = Stage.PLACING;
                 placeTimer.reset();
                 return;
             }
         }
-        // Не выключаемся, просто ждём
-    }
-
-    private void updateTargetRotation() {
-        targetVec = currentTarget.toCenterPos();
-        float[] angles = InteractionUtility.calculateAngle(targetVec);
-        targetYaw = angles[0];
-        targetPitch = angles[1];
-    }
-
-    private void applyRotation() {
-        if (rotate.getValue() == RotMode.Client) {
-            mc.player.setYaw(targetYaw);
-            mc.player.setPitch(targetPitch);
-        } else if (rotate.getValue() == RotMode.Server) {
-            ModuleManager.rotations.fixRotation = targetYaw;
+        if (autoDisable.getValue()) {
+            disable();
         }
     }
 
@@ -141,17 +162,18 @@ public class EChestFarmer extends Module {
 
         SearchInvResult chest = InventoryUtility.findItemInHotBar(Items.ENDER_CHEST);
         if (!chest.found()) {
-            stage = Stage.FINDING;
+            if (autoDisable.getValue()) disable();
+            else stage = Stage.FINDING;
             return;
         }
 
-        applyRotation();
+        updateRotation();
 
         int prevSlot = mc.player.getInventory().selectedSlot;
         if (autoSwitch.getValue()) chest.switchTo();
 
         boolean placed = InteractionUtility.placeBlock(currentTarget,
-            InteractionUtility.Rotate.None, // Уже повернулись через applyRotation
+            rotate.getValue() != RotMode.Off ? InteractionUtility.Rotate.Default : InteractionUtility.Rotate.None,
             InteractionUtility.Interact.Strict,
             InteractionUtility.PlaceMode.Normal,
             true);
@@ -161,7 +183,11 @@ public class EChestFarmer extends Module {
         if (placed) {
             stage = Stage.BREAKING;
             breakAttempts = 0;
+            mining = false;
+            startDelayCounter = 0;
             actionTimer.reset();
+        } else {
+            stage = Stage.FINDING;
         }
         placeTimer.reset();
     }
@@ -169,19 +195,22 @@ public class EChestFarmer extends Module {
     private void handleBreaking() {
         if (!actionTimer.passedMs(delay.getValue())) return;
         if (!isEChest(currentTarget)) {
-            mc.options.attackKey.setPressed(false);
+            stopMining();
             stage = Stage.FINDING;
             return;
         }
         if (mc.world.isAir(currentTarget)) {
-            mc.options.attackKey.setPressed(false);
-            stage = Stage.FINDING;
+            stopMining();
+            if (autoDisable.getValue()) {
+                disable();
+            } else {
+                stage = Stage.FINDING;
+            }
             return;
         }
 
-        applyRotation();
+        updateRotation();
 
-        // Switch to pickaxe
         int prevSlot = mc.player.getInventory().selectedSlot;
         if (autoSwitch.getValue()) {
             SearchInvResult pick = InventoryUtility.findItemInHotBar(
@@ -191,22 +220,53 @@ public class EChestFarmer extends Module {
             if (pick.found()) pick.switchTo();
         }
 
-        // Ванильное ломание: зажимаем кнопку + отправляем START_DESTROY_BLOCK
-        mc.options.attackKey.setPressed(true);
-        mc.interactionManager.attackBlock(currentTarget, Direction.UP);
-        mc.player.swingHand(Hand.MAIN_HAND);
+        if (packetMine.getValue()) {
+            sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, currentTarget, Direction.UP));
+            sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, currentTarget, Direction.UP));
+            mc.player.swingHand(Hand.MAIN_HAND);
+        } else {
+            if (!mining) {
+                if (startDelayCounter < startDelay.getValue()) {
+                    startDelayCounter++;
+                    if (autoSwitch.getValue()) InventoryUtility.switchTo(prevSlot);
+                    actionTimer.reset();
+                    return;
+                }
+                mining = true;
+                mc.options.attackKey.setPressed(true);
+                mc.interactionManager.attackBlock(currentTarget, Direction.UP);
+            } else {
+                breakAttempts++;
+                if (breakAttempts >= resetThreshold.getValue()) {
+                    stopMining();
+                    startDelayCounter = 0;
+                } else {
+                    mc.player.swingHand(Hand.MAIN_HAND);
+                }
+            }
+        }
 
         if (autoSwitch.getValue()) InventoryUtility.switchTo(prevSlot);
 
-        breakAttempts++;
-        totalActions++;
-
         if (mc.world.isAir(currentTarget)) {
-            mc.options.attackKey.setPressed(false);
-            stage = Stage.FINDING; // Ищем следующий
+            stopMining();
+            if (autoDisable.getValue()) {
+                disable();
+            } else {
+                stage = Stage.FINDING;
+            }
         }
 
         actionTimer.reset();
+    }
+
+    private void stopMining() {
+        mc.options.attackKey.setPressed(false);
+        if (mc.interactionManager != null && currentTarget != null) {
+            mc.interactionManager.cancelBlockBreaking();
+        }
+        mining = false;
+        breakAttempts = 0;
     }
 
     private boolean isEChest(BlockPos pos) {
@@ -243,17 +303,14 @@ public class EChestFarmer extends Module {
         BlockPos playerPos = mc.player.getBlockPos();
         int dist = distanceFromPlayer.getValue();
 
-        // Проверяем все 4 стороны на точном расстоянии
         Direction[] dirs = {Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
         for (Direction dir : dirs) {
             BlockPos pos = playerPos.offset(dir, dist);
             if (isValidPlacePosition(pos)) return pos.toImmutable();
         }
 
-        // Если точное расстояние не подходит — ищем в квадрате dist x dist вокруг
         for (int x = -dist; x <= dist; x++)
             for (int z = -dist; z <= dist; z++) {
-                if (Math.abs(x) != dist && Math.abs(z) != dist) continue; // Только периметр
                 BlockPos pos = playerPos.add(x, 0, z);
                 if (isValidPlacePosition(pos)) return pos.toImmutable();
             }
