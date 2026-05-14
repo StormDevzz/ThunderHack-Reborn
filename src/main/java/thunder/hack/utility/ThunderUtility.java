@@ -129,10 +129,10 @@ public final class ThunderUtility {
 
     public static void parseCommits() {
         try {
-            URL url = new URL("https://api.github.com/repos/Pan4ur/ThunderHack-Recode/commits?per_page=50");
+            URL url = new URL("https://api.github.com/repos/StormDevzz/ThunderHack-Reborn/commits?per_page=50");
             BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
 
-            changeLog.add("Changelog [Recode; Date: " + ThunderHack.BUILD_DATE + "; GitHash:" + ThunderHack.GITHUB_HASH + "]");
+            changeLog.add("Changelog [Reborn; Date: " + ThunderHack.BUILD_DATE + "; GitHash:" + ThunderHack.GITHUB_HASH + "]");
             changeLog.add("\n");
 
             String inputLine;
