@@ -21,6 +21,7 @@ import thunder.hack.utility.player.InventoryUtility;
 import static thunder.hack.utility.player.MovementUtility.isMoving;
 
 public class TargetStrafe extends Module {
+    public Setting<Mode> mode = new Setting<>("Mode", Mode.Default);
     public Setting<Boolean> jump = new Setting<>("Jump", true);
     public Setting<Float> distance = new Setting<>("Distance", 1.3F, 0.2F, 7f);
 
@@ -29,11 +30,33 @@ public class TargetStrafe extends Module {
     private final Setting<Float> velReduction = new Setting<>("Reduction", 6.0f, 0.1f, 10f, v -> boost.getValue() == Boost.Damage);
     private final Setting<Float> maxVelocitySpeed = new Setting<>("MaxVelocity", 0.8f, 0.1f, 2f, v -> boost.getValue() == Boost.Damage);
 
+    // Pizdec mode settings
+private final Setting<Float> pizdecSpeed = new Setting<>("PizdecSpeed", 1.25f, 0.1f, 50.0f, v -> mode.getValue() == Mode.Pizdec);
+private final Setting<Float> pizdecAccel = new Setting<>("PizdecAccel", 1.25f, 0.01f, 50.0f, v -> mode.getValue() == Mode.Pizdec);
+    private final Setting<Boolean> pizdecBhop = new Setting<>("PizdecBHop", true, v -> mode.getValue() == Mode.Pizdec);
+
+    // Custom mode settings
+    private final Setting<Float> customSpeed = new Setting<>("CustomSpeed", 0.28f, 0.1f, 1.0f, v -> mode.getValue() == Mode.Custom);
+    private final Setting<Float> customDistance = new Setting<>("CustomDist", 2.5f, 0.5f, 6.0f, v -> mode.getValue() == Mode.Custom);
+    private final Setting<DirectionMode> customDir = new Setting<>("Direction", DirectionMode.Clockwise, v -> mode.getValue() == Mode.Custom);
+
+    public enum DirectionMode {
+        Clockwise, CounterClockwise, RandomSwitch
+    }
+
     public static double oldSpeed, contextFriction, fovval;
     public static boolean needSwap, needSprintState, skip, switchDir, disabled;
     public static int noSlowTicks, jumpTicks, waterTicks;
     static long disableTime;
     private static TargetStrafe instance;
+
+    // Pizdec state
+    private double pizdecCurrentSpeed = 0;
+    private int pizdecBhopTick = 0;
+
+    // Custom state
+    private boolean customSwitchDir = false;
+    private int customSwitchTimer = 0;
 
     public TargetStrafe() {
         super("TargetStrafe", Category.COMBAT);
@@ -50,6 +73,10 @@ public class TargetStrafe extends Module {
         fovval = mc.options.getFovEffectScale().getValue();
         mc.options.getFovEffectScale().setValue(0d);
         skip = true;
+        pizdecCurrentSpeed = 0;
+        pizdecBhopTick = 0;
+        customSwitchDir = false;
+        customSwitchTimer = 0;
     }
 
     public boolean canStrafe() {
@@ -88,6 +115,7 @@ public class TargetStrafe extends Module {
     @Override
     public void onDisable() {
         mc.options.getFovEffectScale().setValue(fovval);
+        pizdecCurrentSpeed = 0;
     }
 
     public double calculateSpeed(EventMove move) {
@@ -184,19 +212,67 @@ public class TargetStrafe extends Module {
 
         if (canStrafe()) {
             if (Aura.target != null && ModuleManager.aura.isEnabled()) {
-                double speed = calculateSpeed(event);
+                double speed;
+                double currentDistance;
+                
+                switch (mode.getValue()) {
+                    case Pizdec -> {
+                        // Агрессивный режим: быстрое ускорение и высокая скорость
+                        pizdecBhopTick++;
+                        if (pizdecBhopTick >= 10) pizdecBhopTick = 0;
+                        
+                        if (mc.player.isOnGround()) {
+                            pizdecCurrentSpeed = Math.min(pizdecCurrentSpeed + pizdecAccel.getValue(), pizdecSpeed.getValue());
+                        } else {
+                            pizdecCurrentSpeed = Math.max(pizdecCurrentSpeed * 0.98, pizdecSpeed.getValue() * 0.7);
+                        }
+                        speed = pizdecCurrentSpeed;
+                        currentDistance = distance.getValue();
+                    }
+                    case Custom -> {
+                        speed = customSpeed.getValue();
+                        currentDistance = customDistance.getValue();
+                        
+                        // Обработка направления
+                        if (customDir.getValue() == DirectionMode.RandomSwitch) {
+                            customSwitchTimer++;
+                            if (customSwitchTimer > 20 + (int)(Math.random() * 40)) {
+                                customSwitchTimer = 0;
+                                customSwitchDir = !customSwitchDir;
+                            }
+                        }
+                    }
+                    default -> {
+                        speed = calculateSpeed(event);
+                        currentDistance = distance.getValue();
+                    }
+                }
 
                 double wrap = Math.atan2(mc.player.getZ() - Aura.target.getZ(), mc.player.getX() - Aura.target.getX());
-                wrap += switchDir ? speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target)) : -(speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target)));
+                
+                if (mode.getValue() == Mode.Pizdec) {
+                    // В Pizdec режиме более резкая смена направления
+                    wrap += switchDir ? speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target)) * 1.5 
+                                    : -(speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target)) * 1.5);
+                } else if (mode.getValue() == Mode.Custom) {
+                    wrap += customSwitchDir ? speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target))
+                                           : -(speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target)));
+                } else {
+                    wrap += switchDir ? speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target)) 
+                                    : -(speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target)));
+                }
 
-                double x = Aura.target.getX() + distance.getValue() * Math.cos(wrap);
-                double z = Aura.target.getZ() + distance.getValue() * Math.sin(wrap);
+                double x = Aura.target.getX() + currentDistance * Math.cos(wrap);
+                double z = Aura.target.getZ() + currentDistance * Math.sin(wrap);
 
                 if (needToSwitch(x, z)) {
                     switchDir = !switchDir;
-                    wrap += 2 * (switchDir ? speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target)) : -(speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target))));
-                    x = Aura.target.getX() + distance.getValue() * Math.cos(wrap);
-                    z = Aura.target.getZ() + distance.getValue() * Math.sin(wrap);
+                    if (mode.getValue() == Mode.Custom) customSwitchDir = !customSwitchDir;
+                    double multiplier = mode.getValue() == Mode.Pizdec ? 2.0 : 1.0;
+                    wrap += 2 * (switchDir ? speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target)) * multiplier 
+                                         : -(speed / Math.sqrt(mc.player.squaredDistanceTo(Aura.target)) * multiplier));
+                    x = Aura.target.getX() + currentDistance * Math.cos(wrap);
+                    z = Aura.target.getZ() + currentDistance * Math.sin(wrap);
                 }
 
                 event.setX(speed * -Math.sin(Math.toRadians(wrapDS(x, z))));
@@ -206,6 +282,7 @@ public class TargetStrafe extends Module {
             }
         } else {
             oldSpeed = 0;
+            pizdecCurrentSpeed = 0;
         }
     }
 
@@ -213,7 +290,11 @@ public class TargetStrafe extends Module {
     public void updateValues(EventSync e) {
         oldSpeed = Math.hypot(mc.player.getX() - mc.player.prevX, mc.player.getZ() - mc.player.prevZ) * contextFriction;
 
-        if (mc.player.isOnGround() && jump.getValue() && Aura.target != null) {
+        if (mode.getValue() == Mode.Pizdec && pizdecBhop.getValue()) {
+            if (mc.player.isOnGround() && Aura.target != null) {
+                mc.player.jump();
+            }
+        } else if (mc.player.isOnGround() && jump.getValue() && Aura.target != null) {
             mc.player.jump();
         }
 
@@ -231,11 +312,11 @@ public class TargetStrafe extends Module {
         }
     }
 
-
     @EventHandler
     public void onPacketReceive(PacketEvent.Receive e) {
         if (e.getPacket() instanceof PlayerPositionLookS2CPacket) {
             oldSpeed = 0;
+            pizdecCurrentSpeed = 0;
         }
         EntityVelocityUpdateS2CPacket velocity;
         if (e.getPacket() instanceof EntityVelocityUpdateS2CPacket && (velocity = e.getPacket()).getId() == mc.player.getId() && boost.getValue() == Boost.Damage) {
@@ -249,13 +330,13 @@ public class TargetStrafe extends Module {
 
             oldSpeed = (vX + vZ) / (velReduction.getValue() * 1000f);
             oldSpeed = Math.min(oldSpeed, maxVelocitySpeed.getValue());
+            pizdecCurrentSpeed = oldSpeed; // Pizdec тоже получает буст
 
             ((ISPacketEntityVelocity) velocity).setMotionX(0);
             ((ISPacketEntityVelocity) velocity).setMotionY(0);
             ((ISPacketEntityVelocity) velocity).setMotionZ(0);
         }
     }
-
 
     @EventHandler
     public void actionEvent(EventSprint eventAction) {
@@ -268,6 +349,10 @@ public class TargetStrafe extends Module {
             eventAction.setSprintState(!mc.player.lastSprinting);
             needSwap = false;
         }
+    }
+
+    public enum Mode {
+        Default, Pizdec, Custom
     }
 
     private enum Boost {
