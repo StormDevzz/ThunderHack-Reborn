@@ -33,6 +33,7 @@ public class ModuleManager implements IManager {
     public static PenisESP penisESP = new PenisESP();
     public static ShiftInterp shiftInterp = new ShiftInterp();
     public static Ambience ambience = new Ambience();
+    public static SmallUser smallUser = new SmallUser();
     public static EChestFarmer eChestFarmer = new EChestFarmer();
     public static DickAura dickAura = new DickAura();
     public static AntiPacketException antiPacketException = new AntiPacketException();

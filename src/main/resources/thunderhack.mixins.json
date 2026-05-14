@@ -38,6 +38,7 @@
     "MixinMobSpawnerBlockEntityRenderer",
     "MixinMouse",
     "MixinMultiplayerScreen",
+    "MixinModel",
     "MixinOtherClientPlayerEntity",
     "MixinParticleManager",
     "MixinPlayerListEntry",

@@ -10,7 +10,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import thunder.hack.core.manager.client.ModuleManager;
 
 @Mixin(Entity.class)
-public class MixinLivingEntity {
+public abstract class MixinLivingEntity {
+
     @Inject(method = "getPose", at = @At("HEAD"), cancellable = true)
     private void getPoseHook(CallbackInfoReturnable<EntityPose> cir) {
         if (ModuleManager.shiftInterp != null && ModuleManager.shiftInterp.isEnabled()) {
