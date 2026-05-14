@@ -104,7 +104,7 @@
   "descriptions.render.soundesp": "Подсвечивает звуки.",
   "descriptions.render.shaders": "Шейдеры на игроков и предметы.",
   "descriptions.render.shiftinterp": "Типа все присели?",
-  "descriptions.render.smalluser": "Уменьшает модель игрока.",
+  "descriptions.render.smalluser": "Уменьшает модель игрока(AkrienUser).",
   "descriptions.render.storageesp": "Подсвечивает выбранные хранилища.",
   "descriptions.render.tracers": "Рисует линии до игроков.",
   "descriptions.render.trails": "Показывает пути стрел, перлов и игроков.",
