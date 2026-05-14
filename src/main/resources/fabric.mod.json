@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "id": "thunderhack",
-  "version": "1.7",
+  "version": "1.8",
   "icon": "icon.png",
-  "name": "ThunderHack",
+  "name": "ThunderHack Reborn",
   "description": "Player Assistance Mod",
   "authors": [
     {
@@ -19,7 +19,7 @@
       }
     }
   ],
-  "license": "GNU General Public License v3.0",
+  "license": "MIT",
   "accessWidener": "thunderhack.accesswidener",
   "environment": "client",
   "entrypoints": {
