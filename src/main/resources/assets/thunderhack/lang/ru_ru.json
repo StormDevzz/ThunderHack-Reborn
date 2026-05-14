@@ -75,6 +75,7 @@
   "descriptions.misc.xray": "Алмазы? Без проблем.",
   "descriptions.misc.autodupe": "Автоматическое дюпание предметов (работает не на всех серверах).",
 
+    "descriptions.render.ambience": "Изменяет атмосферу мира.",
   "descriptions.render.animations": "Анимация удара.",
   "descriptions.render.aspectratio": "Позволяет изменять соотношение сторон экрана.",
   "descriptions.render.blockhighlight": "Подсвечивает блок под прицелом.",

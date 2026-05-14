@@ -75,6 +75,7 @@
   "descriptions.misc.xray": "Diamonds? No problem.",
   "descriptions.misc.autodupe": "Automatically dupes items using a duplication glitch.",
 
+  "descriptions.render.ambience": "Changes the ambience of the world.",
   "descriptions.render.animations": "Nice hand animations.",
   "descriptions.render.aspectratio": "Allows you to change the screen aspect ratio.",
   "descriptions.render.blockhighlight": "Highlights crosshair block.",
