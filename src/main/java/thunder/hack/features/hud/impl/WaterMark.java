@@ -14,6 +14,8 @@ import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.features.modules.client.Media;
 import thunder.hack.features.modules.misc.NameProtect;
 import thunder.hack.setting.Setting;
+import thunder.hack.setting.impl.ColorSetting;
+import thunder.hack.utility.Timer;
 import thunder.hack.utility.render.Render2DEngine;
 import thunder.hack.utility.render.Render3DEngine;
 import thunder.hack.utility.render.TextUtil;
@@ -31,6 +33,11 @@ public class WaterMark extends HudElement {
     public static final Setting<Mode> mode = new Setting<>("Mode", Mode.Big);
     private final Setting<Boolean> ru = new Setting<>("RU", false);
 
+    // Настройки для Old-режима
+    private final Setting<ColorSetting> oldTextColor = new Setting<>("OldTextColor", new ColorSetting(new Color(-1)), v -> mode.is(Mode.Old));
+    private final Setting<ColorSetting> oldBgColor = new Setting<>("OldBgColor", new ColorSetting(new Color(0xFF0F0F10, true)), v -> mode.is(Mode.Old));
+    private final Setting<ColorSetting> oldShadowColor = new Setting<>("OldShadowColor", new ColorSetting(new Color(0xFF0F0F10, true)), v -> mode.is(Mode.Old));
+
     private final TextUtil textUtil = new TextUtil(
             "ТандерХак",
             "ГромХак",
@@ -43,9 +50,21 @@ public class WaterMark extends HudElement {
             "ГромВзлом"
     );
 
+    // Для анимации Old
+    private int animIndex = 0;
+    private final Timer animTimer = new Timer();
+
     private enum Mode {
-        Big, Small, Classic, BaltikaClient, Rifk
+        Big, Small, Classic, BaltikaClient, Rifk, Old
     }
+
+    private static final String[] ANIM_FRAMES = {
+        "_", "T_", "Th_", "Thu_", "Thun_", "Thund_", "Thunde_", "Thunder_",
+        "ThunderH_", "ThunderHa_", "ThunderHac_", "ThunderHack",
+        "ThunderHack", "ThunderHack", "ThunderHack",
+        "ThunderHac_", "ThunderHa_", "ThunderH_", "Thunder_",
+        "Thunde_", "Thund_", "Thun_", "Thu_", "Th_", "T_", "_"
+    };
 
     public void onRender2D(DrawContext context) {
         super.onRender2D(context);
@@ -127,15 +146,64 @@ public class WaterMark extends HudElement {
             Date date = new Date(System.currentTimeMillis());
             SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
 
-            // лень вставлять реал билд дату
-            // too lazy to insert the real build date
-
             String info = Formatting.GREEN + String.format("th8 | build: 14/05/2026 | rate: %d | %s", Math.round(Managers.SERVER.getTPS()), format.format(date));
             float width = FontRenderers.profont.getStringWidth(info) + 5;
             Render2DEngine.drawRectWithOutline(context.getMatrices(), getPosX(), getPosY(), width, 8, Color.decode("#192A1A"), Color.decode("#833B7B"));
             Render2DEngine.drawGradientBlurredShadow1(context.getMatrices(), getPosX(), getPosY(), width, 8, 10, Color.decode("#161A1E"), Color.decode("#161A1E"), Color.decode("#382E37"), Color.decode("#382E37"));
             FontRenderers.profont.drawString(context.getMatrices(), info, getPosX() + 2.7, getPosY() + 2.953, HudEditor.textColor.getValue().getColor());
             setBounds(getPosX(), getPosY(), width, 8);
+        } else if (mode.is(Mode.Old)) {
+            // === Режим Old (стиль ThunderHack Plus) ===
+            String info = Formatting.DARK_GRAY + "  |  " + Formatting.RESET + username + Formatting.DARK_GRAY + "  |  " + Formatting.RESET + Managers.SERVER.getPing() + " ms" + Formatting.DARK_GRAY + "  |  " + Formatting.RESET + (mc.isInSingleplayer() ? "SinglePlayer" : mc.getNetworkHandler().getServerInfo().address);
+            float fullWidth = FontRenderers.sf_bold.getStringWidth("ThunderHack" + info) + 35;
+            float height = 16f;
+
+            // Анимация печатания
+            if (animTimer.passedMs(350)) {
+                animIndex++;
+                if (animIndex >= ANIM_FRAMES.length) {
+                    animIndex = 0;
+                }
+                animTimer.reset();
+            }
+
+            String animatedText = ANIM_FRAMES[animIndex];
+
+            // Тень
+            Render2DEngine.drawBlurredShadow(
+                context.getMatrices(),
+                getPosX() + 4, getPosY() + 4,
+                fullWidth, height,
+                10,
+                oldShadowColor.getValue().getColorObject()
+            );
+
+            // Скруглённый фон
+            Render2DEngine.drawRect(
+                context.getMatrices(),
+                getPosX() + 4, getPosY() + 4,
+                fullWidth, height,
+                oldBgColor.getValue().getColorObject()
+            );
+
+            // Анимированный "ThunderHack"
+            FontRenderers.sf_bold.drawString(
+                context.getMatrices(),
+                animatedText,
+                getPosX() + 9, getPosY() + 9,
+                -1
+            );
+
+            // Информация (ник | пинг | сервер)
+            FontRenderers.sf_bold.drawString(
+                context.getMatrices(),
+                info,
+                getPosX() + 9 + FontRenderers.sf_bold.getStringWidth("ThunderHack"),
+                getPosY() + 9,
+                oldTextColor.getValue().getColor()
+            );
+
+            setBounds(getPosX(), getPosY(), fullWidth + 8, height + 8);
         } else {
             FontRenderers.monsterrat.drawGradientString(context.getMatrices(), "ThunderHack v" + ThunderHack.VERSION, getPosX() + 5.5f, getPosY() + 5, 10);
             setBounds(getPosX(), getPosY(), 100, 3);
