@@ -169,6 +169,7 @@ public class ModuleManager implements IManager {
     public static Rotations rotations = new Rotations();
     public static MemoryHud memoryHud = new MemoryHud();
     public static WexIndicators wexIndicators = new WexIndicators();
+    public static PlayerView playerView = new PlayerView();
     public static Companion companion = new Companion();
     public static AntiCrash antiCrash = new AntiCrash();
     public static AutoGear autoGear = new AutoGear();
