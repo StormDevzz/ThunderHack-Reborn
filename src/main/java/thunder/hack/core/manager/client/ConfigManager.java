@@ -22,7 +22,7 @@ import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class ConfigManager implements IManager {
-    public static final String CONFIG_FOLDER_NAME = "ThunderHackRecode";
+    public static final String CONFIG_FOLDER_NAME = "ThunderHackReborn";
     public static final File MAIN_FOLDER = new File(mc.runDirectory, CONFIG_FOLDER_NAME);
     public static final File CONFIGS_FOLDER = new File(MAIN_FOLDER, "configs");
     public static final File TEMP_FOLDER = new File(MAIN_FOLDER, "temp");
@@ -118,7 +118,7 @@ public class ConfigManager implements IManager {
 
     public void loadCloud(String name) {
         Command.sendMessage(isRu() ? "Загружаю.." : "Downloading..");
-        try (BufferedInputStream in = new BufferedInputStream(new URL("https://raw.githubusercontent.com/Pan4ur/THRecodeUtil/main/configs/" + name + ".th").openStream());
+        try (BufferedInputStream in = new BufferedInputStream(new URL("https://raw.githubusercontent.com/StormDevzz/ThunderHack-Reborn/main/configs/" + name + ".th").openStream());
              FileOutputStream fileOutputStream = new FileOutputStream(new File(CONFIGS_FOLDER, name + ".th"))) {
             byte[] dataBuffer = new byte[1024];
             int bytesRead;
@@ -402,7 +402,7 @@ public class ConfigManager implements IManager {
     public List<String> getCloudConfigs() {
         List<String> list = new ArrayList<>();
         try {
-            URL url = new URL("https://raw.githubusercontent.com/Pan4ur/THRecodeUtil/main/cloudConfigs.txt");
+            URL url = new URL("https://raw.githubusercontent.com/StormDevzz/ThunderHack-Reborn/main/cloudConfigs.txt");
             BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
             String inputLine;
             while ((inputLine = in.readLine()) != null)

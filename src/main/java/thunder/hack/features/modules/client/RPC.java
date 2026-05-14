@@ -19,10 +19,10 @@ import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 public final class RPC extends Module {
     private static final DiscordRPC rpc = DiscordRPC.INSTANCE;
-    public static Setting<Mode> mode = new Setting<>("Picture", Mode.Recode);
+    public static Setting<Mode> mode = new Setting<>("Picture", Mode.Reborn);
     public static Setting<Boolean> showIP = new Setting<>("ShowIP", true);
     public static Setting<sMode> smode = new Setting<>("StateMode", sMode.Stats);
-    public static Setting<String> state = new Setting<>("State", "Beta? Recode? NextGen?");
+    public static Setting<String> state = new Setting<>("State", "Beta? Reborn? NextGen?");
     public static Setting<Boolean> nickname = new Setting<>("Nickname", true);
     public static DiscordRichPresence presence = new DiscordRichPresence();
     public static boolean started;
@@ -40,7 +40,7 @@ public final class RPC extends Module {
 
     public static void readFile() {
         try {
-            File file = new File("ThunderHackRecode/misc/RPC.txt");
+            File file = new File("ThunderHackReborn/misc/RPC.txt");
             if (file.exists()) {
                 try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                     while (reader.ready()) {
@@ -53,7 +53,7 @@ public final class RPC extends Module {
     }
 
     public static void WriteFile(String url1, String url2) {
-        File file = new File("ThunderHackRecode/misc/RPC.txt");
+        File file = new File("ThunderHackReborn/misc/RPC.txt");
         try {
             file.createNewFile();
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
@@ -109,10 +109,10 @@ public final class RPC extends Module {
                     }
 
                     presence.button_label_1 = "Download";
-                    presence.button_url_1 = "https://github.com/Pan4ur/ThunderHack-Recode/";
+                    presence.button_url_1 = "https://github.com/StormDevzz/ThunderHack-Reborn/";
 
                     switch (mode.getValue()) {
-                        case Recode -> presence.largeImageKey = "https://i.imgur.com/yY0z2Uq.gif";
+                        case Reborn -> presence.largeImageKey = "https://i.imgur.com/yY0z2Uq.gif";
                         case MegaCute ->
                                 presence.largeImageKey = "https://media1.tenor.com/images/6bcbfcc0be97d029613b54f97845bc59/tenor.gif?itemid=26823781";
                         case Custom -> {
@@ -152,7 +152,7 @@ public final class RPC extends Module {
         return result;
     }
 
-    public enum Mode {Custom, MegaCute, Recode}
+    public enum Mode {Custom, MegaCute, Reborn}
 
     public enum sMode {Custom, Stats, Version}
 }

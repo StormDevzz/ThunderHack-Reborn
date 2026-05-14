@@ -19,7 +19,7 @@ import static thunder.hack.core.manager.IManager.mc;
 import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 public class PlayerArgumentType implements ArgumentType<PlayerListEntry> {
-    private static final Collection<String> EXAMPLES = List.of("pan4ur", "06ED");
+    private static final Collection<String> EXAMPLES = List.of("StormDevzz", "06ED");
 
     public static PlayerArgumentType create() {
         return new PlayerArgumentType();

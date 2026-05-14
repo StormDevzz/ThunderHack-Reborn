@@ -32,7 +32,7 @@ import static thunder.hack.utility.render.animation.AnimationUtility.fast;
 /**
  * Кто спиздит у того мать у меня под столом
  *
- * @Copyright by Pan4ur#2144
+ * @Copyright by StormDevzz
  **/
 public class ThunderGui extends Screen {
     public static CurrentMode currentMode = CurrentMode.Modules;
@@ -230,7 +230,7 @@ public class ThunderGui extends Screen {
         context.getMatrices().scale(1, 1, 1);
         context.getMatrices().pop();
 
-        FontRenderers.settings.drawString(context.getMatrices(), "recode v" + ThunderHack.VERSION, main_posX + 91 - (FontRenderers.settings.getStringWidth("recode v" + ThunderHack.VERSION)), main_posY + 30, ThunderHackGui.getColorByTheme(3).getRGB());
+        FontRenderers.settings.drawString(context.getMatrices(), "reborn v" + ThunderHack.VERSION, main_posX + 91 - (FontRenderers.settings.getStringWidth("reborn v" + ThunderHack.VERSION)), main_posY + 30, ThunderHackGui.getColorByTheme(3).getRGB());
 
         // Левая плита под категриями
         Render2DEngine.drawRound(context.getMatrices(), main_posX + 5, main_posY + 40, 90, 120, 7f, ThunderHackGui.getColorByTheme(4));
@@ -474,7 +474,7 @@ public class ThunderGui extends Screen {
         }
         if (isHoveringItem(main_posX + 105, main_posY + 14, 11, 11, (float) mouseX, (float) mouseY)) {
             try {
-                net.minecraft.util.Util.getOperatingSystem().open(new File("ThunderHackRecode/configs/").toURI());
+                net.minecraft.util.Util.getOperatingSystem().open(new File("ThunderHackReborn/configs/").toURI());
             } catch (Exception e) {
                 Command.sendMessage("Не удалось открыть проводник!");
             }

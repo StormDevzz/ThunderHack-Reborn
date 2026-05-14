@@ -56,7 +56,7 @@ public final class ThunderUtility {
 
     public static void syncVersion() {
         try {
-            if (!new BufferedReader(new InputStreamReader(new URL("https://raw.githubusercontent.com/Pan4ur/THRecodeUtil/main/syncVersion121.txt").openStream())).readLine().equals(ThunderHack.VERSION))
+            if (!new BufferedReader(new InputStreamReader(new URL("https://raw.githubusercontent.com/StormDevzz/ThunderHack-Reborn/main/syncVersion121.txt").openStream())).readLine().equals(ThunderHack.VERSION))
                 ThunderHack.isOutdated = true;
         } catch (Exception ignored) {
         }
@@ -67,7 +67,7 @@ public final class ThunderUtility {
 
         try {
             for (int page = 1; page <= 3; page++) {
-                URL url = new URL("https://api.github.com/repos/Pan4ur/ThunderHack-Recode/stargazers?per_page=100&page=" + page);
+                URL url = new URL("https://api.github.com/repos/StormDevzz/ThunderHack-Reborn/stargazers?per_page=100&page=" + page);
                 BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
                 StringBuilder response = new StringBuilder();
                 String inputLine;
@@ -92,7 +92,7 @@ public final class ThunderUtility {
 
     public static void syncContributors() {
         try {
-            URL list = new URL("https://raw.githubusercontent.com/Pan4ur/THRecodeUtil/main/thTeam.txt");
+            URL list = new URL("https://raw.githubusercontent.com/StormDevzz/ThunderHack-Reborn/main/thTeam.txt");
             BufferedReader in = new BufferedReader(new InputStreamReader(list.openStream(), StandardCharsets.UTF_8));
             String inputLine;
             int i = 0;

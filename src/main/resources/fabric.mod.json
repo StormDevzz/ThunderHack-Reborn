@@ -7,9 +7,9 @@
   "description": "Player Assistance Mod",
   "authors": [
     {
-      "name": "pan4ur",
+      "name": "StormDevzz",
       "contact": {
-        "discord": "pan4ur"
+        "discord": "StormDevzz"
       }
     },
     {
@@ -28,9 +28,9 @@
     ]
   },
   "contact": {
-    "sources": "https://github.com/Pan4ur/ThunderHack-Recode",
+    "sources": "https://github.com/StormDevzz/ThunderHack-Reborn",
     "homepage": "https://thunderhack-site.vercel.app",
-    "issues": "https://github.com/Pan4ur/ThunderHack-Recode/issues"
+    "issues": "https://github.com/StormDevzz/ThunderHack-Reborn/issues"
   },
   "mixins": [
     "thunderhack.mixins.json"

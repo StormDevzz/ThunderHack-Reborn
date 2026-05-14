@@ -6,9 +6,9 @@
 
 # ThunderHack Reborn
 
-**Неофициальное продолжение ThunderHack Recode от организации StormDevzz**
+**Неофициальное продолжение ThunderHack Reborn от организации StormDevzz**
 <br>
-**Unofficial continuation of ThunderHack Recode by StormDevzz**
+**Unofficial continuation of ThunderHack Reborn by StormDevzz**
 
 [![Discord](https://img.shields.io/discord/1140266441082404924?label=discord&logo=discord&logoColor=white)](https://discord.gg/PvBhPWdkVD)
 [![GitHub forks](https://img.shields.io/github/forums/stormdevzz/ThunderHack-Reborn?style=social)](https://github.com/stormdevzz/ThunderHack-Reborn)
@@ -76,11 +76,11 @@
 ## Благодарности / Credits
 
 **RU: Оригинальные разработчики ThunderHack:**
-- Pan4ur -- создатель оригинального ThunderHack Recode
+- StormDevzz -- создатель ThunderHack Reborn
 - Все контрибьюторы оригинального проекта
 
 **EN: Original ThunderHack developers:**
-- Pan4ur -- creator of the original ThunderHack Recode
+- StormDevzz -- creator of ThunderHack Reborn
 - All contributors to the original project
 
 **Библиотеки и фреймворки / Libraries and frameworks:**
@@ -118,7 +118,7 @@
 ![image](assets/5.gif)
 </details>
 
-![image](https://github.com/Pan4ur/ThunderHack-Recode/assets/82473048/1e56338f-58a1-4759-8234-858878bdde3f)
+![image](https://github.com/StormDevzz/ThunderHack-Reborn/assets/82473048/1e56338f-58a1-4759-8234-858878bdde3f)
 
 ---
 
