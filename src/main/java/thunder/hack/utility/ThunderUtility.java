@@ -132,14 +132,17 @@ public final class ThunderUtility {
             URL url = new URL("https://api.github.com/repos/StormDevzz/ThunderHack-Reborn/commits?per_page=50");
             BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
 
-            changeLog.add("Changelog [Reborn; Date: " + ThunderHack.BUILD_DATE + "; GitHash:" + ThunderHack.GITHUB_HASH + "]");
+            changeLog.add("Changelog [Reborn; Date: " + ThunderHack.BUILD_DATE + "]");
             changeLog.add("\n");
 
+            int commitCount = 0;
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 JsonArray jsonArray = JsonParser.parseString(inputLine).getAsJsonArray();
 
                 for (int i = 0; i < jsonArray.size(); i++) {
+                    if (commitCount >= 5) break;
+
                     JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
                     JsonObject commitObject = jsonObject.getAsJsonObject("commit");
                     JsonObject authorObject = commitObject.getAsJsonObject("author");
@@ -156,7 +159,10 @@ public final class ThunderUtility {
                     String formattedName = "@" + Formatting.RED + name + Formatting.RESET;
 
                     changeLog.add("- " + info + " [" + formattedDate + "]  (" + formattedName + ")");
+                    commitCount++;
                 }
+
+                if (commitCount >= 5) break;
             }
             in.close();
         } catch (Exception e) {
