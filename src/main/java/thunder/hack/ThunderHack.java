@@ -84,3 +84,4 @@ public class ThunderHack implements ModInitializer {
         ThunderGui, ClickGui, Search, Sliders, Strings
     }
 }
+#Test

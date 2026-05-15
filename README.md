@@ -54,7 +54,7 @@
 
 > **RU:** Осторожно: Expensive, DoxWare 2.0, gumballoff, Treoderia "Recode", Deluxe Client и Quick Client являются скидами/ратами этого клиента.
 >
-> **EN:** Warning: Expensive, DoxWare 2.0, gumballoff, Treoderia "Recode", Deluxe Client, and Quick Client are both skids and rats based on this client.
+> **EN:** Warning: Expensive, DoxWare 2.0, gumballoff, Treoderia "Recode", Deluxe Client, and Quick Client are both skids and rats based on this client
 
 ---
 
