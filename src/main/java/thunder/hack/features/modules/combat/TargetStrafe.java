@@ -359,3 +359,4 @@ private final Setting<Float> pizdecAccel = new Setting<>("PizdecAccel", 1.25f, 0
         None, Elytra, Damage
     }
 }
+//Xiaomi mi 11 ultra
