@@ -1,6 +1,6 @@
 package thunder.hack.features.modules.player;
 
-//ThunderHack Plus by VFedTerV
+// ThunderHack Plus by VFedTerV & Xiaofeng
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.util.math.MatrixStack;
@@ -8,11 +8,8 @@ import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import thunder.hack.core.manager.client.ModuleManager;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.*;
 import thunder.hack.events.impl.PlayerUpdateEvent;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.client.HudEditor;
@@ -59,7 +56,12 @@ public class EChestFarmer extends Module {
 
     private final Timer actionTimer = new Timer();
     private final Timer placeTimer = new Timer();
-    private BlockPos currentTarget;
+
+    // 新增: 多个末影箱目标列表 (支持批量破坏)
+    private List<BlockPos> targets = new ArrayList<>();
+    // 新增: 当前正在处理的目标索引
+    private int currentTargetIndex = 0;
+
     private int breakAttempts;
     private Stage stage;
     private boolean mining;
@@ -76,7 +78,8 @@ public class EChestFarmer extends Module {
 
     @Override
     public void onEnable() {
-        currentTarget = null;
+        targets.clear();
+        currentTargetIndex = 0;
         breakAttempts = 0;
         stage = Stage.FINDING;
         mining = false;
@@ -89,11 +92,17 @@ public class EChestFarmer extends Module {
     @Override
     public void onDisable() {
         if (mc.options != null) mc.options.attackKey.setPressed(false);
-        if (mc.interactionManager != null && currentTarget != null) {
+        if (mc.interactionManager != null && getCurrentTarget() != null) {
             mc.interactionManager.cancelBlockBreaking();
         }
-        currentTarget = null;
+        targets.clear();
         mining = false;
+    }
+
+    // 新增: 获取当前目标 (支持多目标)
+    private BlockPos getCurrentTarget() {
+        if (targets.isEmpty() || currentTargetIndex >= targets.size()) return null;
+        return targets.get(currentTargetIndex);
     }
 
     @EventHandler
@@ -108,29 +117,29 @@ public class EChestFarmer extends Module {
     }
 
     private void updateRotation() {
-        if (currentTarget == null) return;
-        Vec3d targetVec = currentTarget.toCenterPos();
+        BlockPos target = getCurrentTarget();
+        if (target == null) return;
+        Vec3d targetVec = target.toCenterPos();
         float[] angles = InteractionUtility.calculateAngle(targetVec);
         targetYaw = angles[0];
         targetPitch = angles[1];
 
         if (rotate.getValue() == RotMode.Client) {
-            // Клиент видит поворот, сервер не видит
             mc.player.setYaw(targetYaw);
             mc.player.setPitch(targetPitch);
         } else if (rotate.getValue() == RotMode.Server) {
-            // Сервер видит поворот, клиент тоже видит (чтобы ломание шло в нужный блок)
             mc.player.setYaw(targetYaw);
             mc.player.setPitch(targetPitch);
-            // Отправляем пакет с ротацией на сервер
             sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(targetYaw, targetPitch, mc.player.isOnGround()));
         }
-        // RotMode.Off — ничего не делаем
     }
 
     private void handleFinding() {
-        currentTarget = findExistingEChest();
-        if (currentTarget != null) {
+        // 改进: 查找范围内所有末影箱 (支持多个)
+        List<BlockPos> existing = findAllEChests();
+        if (!existing.isEmpty()) {
+            targets = existing;
+            currentTargetIndex = 0;
             updateRotation();
             stage = Stage.BREAKING;
             breakAttempts = 0;
@@ -139,23 +148,30 @@ public class EChestFarmer extends Module {
             actionTimer.reset();
             return;
         }
+
         if (autoPlace.getValue()) {
-            currentTarget = findPlacePosition();
-            if (currentTarget != null) {
+            // 改进: 使用智能优先级选择最佳放置位置
+            BlockPos bestPos = findBestPlacePosition();
+            if (bestPos != null) {
+                targets.clear();
+                targets.add(bestPos);
+                currentTargetIndex = 0;
                 updateRotation();
                 stage = Stage.PLACING;
                 placeTimer.reset();
                 return;
             }
         }
+
         if (autoDisable.getValue()) {
             disable();
         }
     }
 
     private void handlePlacing() {
+        BlockPos target = getCurrentTarget();
         if (!placeTimer.passedMs(placeDelay.getValue())) return;
-        if (!isValidPlacePosition(currentTarget)) {
+        if (target == null || !isValidPlacePosition(target)) {
             stage = Stage.FINDING;
             return;
         }
@@ -172,11 +188,11 @@ public class EChestFarmer extends Module {
         int prevSlot = mc.player.getInventory().selectedSlot;
         if (autoSwitch.getValue()) chest.switchTo();
 
-        boolean placed = InteractionUtility.placeBlock(currentTarget,
-            rotate.getValue() != RotMode.Off ? InteractionUtility.Rotate.Default : InteractionUtility.Rotate.None,
-            InteractionUtility.Interact.Strict,
-            InteractionUtility.PlaceMode.Normal,
-            true);
+        boolean placed = InteractionUtility.placeBlock(target,
+                rotate.getValue() != RotMode.Off ? InteractionUtility.Rotate.Default : InteractionUtility.Rotate.None,
+                InteractionUtility.Interact.Strict,
+                InteractionUtility.PlaceMode.Normal,
+                true);
 
         if (autoSwitch.getValue()) InventoryUtility.switchTo(prevSlot);
 
@@ -193,19 +209,19 @@ public class EChestFarmer extends Module {
     }
 
     private void handleBreaking() {
+        BlockPos target = getCurrentTarget();
         if (!actionTimer.passedMs(delay.getValue())) return;
-        if (!isEChest(currentTarget)) {
+
+        // 新增: 延迟/中断处理 - 如果目标无效则跳过
+        if (target == null || !isEChest(target) || mc.world.isAir(target)) {
             stopMining();
-            stage = Stage.FINDING;
+            moveToNextTarget();
             return;
         }
-        if (mc.world.isAir(currentTarget)) {
-            stopMining();
-            if (autoDisable.getValue()) {
-                disable();
-            } else {
-                stage = Stage.FINDING;
-            }
+
+        // 新增: 检查方块是否被其他玩家破坏中
+        if (mc.world.getBlockState(target).getHardness(mc.world, target) == -1) {
+            moveToNextTarget();
             return;
         }
 
@@ -214,15 +230,15 @@ public class EChestFarmer extends Module {
         int prevSlot = mc.player.getInventory().selectedSlot;
         if (autoSwitch.getValue()) {
             SearchInvResult pick = InventoryUtility.findItemInHotBar(
-                Items.NETHERITE_PICKAXE, Items.DIAMOND_PICKAXE, Items.IRON_PICKAXE,
-                Items.STONE_PICKAXE, Items.WOODEN_PICKAXE, Items.GOLDEN_PICKAXE
+                    Items.NETHERITE_PICKAXE, Items.DIAMOND_PICKAXE, Items.IRON_PICKAXE,
+                    Items.STONE_PICKAXE, Items.WOODEN_PICKAXE, Items.GOLDEN_PICKAXE
             );
             if (pick.found()) pick.switchTo();
         }
 
         if (packetMine.getValue()) {
-            sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, currentTarget, Direction.UP));
-            sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, currentTarget, Direction.UP));
+            sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, target, Direction.UP));
+            sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, target, Direction.UP));
             mc.player.swingHand(Hand.MAIN_HAND);
         } else {
             if (!mining) {
@@ -234,7 +250,7 @@ public class EChestFarmer extends Module {
                 }
                 mining = true;
                 mc.options.attackKey.setPressed(true);
-                mc.interactionManager.attackBlock(currentTarget, Direction.UP);
+                mc.interactionManager.attackBlock(target, Direction.UP);
             } else {
                 breakAttempts++;
                 if (breakAttempts >= resetThreshold.getValue()) {
@@ -248,21 +264,42 @@ public class EChestFarmer extends Module {
 
         if (autoSwitch.getValue()) InventoryUtility.switchTo(prevSlot);
 
-        if (mc.world.isAir(currentTarget)) {
+        if (mc.world.isAir(target)) {
             stopMining();
-            if (autoDisable.getValue()) {
-                disable();
-            } else {
-                stage = Stage.FINDING;
-            }
+            moveToNextTarget();
         }
 
         actionTimer.reset();
     }
 
+    // 新增: 切换到下一个目标 (支持批量破坏)
+    private void moveToNextTarget() {
+        stopMining();
+        if (targets.isEmpty()) {
+            stage = Stage.FINDING;
+            return;
+        }
+        currentTargetIndex++;
+        if (currentTargetIndex >= targets.size()) {
+            if (autoDisable.getValue()) {
+                disable();
+            } else {
+                targets.clear();
+                stage = Stage.FINDING;
+            }
+        } else {
+            breakAttempts = 0;
+            mining = false;
+            startDelayCounter = 0;
+            actionTimer.reset();
+            stage = Stage.BREAKING;
+        }
+    }
+
     private void stopMining() {
         mc.options.attackKey.setPressed(false);
-        if (mc.interactionManager != null && currentTarget != null) {
+        BlockPos target = getCurrentTarget();
+        if (mc.interactionManager != null && target != null) {
             mc.interactionManager.cancelBlockBreaking();
         }
         mining = false;
@@ -279,55 +316,91 @@ public class EChestFarmer extends Module {
         return mc.world.getBlockState(below).isSolid() && mc.world.getBlockState(pos).isReplaceable();
     }
 
-    private BlockPos findExistingEChest() {
+    // 改进: 查找范围内所有末影箱 (支持多目标)
+    private List<BlockPos> findAllEChests() {
+        List<BlockPos> found = new ArrayList<>();
         BlockPos playerPos = mc.player.getBlockPos();
         int r = (int) Math.ceil(range.getValue());
-        BlockPos best = null;
-        double bestDist = Double.MAX_VALUE;
         for (int x = -r; x <= r; x++)
             for (int y = -r; y <= r; y++)
                 for (int z = -r; z <= r; z++) {
                     BlockPos pos = playerPos.add(x, y, z);
                     if (isEChest(pos)) {
-                        double dist = mc.player.squaredDistanceTo(pos.toCenterPos());
-                        if (dist < bestDist) {
-                            bestDist = dist;
-                            best = pos.toImmutable();
-                        }
+                        found.add(pos.toImmutable());
                     }
                 }
-        return best;
+        found.sort(Comparator.comparingDouble(p -> mc.player.squaredDistanceTo(p.toCenterPos())));
+        return found;
     }
 
-    private BlockPos findPlacePosition() {
+    // 改进: 智能优先级选择最佳放置位置 (安全性 + 可见性)
+    private BlockPos findBestPlacePosition() {
         BlockPos playerPos = mc.player.getBlockPos();
         int dist = distanceFromPlayer.getValue();
+        List<BlockPos> candidates = new ArrayList<>();
 
         Direction[] dirs = {Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
         for (Direction dir : dirs) {
             BlockPos pos = playerPos.offset(dir, dist);
-            if (isValidPlacePosition(pos)) return pos.toImmutable();
+            if (isValidPlacePosition(pos)) candidates.add(pos.toImmutable());
         }
 
         for (int x = -dist; x <= dist; x++)
             for (int z = -dist; z <= dist; z++) {
                 BlockPos pos = playerPos.add(x, 0, z);
-                if (isValidPlacePosition(pos)) return pos.toImmutable();
+                if (isValidPlacePosition(pos) && !candidates.contains(pos)) candidates.add(pos.toImmutable());
             }
 
-        return null;
+        if (candidates.isEmpty()) return null;
+
+        candidates.sort((a, b) -> {
+            int scoreA = evaluatePositionSafety(a);
+            int scoreB = evaluatePositionSafety(b);
+            if (scoreA != scoreB) return Integer.compare(scoreB, scoreA);
+            return Double.compare(mc.player.squaredDistanceTo(a.toCenterPos()), mc.player.squaredDistanceTo(b.toCenterPos()));
+        });
+
+        return candidates.get(0);
+    }
+
+    // 新增: 评估位置安全性 (避免熔岩、仙人掌、水、基岩等危险)
+    private int evaluatePositionSafety(BlockPos pos) {
+        int score = 0;
+
+        // 检查周围方块是否有危险
+        BlockPos[] dangerous = {
+                pos.up(), pos.north(), pos.south(), pos.east(), pos.west(), pos.down()
+        };
+        for (BlockPos neighbor : dangerous) {
+            if (mc.world.getBlockState(neighbor).getBlock() == Blocks.LAVA) score -= 5;
+            if (mc.world.getBlockState(neighbor).getBlock() == Blocks.CACTUS) score -= 10;
+            if (mc.world.getBlockState(neighbor).getBlock() == Blocks.WATER) score -= 2;
+            if (!mc.world.isAir(neighbor) && mc.world.getBlockState(neighbor).getBlock().getHardness() == -1) score -= 3;
+        }
+
+        // 检查上方是否有阻挡 (简单可靠)
+        if (!mc.world.isAir(pos.up())) score -= 1;
+
+        // 距离越近越好
+        double distance = mc.player.squaredDistanceTo(pos.toCenterPos());
+        if (distance < 4) score += 2;
+
+        return score;
     }
 
     @Override
     public String getDisplayInfo() {
-        return stage + (currentTarget != null ? " " + breakAttempts : "");
+        BlockPos cur = getCurrentTarget();
+        return stage + (cur != null ? " " + breakAttempts : "");
     }
 
     public void onRender3D(MatrixStack stack) {
-        if (!render.getValue() || currentTarget == null) return;
+        if (!render.getValue()) return;
         if (stage != Stage.BREAKING && stage != Stage.PLACING) return;
+        BlockPos target = getCurrentTarget();
+        if (target == null) return;
 
-        Box box = new Box(currentTarget);
+        Box box = new Box(target);
         Color fill = fillColor.getValue().getColorObject();
         Color line = lineColor.getValue().getColorObject();
 
