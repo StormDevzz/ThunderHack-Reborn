@@ -17,8 +17,8 @@ import java.awt.*;
 import java.util.Objects;
 
 public class KeyBinds extends HudElement {
-    public final Setting<ColorSetting> oncolor = new Setting<>("OnColor", new ColorSetting(-1));
-    public final Setting<ColorSetting> offcolor = new Setting<>("OffColor", new ColorSetting(1));
+    private final Setting<ColorSetting> onColorSetting = new Setting<>("On", new ColorSetting(new Color(255, 255, 255)));
+    private final Setting<ColorSetting> offColorSetting = new Setting<>("Off", new ColorSetting(new Color(171, 171, 171)));
     public final Setting<Boolean> onlyEnabled = new Setting<>("OnlyEnabled", false);
 
     public KeyBinds() {
@@ -84,12 +84,12 @@ public class KeyBinds extends HudElement {
             if (feature.isDisabled() && onlyEnabled.getValue())
                 continue;
             if (!Objects.equals(feature.getBind().getBind(), "None") && feature != ModuleManager.clickGui && feature != ModuleManager.thunderHackGui) {
-                FontRenderers.sf_bold_mini.drawString(context.getMatrices(), feature.getName(), getPosX() + 5, getPosY() + 19 + y_offset, feature.isOn() ? oncolor.getValue().getColor() : offcolor.getValue().getColor());
+                FontRenderers.sf_bold_mini.drawString(context.getMatrices(), feature.getName(), getPosX() + 5, getPosY() + 19 + y_offset, feature.isOn() ? onColorSetting.getValue().getColor() : offColorSetting.getValue().getColor());
                 FontRenderers.sf_bold_mini.drawCenteredString(context.getMatrices(),  getShortKeyName(feature),
 
                         px + (getPosX() + max_width - px) / 2f,
 
-                        getPosY() + 19 + y_offset, feature.isOn() ? oncolor.getValue().getColor() : offcolor.getValue().getColor());
+                        getPosY() + 19 + y_offset, feature.isOn() ? onColorSetting.getValue().getColor() : offColorSetting.getValue().getColor());
                 Render2DEngine.drawRect(context.getMatrices(), px, getPosY() + 17 + y_offset, 0.5f, 8, new Color(0x44FFFFFF, true));
 
                 y_offset += 9;

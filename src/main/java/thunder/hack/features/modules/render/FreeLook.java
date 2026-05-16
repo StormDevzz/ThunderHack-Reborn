@@ -17,13 +17,7 @@ public class FreeLook extends Module {
     private final Setting<Float> speed = new Setting<>("Speed", 1.0f, 0.1f, 2.0f);
 
     private float lockedYaw, lockedPitch;
-    private double lockedX, lockedY, lockedZ;
-
     private float cameraYaw, cameraPitch;
-    private float lastPlayerYaw, lastPlayerPitch;
-
-    private double camX, camY, camZ;
-
     private boolean switchedToThirdPerson;
 
     @Override
@@ -32,29 +26,20 @@ public class FreeLook extends Module {
 
         lockedYaw = mc.player.getYaw();
         lockedPitch = mc.player.getPitch();
-        lockedX = mc.player.getX();
-        lockedY = mc.player.getY();
-        lockedZ = mc.player.getZ();
 
         cameraYaw = lockedYaw;
         cameraPitch = lockedPitch;
-        lastPlayerYaw = lockedYaw;
-        lastPlayerPitch = lockedPitch;
 
-        // Если игрок в первом лице — переключаем на третье лицо (F5)
         switchedToThirdPerson = mc.options.getPerspective().isFirstPerson();
         if (switchedToThirdPerson) {
             mc.options.setPerspective(net.minecraft.client.option.Perspective.THIRD_PERSON_BACK);
         }
-
-        updateCameraPosition();
     }
 
     @Override
     public void onDisable() {
         if (mc.player == null) return;
 
-        // Возвращаем первое лицо, только если модуль сам переключил на третье
         if (switchedToThirdPerson) {
             mc.options.setPerspective(net.minecraft.client.option.Perspective.FIRST_PERSON);
         }
@@ -64,38 +49,19 @@ public class FreeLook extends Module {
     public void onSync(EventSync e) {
         if (mc.player == null) return;
 
-        float currentYaw = mc.player.getYaw();
-        float currentPitch = mc.player.getPitch();
-
-        float dYaw = currentYaw - lastPlayerYaw;
-        float dPitch = currentPitch - lastPlayerPitch;
-
-        if (dYaw > 180) dYaw -= 360;
-        if (dYaw < -180) dYaw += 360;
-
-        cameraYaw += dYaw * speed.getValue();
-        cameraPitch = MathHelper.clamp(cameraPitch + dPitch * speed.getValue(), -90.0f, 90.0f);
-
-        lastPlayerYaw = currentYaw;
-        lastPlayerPitch = currentPitch;
-
-        updateCameraPosition();
-
+        // Player rotation is now handled by MixinEntity and handleMouse methods
         mc.player.setYaw(lockedYaw);
         mc.player.setPitch(lockedPitch);
-        mc.player.setPosition(lockedX, lockedY, lockedZ);
+        mc.player.prevYaw = lockedYaw;
+        mc.player.prevPitch = lockedPitch;
     }
 
-    private void updateCameraPosition() {
-        double radYaw = Math.toRadians(cameraYaw);
-        double radPitch = Math.toRadians(cameraPitch);
-        double cosYaw = Math.cos(radYaw);
-        double sinYaw = Math.sin(radYaw);
-        double cosPitch = Math.cos(radPitch);
+    public void handleMouseYaw(double deltaYaw) {
+        cameraYaw += (float) (deltaYaw * speed.getValue());
+    }
 
-        camX = lockedX - sinYaw * cosPitch * distance.getValue();
-        camY = lockedY + mc.player.getEyeHeight(mc.player.getPose()) - Math.sin(radPitch) * distance.getValue();
-        camZ = lockedZ + cosYaw * cosPitch * distance.getValue();
+    public void handleMousePitch(double deltaPitch) {
+        cameraPitch = MathHelper.clamp(cameraPitch + (float) (deltaPitch * speed.getValue()), -90.0f, 90.0f);
     }
 
     @EventHandler
@@ -111,13 +77,7 @@ public class FreeLook extends Module {
             } else if (packet instanceof PlayerMoveC2SPacket.Full full) {
                 e.cancel();
                 mc.player.networkHandler.getConnection().send(
-                    new PlayerMoveC2SPacket.Full(lockedX, lockedY, lockedZ, lockedYaw, lockedPitch, mc.player.isOnGround()),
-                    null
-                );
-            } else if (packet instanceof PlayerMoveC2SPacket.PositionAndOnGround) {
-                e.cancel();
-                mc.player.networkHandler.getConnection().send(
-                    new PlayerMoveC2SPacket.PositionAndOnGround(lockedX, lockedY, lockedZ, mc.player.isOnGround()),
+                    new PlayerMoveC2SPacket.Full(full.getX(mc.player.getX()), full.getY(mc.player.getY()), full.getZ(mc.player.getZ()), lockedYaw, lockedPitch, mc.player.isOnGround()),
                     null
                 );
             }
@@ -130,17 +90,5 @@ public class FreeLook extends Module {
 
     public float getCameraPitch() {
         return cameraPitch;
-    }
-
-    public double getCameraX() {
-        return camX;
-    }
-
-    public double getCameraY() {
-        return camY;
-    }
-
-    public double getCameraZ() {
-        return camZ;
     }
 }
