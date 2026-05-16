@@ -35,6 +35,8 @@ public class HitBubbles extends Module {
     }
 
     public void onRender3D(MatrixStack matrixStack) {
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SrcFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DstFactor.ONE);
         RenderSystem.disableDepthTest();
         ArrayList<HitBubble> bubblesCopy = Lists.newArrayList(bubbles);
         bubblesCopy.forEach(b -> {

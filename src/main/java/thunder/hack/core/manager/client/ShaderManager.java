@@ -81,7 +81,6 @@ public class ShaderManager implements IManager {
         outBuffer.draw(outBuffer.textureWidth, outBuffer.textureHeight, false);
         RenderSystem.restoreProjectionMatrix();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.disableBlend();
     }
 
     public ManagedShaderEffect getShader(@NotNull Shader mode) {

@@ -147,7 +147,6 @@ public class WexIndicators extends HudElement {
         }
         BufferRenderer.drawWithGlobalProgram(progressBuffer.end());
 
-        RenderSystem.disableBlend();
 
         // Текст в центре
         String displayText;

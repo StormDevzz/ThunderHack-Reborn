@@ -142,7 +142,6 @@ public class RadarRewrite extends HudElement {
         }
 
         Render2DEngine.endBuilding(bufferBuilder);
-        RenderSystem.disableBlend();
 
         if (!Objects.equals(direction, ""))
             FontRenderers.getModulesRenderer().drawString(matrices, direction, (x - 2 + Math.cos((start - 15) * Math.PI / 180) * (radius / ry)), (y - 1 + Math.sin((start - 15) * Math.PI / 180) * (radius / rx)), -1);

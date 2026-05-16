@@ -78,12 +78,12 @@ public class GuiScanner extends Screen {
             hovery = mouseY - centery;
         }
 
-        Render2DEngine.addWindow(context.getMatrices(), consolex, consoley, consolex1, consoley1 - 10, 1f);
+        Render2DEngine.addWindow(context, consolex, consoley, consolex1, consoley1 - 10, 1f);
 
         for (NoCommentExploit.Cout out : new ArrayList<>(consoleout)) {
             FontRenderers.monsterrat.drawString(context.getMatrices(), out.out(), consolex + 4, consoley + 6 + (out.posY() * 11) + wheely, -1);
         }
-        Render2DEngine.popWindow();
+        Render2DEngine.popWindow(context);
 
         FontRenderers.monsterrat.drawString(context.getMatrices(), "X+", radarx1 + 5, centery, -1);
         FontRenderers.monsterrat.drawString(context.getMatrices(), "X-", radarx - 15, centery, -1);

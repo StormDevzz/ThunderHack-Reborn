@@ -380,7 +380,6 @@ public class TargetHud extends HudElement {
                 RenderSystem.enableBlend();
                 RenderSystem.defaultBlendFunc();
                 Render2DEngine.drawRound(context.getMatrices(), getPosX() + 50, getPosY(), 100, 50, 12, new Color(0, 0, 0, 255));
-                RenderSystem.disableBlend();
                 RenderSystem.setShaderColor(0.3f, 0.3f, 0.3f, 1f);
                 Render2DEngine.renderTexture(context.getMatrices(), getPosX() + 50, getPosY(), 95, 50, 0, 0, 100, 50, 100, 50);
                 context.getMatrices().pop();
@@ -510,7 +509,6 @@ public class TargetHud extends HudElement {
                 RenderSystem.enableBlend();
                 RenderSystem.defaultBlendFunc();
                 Render2DEngine.drawRound(context.getMatrices(), getPosX() + 50, getPosY(), 100, 50, 12, new Color(0, 0, 0, 255));
-                RenderSystem.disableBlend();
                 RenderSystem.setShaderColor(0.3f, 0.3f, 0.3f, 1f);
                 Render2DEngine.renderTexture(context.getMatrices(), getPosX() + 50, getPosY(), 100, 50, 0, 0, 100, 50, 100, 50);
                 context.getMatrices().pop();

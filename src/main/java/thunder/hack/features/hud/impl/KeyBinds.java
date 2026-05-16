@@ -78,7 +78,7 @@ public class KeyBinds extends HudElement {
         }
 
 
-        Render2DEngine.addWindow(context.getMatrices(), getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
+        Render2DEngine.addWindow(context, getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
         int y_offset = 0;
         for (Module feature : Managers.MODULE.modules) {
             if (feature.isDisabled() && onlyEnabled.getValue())
@@ -95,7 +95,7 @@ public class KeyBinds extends HudElement {
                 y_offset += 9;
             }
         }
-        Render2DEngine.popWindow();
+        Render2DEngine.popWindow(context);
         setBounds(getPosX(), getPosY(), hAnimation, vAnimation);
     }
 

@@ -41,6 +41,7 @@ public class CandleHud extends HudElement {
         context.getMatrices().translate((int) getPosX(), (int) getPosY(), 0);
         float scalefactor = (float) scale.getValue() / 100f;
         context.getMatrices().scale(scalefactor, scalefactor, 1);
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
         context.drawTexture(TextureStorage.candle, 0, -5, 0, 0, 102, 529, 102, 529);
         context.getMatrices().pop();
 
@@ -69,7 +70,6 @@ public class CandleHud extends HudElement {
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
         RenderSystem.setShaderTexture(0, TextureStorage.firefly);
         Render2DEngine.renderTexture(matrices, x, y, width, height, 0, 0, width, height, width, height);
-        RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 

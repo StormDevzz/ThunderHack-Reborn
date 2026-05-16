@@ -31,7 +31,6 @@ public class Particles {
         RenderSystem.setShaderTexture(0, TextureStorage.star);
         RenderSystem.setShaderColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, (float) (opacity / 255f));
         Render2DEngine.renderTexture(matrices, x + size / 2f, y + size / 2f, size, size, 0, 0, 256, 256, 256, 256);
-        RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 

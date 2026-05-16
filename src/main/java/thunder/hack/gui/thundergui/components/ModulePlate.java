@@ -1,4 +1,14 @@
 package thunder.hack.gui.thundergui.components;
+import net.minecraft.client.gui.DrawContext;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.BufferRenderer;
+import net.minecraft.client.render.BufferBuilder;
+import org.joml.Matrix4f;
+import net.minecraft.client.util.math.MatrixStack;
 
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
@@ -30,6 +40,7 @@ public class ModulePlate {
     private boolean first_open = true;
     private boolean listening_bind = false;
     private boolean holdbind = false;
+    private final thunder.hack.utility.render.animation.GearAnimation gearAnimation = new thunder.hack.utility.render.animation.GearAnimation();
 
 
     public ModulePlate(Module module, int posX, int posY, int index) {
@@ -42,7 +53,8 @@ public class ModulePlate {
         scroll_animation = 0;
     }
 
-    public void render(MatrixStack stack, int MouseX, int MouseY) {
+    public void render(DrawContext context, int MouseX, int MouseY) {
+        MatrixStack stack = context.getMatrices();
         if (scrollPosY != posY) {
             scroll_animation = AnimationUtility.fast(scroll_animation, 1, 15f);
             posY = (int) Render2DEngine.interpolate(prevPosY, scrollPosY, scroll_animation);
@@ -52,7 +64,10 @@ public class ModulePlate {
             return;
         }
 
-        Render2DEngine.addWindow(stack, new Render2DEngine.Rectangle(posX + 1, posY + 1, posX + 90, posY + 30));
+        if (isHovered(MouseX, MouseY)) {
+        }
+
+        Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(posX + 1, posY + 1, posX + 90, posY + 30));
 
         if (module.isOn()) {
             Render2DEngine.drawGradientRound(stack, posX + 1, posY, 89, 30, 4f,
@@ -64,27 +79,31 @@ public class ModulePlate {
             Render2DEngine.drawRound(stack, posX + 1, posY, 89, 30, 4f, Render2DEngine.applyOpacity(new Color(25, 20, 30, 255), getFadeFactor()));
         }
 
-        if (first_open) {
-            Render2DEngine.drawBlurredShadow(stack, MouseX - 20, MouseY - 20, 40, 40, 60, Render2DEngine.applyOpacity(new Color(0xC3555A7E, true), getFadeFactor()));
-            first_open = false;
-        }
-
-        if (isHovered(MouseX, MouseY)) {
-            Render2DEngine.drawBlurredShadow(stack, MouseX - 20, MouseY - 20, 40, 40, 60, Render2DEngine.applyOpacity(new Color(0xC3555A7E, true), getFadeFactor()));
-        }
 
         if (ThunderGui.selected_plate != this)
             FontRenderers.icons.drawString(stack, "H", (int) (posX + 80f), (int) (posY + 22f), Render2DEngine.applyOpacity(new Color(0xFFECECEC, true).getRGB(), getFadeFactor()));
         else {
 
             stack.push();
-            stack.translate((posX + 91f), (posY + 15f), 0.0F);
-            stack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(mc.player.age * 4));
-            stack.translate(-(posX + 91f), -(posY + 15f), 0.0F);
-            FontRenderers.big_icons.drawString(stack, "H", (posX + 78f), (posY + 5f), Render2DEngine.applyOpacity(new Color(0xFF646464, true).getRGB(), getFadeFactor()));
-            stack.translate((posX + 91f), (posY + 15f), 0.0F);
-            stack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-mc.player.age * 4));
-            stack.translate(-(posX + 91f), -(posY + 15f), 0.0F);
+            stack.translate((posX + 85f), (posY + 12f), 0.0F);
+            stack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(gearAnimation.getValue()));
+            stack.translate(-(posX + 85f), -(posY + 12f), 0.0F);
+            
+            RenderSystem.setShaderTexture(0, thunder.hack.utility.render.TextureStorage.Gear);
+            RenderSystem.enableBlend();
+            RenderSystem.setShader(net.minecraft.client.render.GameRenderer::getPositionTexColorProgram);
+            RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SrcFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DstFactor.ONE);
+            
+            float fade = getFadeFactor();
+            Matrix4f matrix = stack.peek().getPositionMatrix();
+            BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+            buffer.vertex(matrix, posX + 78, posY + 19, 0).texture(0, 1).color(1f, 1f, 1f, fade);
+            buffer.vertex(matrix, posX + 92, posY + 19, 0).texture(1, 1).color(1f, 1f, 1f, fade);
+            buffer.vertex(matrix, posX + 92, posY + 5, 0).texture(1, 0).color(1f, 1f, 1f, fade);
+            buffer.vertex(matrix, posX + 78, posY + 5, 0).texture(0, 0).color(1f, 1f, 1f, fade);
+            BufferRenderer.drawWithGlobalProgram(buffer.end());
+
+            RenderSystem.disableBlend();
             stack.pop();
         }
 
@@ -114,7 +133,7 @@ public class ModulePlate {
             if (sbind.equals("RIGHT_ALT")) {
                 sbind = "RAlt";
             }
-
+ 
             FontRenderers.modules.drawString(stack, sbind, posX + 86 - FontRenderers.modules.getStringWidth(sbind), posY + 6, Render2DEngine.applyOpacity(new Color(0xB0B0B0), getFadeFactor()).getRGB());
         }
 
@@ -146,7 +165,7 @@ public class ModulePlate {
             }
         }
 
-        Render2DEngine.popWindow();
+        Render2DEngine.popWindow(context);
     }
 
     private float getFadeFactor() {
@@ -155,6 +174,7 @@ public class ModulePlate {
 
 
     public void onTick() {
+        gearAnimation.tick();
         if (progress > 4) {
             progress = 0;
         }

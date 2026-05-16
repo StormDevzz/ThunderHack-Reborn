@@ -1,5 +1,6 @@
 package thunder.hack.features.hud.impl;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.DrawContext;
@@ -57,6 +58,7 @@ public class KillStats extends HudElement {
             Render2DEngine.drawRoundedBlur(context.getMatrices(), pX, getPosY(), FontRenderers.getModulesRenderer().getStringWidth(streak) + FontRenderers.getModulesRenderer().getStringWidth(kd) + 21, 13f, 3, HudEditor.blurColor.getValue().getColorObject());
             Render2DEngine.drawRect(context.getMatrices(), pX + 14, getPosY() + 2, 0.5f, 8, new Color(0x44FFFFFF, true));
             Render2DEngine.setupRender();
+            RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
             RenderSystem.setShaderTexture(0, TextureStorage.swordIcon);
             Render2DEngine.renderGradientTexture(context.getMatrices(), pX + 2, getPosY() + 1, 10, 10, 0, 0, 16, 16, 16, 16,
                     HudEditor.getColor(270), HudEditor.getColor(0), HudEditor.getColor(180), HudEditor.getColor(90));

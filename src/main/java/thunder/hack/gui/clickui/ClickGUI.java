@@ -6,6 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.ModuleManager;
@@ -140,8 +141,8 @@ public class ClickGUI extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        if (ModuleManager.clickGui.blur.getValue())
-            applyBlur(delta);
+        // if (ModuleManager.clickGui.blur.getValue())
+        //    applyBlur(delta);
 
         anyHovered = false;
 
@@ -151,14 +152,10 @@ public class ClickGUI extends Screen {
             RenderSystem.setShaderTexture(0, image.file);
 
             Render2DEngine.renderTexture(context.getMatrices(),
-
                     mc.getWindow().getScaledWidth() - image.fileWidth * imageAnimation.getAnimationd(),
                     mc.getWindow().getScaledHeight() - image.fileHeight,
-
                     image.fileWidth,
                     image.fileHeight,
-
-
                     0, 0,
                     image.fileWidth, image.fileHeight, image.fileWidth, image.fileHeight);
         }
@@ -226,7 +223,6 @@ public class ClickGUI extends Screen {
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
                 GLFW.glfwSetCursor(mc.getWindow().getHandle(), GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR));
             }
-
     }
 
     @Override

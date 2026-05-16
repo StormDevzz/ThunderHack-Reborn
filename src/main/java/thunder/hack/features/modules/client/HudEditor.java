@@ -14,7 +14,6 @@ public final class HudEditor extends Module {
     public static final Setting<ArrowsStyle> arrowsStyle = new Setting<>("ArrowsStyle", ArrowsStyle.Default);
     public static final Setting<ClickGui.colorModeEn> colorMode = new Setting<>("ColorMode", ClickGui.colorModeEn.Static);
     public static final Setting<Integer> colorSpeed = new Setting<>("ColorSpeed", 18, 2, 54);
-    public static final Setting<Boolean> glow = new Setting<>("Light", true);
     public static final Setting<ColorSetting> hcolor1 = new Setting<>("Color", new ColorSetting(-6974059));
     public static final Setting<ColorSetting> acolor = new Setting<>("Color2", new ColorSetting(-8365735));
     public static final Setting<ColorSetting> plateColor = new Setting<>("PlateColor", new ColorSetting(new Color(0xE7000000, true).getRGB()));
@@ -25,7 +24,6 @@ public final class HudEditor extends Module {
     public static final Setting<Float> alpha = new Setting<>("Alpha", 0.9f, 0f, 1f);
     public static final Setting<Float> blend = new Setting<>("Blend", 10f, 1f, 15f);
     public static final Setting<Float> outline = new Setting<>("Outline", 0.5f, 0f, 2.5f);
-    public static final Setting<Float> glow1 = new Setting<>("Glow", 0.5f, 0f, 1f);
     public static final Setting<Float> blurOpacity = new Setting<>("BlurOpacity", 0.55f, 0f, 1f);
     public static final Setting<Float> blurStrength = new Setting<>("BlurStrength", 20f, 5f, 50f);
 

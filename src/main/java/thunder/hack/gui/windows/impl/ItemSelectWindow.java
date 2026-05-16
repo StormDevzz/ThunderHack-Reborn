@@ -90,7 +90,7 @@ public class ItemSelectWindow extends WindowBase {
                     getX() + getWidth() / 2f, getY() + getHeight() / 2f, new Color(0xBDBDBD).getRGB());
         }
 
-        Render2DEngine.addWindow(context.getMatrices(), getX(), getY() + 30, getX() + getWidth(), getY() + getHeight() - 1, 1f);
+        Render2DEngine.addWindow(context, getX(), getY() + 30, getX() + getWidth(), getY() + getHeight() - 1, 1f);
 
         for (ItemPlate itemPlate : (allTab ? allItems : itemPlates)) {
             if (itemPlate.offset + getY() + 25 + getScrollOffset() > getY() + getHeight() || itemPlate.offset + getScrollOffset() + getY() + 10 < getY())
@@ -117,7 +117,7 @@ public class ItemSelectWindow extends WindowBase {
             }
         }
         setMaxElementsHeight((allTab ? allItems : itemPlates).size() * 20);
-        Render2DEngine.popWindow();
+        Render2DEngine.popWindow(context);
     }
 
     @Override

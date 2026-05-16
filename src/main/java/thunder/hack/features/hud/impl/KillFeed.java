@@ -65,13 +65,13 @@ public class KillFeed extends HudElement {
             }
         }
 
-        Render2DEngine.addWindow(context.getMatrices(), getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
+        Render2DEngine.addWindow(context, getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
         int y_offset = 3;
         for (KillComponent kc : Lists.newArrayList(players)) {
             FontRenderers.modules.drawString(context.getMatrices(), kc.getString(), getPosX() + 5, getPosY() + 18 + y_offset, -1);
             y_offset += 10;
         }
-        Render2DEngine.popWindow();
+        Render2DEngine.popWindow(context);
         setBounds(getPosX(), getPosY(), hAnimation, vAnimation);
     }
 

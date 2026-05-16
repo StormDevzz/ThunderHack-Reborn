@@ -87,9 +87,9 @@ public abstract class MixinSplashOverlay {
         RenderSystem.setShaderColor(0.1F, 0.1F, 0.1F, h);
         context.drawTexture(TextureStorage.thLogo, k - 150, p - 35, 0, 0, 300, 70, 300, 70);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, h);
-        Render2DEngine.addWindow(context.getMatrices(),k - 150, p - 35, k - 150 + (300 * progress), p + 35, 1f);
+        Render2DEngine.addWindow(context,k - 150, p - 35, k - 150 + (300 * progress), p + 35, 1f);
         context.drawTexture(TextureStorage.thLogo, k - 150, p - 35, 0, 0, 300, 70, 300, 70);
-        Render2DEngine.popWindow();
+        Render2DEngine.popWindow(context);
 
         float t = this.reload.getProgress();
         this.progress = MathHelper.clamp(this.progress * 0.95F + t * 0.050000012F, 0.0F, 1.0F);

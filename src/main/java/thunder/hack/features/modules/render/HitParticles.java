@@ -81,6 +81,8 @@ public class HitParticles extends Module {
     }
 
     public void onRender3D(MatrixStack stack) {
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SrcFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DstFactor.ONE);
         RenderSystem.disableDepthTest();
         if (mc.player != null && mc.world != null) {
             for (Particle particle : particles) {

@@ -34,9 +34,9 @@ public class ArmorHud extends HudElement {
                 context.drawItem(itemStack, (int) xItemOffset, (int) getPosY());
                 RenderSystem.setShaderColor(1f,1f,1f,1f);
                 float offset = ((itemStack.getItem() instanceof ArmorItem ai) && ai.getSlotType() == EquipmentSlot.HEAD) ? -4 : 0;
-                Render2DEngine.addWindow(context.getMatrices(), (int) xItemOffset, getPosY() + offset + (15 - offset) * ((float) itemStack.getDamage() / (float) itemStack.getMaxDamage()), xItemOffset + 15, getPosY() + 15, 1f);
+                Render2DEngine.addWindow(context, (int) xItemOffset, getPosY() + offset + (15 - offset) * ((float) itemStack.getDamage() / (float) itemStack.getMaxDamage()), xItemOffset + 15, getPosY() + 15, 1f);
                 context.drawItem(itemStack, (int) xItemOffset, (int) getPosY());
-                Render2DEngine.popWindow();
+                Render2DEngine.popWindow(context);
             }
             xItemOffset += 20;
         }

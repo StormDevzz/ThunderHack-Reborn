@@ -48,7 +48,6 @@ public class GapplesHud extends HudElement {
         context.getMatrices().translate(xPos, yPos, 0);
         context.getMatrices().multiply(RotationAxis.NEGATIVE_Z.rotation((float) Math.toRadians(-Render2DEngine.interpolateFloat(prevAngle, angle, Render3DEngine.getTickDelta()))));
         context.getMatrices().translate(-xPos, -yPos, 0);
-
         RenderSystem.setShaderColor(0.3f, 0.3f, 0.3f, 1f);
         context.getMatrices().translate(xPos + 20, yPos - 9, 0);
         context.drawItem(targetItem.getDefaultStack(), 0, 0);
@@ -60,7 +59,6 @@ public class GapplesHud extends HudElement {
         context.drawItem(targetItem.getDefaultStack(), -8, -8);
         context.getMatrices().scale(factor2 != 0 ? 1f / factor2 : 1f, factor2 != 0 ? 1f / factor2 : 1f, 1f);
         context.getMatrices().translate(-(xPos + 28), -(yPos - 1), 0);
-
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
         if (factor > 0)

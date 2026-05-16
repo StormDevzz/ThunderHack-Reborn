@@ -342,6 +342,8 @@ public class ModuleManager implements IManager {
 
     public void onRender2D(DrawContext context) {
         if (mc.getDebugHud().shouldShowDebugHud() || mc.options.hudHidden) return;
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
         HudElement.anyHovered = false;
         modules.stream().filter(Module::isEnabled).forEach(module -> module.onRender2D(context));
         if (!HudElement.anyHovered && !ClickGUI.anyHovered)

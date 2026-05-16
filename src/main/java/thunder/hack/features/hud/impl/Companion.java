@@ -68,9 +68,9 @@ public class Companion extends HudElement {
             float factor = MathUtility.clamp(lastPop.getPassedTimeMs(), 0, 500) / 500f;
             Render2DEngine.drawRound(context.getMatrices(), getPosX() + scale.getValue() / 3f, getPosY() + 70 - scale.getValue(), factor * w, 10, 3, new Color(0xFCD7DD));
 
-            Render2DEngine.addWindow(context.getMatrices(), getPosX() + scale.getValue() / 3f, getPosY() + 72 - scale.getValue(), factor * w + getPosX() + scale.getValue() / 3f, 20 + getPosY() + 72 - scale.getValue(), 1f);
+            Render2DEngine.addWindow(context, getPosX() + scale.getValue() / 3f, getPosY() + 72 - scale.getValue(), factor * w + getPosX() + scale.getValue() / 3f, 20 + getPosY() + 72 - scale.getValue(), 1f);
             FontRenderers.sf_bold.drawString(context.getMatrices(), message, getPosX() + 2 + scale.getValue() / 3f, getPosY() + 72 - scale.getValue(), new Color(0x484848).getRGB());
-            Render2DEngine.popWindow();
+            Render2DEngine.popWindow(context);
         }
 
         if (frameRate.passedMs(64)) {

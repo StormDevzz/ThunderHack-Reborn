@@ -110,7 +110,6 @@ public class Crosshair extends Module {
                 bufferBuilder.vertex(posMatrix, 0, 0, 0).texture(0, 0).color(color1.getRGB());
                 BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
                 RenderSystem.defaultBlendFunc();
-                RenderSystem.disableBlend();
                 context.getMatrices().pop();
             }
             case Default -> {

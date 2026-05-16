@@ -1,4 +1,6 @@
 package thunder.hack.gui.thundergui.components;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.math.MatrixStack;
 
 import net.minecraft.client.util.math.MatrixStack;
 import thunder.hack.ThunderHack;
@@ -42,8 +44,9 @@ public class ColorPickerComponent extends SettingElement {
     }
 
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float delta) {
-        super.render(stack, mouseX, mouseY, delta);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        MatrixStack stack = context.getMatrices();
+        super.render(context, mouseX, mouseY, delta);
         if ((getY() > ThunderGui.getInstance().main_posY + ThunderGui.getInstance().height) || getY() < ThunderGui.getInstance().main_posY) {
             return;
         }

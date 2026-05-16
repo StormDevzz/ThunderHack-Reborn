@@ -146,7 +146,7 @@ public class StaffBoard extends HudElement {
         }
 
 
-        Render2DEngine.addWindow(context.getMatrices(), getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
+        Render2DEngine.addWindow(context, getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
         int y_offset = 0;
 
         for (String player : all) {
@@ -164,7 +164,7 @@ public class StaffBoard extends HudElement {
             Render2DEngine.drawRect(context.getMatrices(), px, getPosY() + 17 + y_offset, 0.5f, 8, new Color(0x44FFFFFF, true));
             y_offset += 9;
         }
-        Render2DEngine.popWindow();
+        Render2DEngine.popWindow(context);
         setBounds(getPosX(), getPosY(), hAnimation, vAnimation);
     }
 

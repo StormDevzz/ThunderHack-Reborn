@@ -34,7 +34,7 @@ public class HudShader {
         setup();
     }
 
-    public void setParameters(float x, float y, float width, float height, float r, float externalAlpha, float internalAlpha) {
+    public void setParameters(float x, float y, float width, float height, float r, float externalAlpha, float internalAlpha, float glowRadius) {
         float i = (float) mc.getWindow().getScaleFactor();
         radius.set(r * i);
         uLocation.set(x * i, -y * i + mc.getWindow().getScaledHeight() * i - height * i);
@@ -51,7 +51,7 @@ public class HudShader {
         color4.set(c4.getRed() / 255f, c4.getGreen() / 255f, c4.getBlue() / 255f, externalAlpha);
         blend.set(HudEditor.blend.getValue());
         outline.set(HudEditor.outline.getValue());
-        glow.set(HudEditor.glow1.getValue());
+        glow.set(glowRadius);
         alpha.set(internalAlpha);
     }
 

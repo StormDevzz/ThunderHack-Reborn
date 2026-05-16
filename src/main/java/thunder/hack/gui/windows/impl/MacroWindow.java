@@ -115,7 +115,7 @@ public class MacroWindow extends WindowBase {
         FontRenderers.sf_medium.drawCenteredString(context.getMatrices(), "Text", textX + textWidth / 2f, getY() + 40, textColor);
 
 
-        Render2DEngine.addWindow(context.getMatrices(), getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1, 1f);
+        Render2DEngine.addWindow(context, getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1, 1f);
 
         int id = 0;
         for (MacroPlate macroPlate : macroPlates) {
@@ -148,7 +148,7 @@ public class MacroWindow extends WindowBase {
             FontRenderers.sf_medium_mini.drawString(context.getMatrices(), id + ".", getX() + 3, macroPlate.offset + getY() + 41 + getScrollOffset(), textColor);
         }
         setMaxElementsHeight(macroPlates.size() * 20);
-        Render2DEngine.popWindow();
+        Render2DEngine.popWindow(context);
     }
 
     @Override
