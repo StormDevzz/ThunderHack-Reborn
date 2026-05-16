@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "thunderhack",
-  "version": "1.8.2",
+  "version": "1.9",
   "icon": "icon.png",
   "name": "ThunderHack Reborn",
   "description": "Player Assistance Mod",
@@ -10,12 +10,6 @@
       "name": "StormDevzz",
       "contact": {
         "discord": "wawelcrafter"
-      }
-    },
-    {
-      "name": "06ED",
-      "contact": {
-        "discord": "dinner_enjoyer"
       }
     }
   ],

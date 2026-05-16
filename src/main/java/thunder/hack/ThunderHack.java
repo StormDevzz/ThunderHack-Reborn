@@ -24,7 +24,7 @@ public class ThunderHack implements ModInitializer {
     public static final ModMetadata MOD_META;
 
     public static final String MOD_ID = "thunderhack";
-    public static final String VERSION = "1.8.2b2407";
+    public static final String VERSION = "1.9b2407";
     public static String GITHUB_HASH = "0";
     public static String BUILD_DATE = "1 Jan 1970";
 
@@ -60,7 +60,8 @@ public class ThunderHack implements ModInitializer {
         ThunderUtility.syncVersion();
 
         EVENT_BUS.registerLambdaFactory("thunder.hack",
-                (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
+                (lookupInMethod,
+                        klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
         EVENT_BUS.subscribe(core);
 
         Managers.init();
