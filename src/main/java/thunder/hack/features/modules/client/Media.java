@@ -24,9 +24,11 @@ public final class Media extends Module {
             for (PlayerListEntry ple : mc.player.networkHandler.getPlayerList()) {
                 if (pac.content().getString().contains(ple.getProfile().getName())) {
                     IGameMessageS2CPacket packet = e.getPacket();
-                    packet.setContent(Text.of(pac.content().getString().replace(ple.getProfile().getName(), "Protected")));
+                    packet.setContent(
+                            Text.of(pac.content().getString().replace(ple.getProfile().getName(), "Protected")));
                 }
             }
         }
     }
 }
+// test
