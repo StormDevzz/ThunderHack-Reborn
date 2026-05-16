@@ -151,16 +151,17 @@ public class Aura extends Module {
     public final Setting<Boolean> hvhAntiResolve = new Setting<>("AntiResolve", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
     public final Setting<Boolean> hvhIgnoreCooldown = new Setting<>("IgnoreCooldown", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
 
-    /*   CHINESE ROTATIONS   */  // 中国风旋转模式 - 优雅而精准的旋转算法
+    /*   CHINESE ROTATIONS   */  // 中国风旋转模式 - 优雅精准的太极瞄准
     public final Setting<SettingGroup> chineseSettings = new Setting<>("Chinese", new SettingGroup(false, 0), v -> rotationMode.is(Mode.Chinese));
-    public final Setting<Float> chineseYawSpeed = new Setting<>("YawSpeed", 180f, 30f, 360f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 偏航速度
-    public final Setting<Float> chinesePitchSpeed = new Setting<>("PitchSpeed", 120f, 20f, 240f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 俯仰速度
-    public final Setting<Float> chineseYawNoise = new Setting<>("YawNoise", 1.2f, 0f, 5f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 偏航随机扰动
-    public final Setting<Float> chinesePitchNoise = new Setting<>("PitchNoise", 0.8f, 0f, 5f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 俯仰随机扰动
-    public final Setting<Boolean> chineseSmooth = new Setting<>("SmoothTransition", true, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 平滑过渡
-    public final Setting<Float> chineseAimThreshold = new Setting<>("AimThreshold", 0.3f, 0f, 3f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 瞄准阈值
-    public final Setting<ChineseTargetPoint> chineseTargetPoint = new Setting<>("TargetPoint", ChineseTargetPoint.Chest, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 瞄准点选择
-    public final Setting<Boolean> chineseQiStyle = new Setting<>("QiStyle", true, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 气功风格 - 增加命中率
+    public final Setting<Float> chineseYawSpeed = new Setting<>("偏航速度", 220f, 30f, 360f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 快速但平滑
+    public final Setting<Float> chinesePitchSpeed = new Setting<>("俯仰速度", 160f, 20f, 240f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Float> chineseYawNoise = new Setting<>("偏航扰动", 1.2f, 0f, 5f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Float> chinesePitchNoise = new Setting<>("俯仰扰动", 0.8f, 0f, 5f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Boolean> chineseSmooth = new Setting<>("平滑过渡", true, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Float> chineseAimThreshold = new Setting<>("瞄准阈值", 0.3f, 0f, 3f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<ChineseTargetPoint> chineseTargetPoint = new Setting<>("瞄准点", ChineseTargetPoint.Chest, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Boolean> chineseQiStyle = new Setting<>("气功风格", true, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Integer> chineseInteractTicks = new Setting<>("交互持续", 5, 1, 20, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
 
     /*   TARGETS   */
     public final Setting<SettingGroup> targets = new Setting<>("Targets", new SettingGroup(false, 0));
@@ -191,6 +192,7 @@ public class Aura extends Module {
     private int hitTicks;
     private int trackticks;
     private boolean lookingAtHitbox;
+    private int chineseTicks;
 
     private final Timer delayTimer = new Timer();
     private final Timer pauseTimer = new Timer();
@@ -259,11 +261,11 @@ public class Aura extends Module {
         return true;
     }
 
+    // 注意: Chinese 模式移出了跳过射线追踪, 现在必须真正瞄准目标才能攻击
     private boolean skipRayTraceCheck() {
         return rotationMode.getValue() == Mode.None || rayTrace.getValue() == RayTrace.OFF
                 || rotationMode.is(Mode.Grim)
                 || rotationMode.is(Mode.HvH)
-                || rotationMode.is(Mode.Chinese)  // 中国风模式也跳过射线追踪
                 || (rotationMode.is(Mode.Interact) && (interactTicks.getValue() <= 1
                 || mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.25, 0.0, -0.25).offset(0.0, 1, 0.0)).iterator().hasNext()))
                 || (rotationMode.is(Mode.Interact2) && (interact2Ticks.getValue() <= 1
@@ -433,6 +435,7 @@ public class Aura extends Module {
         rotationMotion = Vec3d.ZERO;
         rotationYaw = mc.player.getYaw();
         rotationPitch = mc.player.getPitch();
+        chineseTicks = 0;
         delayTimer.reset();
     }
 
@@ -541,8 +544,16 @@ public class Aura extends Module {
     }
 
     private void calcRotations(boolean ready) {
-        // --- 中国风旋转模式 (优雅精准) --- 中国风旋转算法 - 结合太极理念的平滑瞄准
+        // --- 中国风旋转模式 (太极: 快慢相间, 后发先至) ---
         if (rotationMode.is(Mode.Chinese)) {
+            // 交互计时: 有方块碰撞箱则立即恢复转头, 否则维持设定值
+            if (ready) {
+                boolean hasCollision = mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.25, 0.0, -0.25).offset(0.0, 1, 0.0)).iterator().hasNext();
+                chineseTicks = hasCollision ? 1 : chineseInteractTicks.getValue();
+            } else if (chineseTicks > 0) {
+                chineseTicks--;
+            }
+
             if (target == null) return;
 
             // 选择瞄准点
@@ -557,19 +568,15 @@ public class Aura extends Module {
                 case Legs:
                     targetVec = target.getPos().add(0, target.getHeight() * 0.3, 0);
                     break;
-                case Random:
+                default: // Random
                     Box box = target.getBoundingBox();
                     targetVec = new Vec3d(
                         box.minX + Math.random() * (box.maxX - box.minX),
                         box.minY + Math.random() * (box.maxY - box.minY),
                         box.minZ + Math.random() * (box.maxZ - box.minZ)
                     );
-                    break;
-                default:
-                    targetVec = target.getPos().add(0, target.getHeight() / 2, 0);
             }
 
-            // 计算目标角度
             double diffX = targetVec.x - mc.player.getX();
             double diffZ = targetVec.z - mc.player.getZ();
             double diffY = targetVec.y - (mc.player.getY() + mc.player.getEyeHeight(mc.player.getPose()));
@@ -579,42 +586,43 @@ public class Aura extends Module {
             float targetPitch = (float) -Math.toDegrees(Math.atan2(diffY, distanceXZ));
             targetPitch = MathHelper.clamp(targetPitch, -90f, 90f);
 
-            // 添加随机扰动 (气功风格)
+            // 气功风格: 增加微扰动, 模拟呼吸
             if (chineseQiStyle.getValue()) {
                 targetYaw += (Math.random() - 0.5) * chineseYawNoise.getValue();
                 targetPitch += (Math.random() - 0.5) * chinesePitchNoise.getValue();
+                targetPitch = MathHelper.clamp(targetPitch, -90f, 90f);
             }
 
-            // 计算角度差
-            float deltaYaw = MathHelper.wrapDegrees(targetYaw - rotationYaw);
-            float deltaPitch = targetPitch - rotationPitch;
+            // 只有 active 状态才进行旋转, 否则保持原角度 (如同 Track 模式)
+            if (chineseTicks > 0) {
+                float deltaYaw = MathHelper.wrapDegrees(targetYaw - rotationYaw);
+                float deltaPitch = targetPitch - rotationPitch;
 
-            // 瞄准阈值
-            if (Math.abs(deltaYaw) < chineseAimThreshold.getValue() && Math.abs(deltaPitch) < chineseAimThreshold.getValue()) {
-                // 已在阈值内，不做调整
-            } else {
-                float maxYawChange = chineseYawSpeed.getValue() * 0.05f;
-                float maxPitchChange = chinesePitchSpeed.getValue() * 0.05f;
+                if (Math.abs(deltaYaw) > chineseAimThreshold.getValue() || Math.abs(deltaPitch) > chineseAimThreshold.getValue()) {
+                    float maxYawChange = chineseYawSpeed.getValue() * 0.05f;
+                    float maxPitchChange = chinesePitchSpeed.getValue() * 0.05f;
 
-                float yawChange = MathHelper.clamp(deltaYaw, -maxYawChange, maxYawChange);
-                float pitchChange = MathHelper.clamp(deltaPitch, -maxPitchChange, maxPitchChange);
+                    float yawChange = MathHelper.clamp(deltaYaw, -maxYawChange, maxYawChange);
+                    float pitchChange = MathHelper.clamp(deltaPitch, -maxPitchChange, maxPitchChange);
 
-                if (chineseSmooth.getValue()) {
-                    // 平滑过渡
-                    rotationYaw += yawChange * 0.6f;
-                    rotationPitch += pitchChange * 0.6f;
-                } else {
-                    rotationYaw += yawChange;
-                    rotationPitch += pitchChange;
+                    if (chineseSmooth.getValue()) {
+                        rotationYaw += yawChange * 0.6f;
+                        rotationPitch += pitchChange * 0.6f;
+                    } else {
+                        rotationYaw += yawChange;
+                        rotationPitch += pitchChange;
+                    }
+                    rotationPitch = MathHelper.clamp(rotationPitch, -90f, 90f);
                 }
 
-                rotationPitch = MathHelper.clamp(rotationPitch, -90f, 90f);
+                // GCD 修正, 避免卡刀
+                double gcdFix = (Math.pow(mc.options.getMouseSensitivity().getValue() * 0.6 + 0.2, 3.0)) * 1.2;
+                rotationYaw = (float) (rotationYaw - (rotationYaw % gcdFix));
+                rotationPitch = (float) (rotationPitch - (rotationPitch % gcdFix));
+            } else {
+                // 非 active 状态: 可以缓慢回正 (可选, 这里不做强制)
+                // 保持当前角度即可
             }
-
-            // GCD修正
-            double gcdFix = (Math.pow(mc.options.getMouseSensitivity().getValue() * 0.6 + 0.2, 3.0)) * 1.2;
-            rotationYaw = (float) (rotationYaw - (rotationYaw % gcdFix));
-            rotationPitch = (float) (rotationPitch - (rotationPitch % gcdFix));
 
             ModuleManager.rotations.fixRotation = rotationYaw;
             lookingAtHitbox = Managers.PLAYER.checkRtx(rotationYaw, rotationPitch, getRange(), getWallRange(), rayTrace.getValue());
@@ -656,7 +664,7 @@ public class Aura extends Module {
             float deltaPitch = targetPitch - rotationPitch;
 
             if (Math.abs(deltaYaw) < altAimThreshold.getValue() && Math.abs(deltaPitch) < altAimThreshold.getValue()) {
-                // Ничего не делаем
+                // ничего
             } else {
                 float maxYawChange = altYawSpeed.getValue() * 0.05f;
                 float maxPitchChange = altPitchSpeed.getValue() * 0.05f;
@@ -738,7 +746,7 @@ public class Aura extends Module {
             return;
         }
 
-        // --- Interact2 (копия Interact) ---
+        // --- Interact2 ---
         if (rotationMode.is(Mode.Interact2)) {
             if (ready) {
                 trackticks = (mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.25, 0.0, -0.25).offset(0.0, 1, 0.0)).iterator().hasNext() ? 1 : interact2Ticks.getValue());
@@ -881,10 +889,8 @@ public class Aura extends Module {
     }
 
     public Vec3d getLegitLook(Entity target) {
-
         float minMotionXZ = 0.003f;
         float maxMotionXZ = 0.03f;
-
         float minMotionY = 0.001f;
         float maxMotionY = 0.03f;
 
@@ -892,38 +898,24 @@ public class Aura extends Module {
         double lenghtY = target.getBoundingBox().getLengthY();
         double lenghtZ = target.getBoundingBox().getLengthZ();
 
-
-        // Задаем начальную скорость точки
         if (rotationMotion.equals(Vec3d.ZERO))
             rotationMotion = new Vec3d(random(-0.05f, 0.05f), random(-0.05f, 0.05f), random(-0.05f, 0.05f));
 
         rotationPoint = rotationPoint.add(rotationMotion);
 
-        // Сталкиваемся с хитбоксом по X
         if (rotationPoint.x >= (lenghtX - 0.05) / 2f)
             rotationMotion = new Vec3d(-random(minMotionXZ, maxMotionXZ), rotationMotion.getY(), rotationMotion.getZ());
-
-        // Сталкиваемся с хитбоксом по Y
         if (rotationPoint.y >= lenghtY)
             rotationMotion = new Vec3d(rotationMotion.getX(), -random(minMotionY, maxMotionY), rotationMotion.getZ());
-
-        // Сталкиваемся с хитбоксом по Z
         if (rotationPoint.z >= (lenghtZ - 0.05) / 2f)
             rotationMotion = new Vec3d(rotationMotion.getX(), rotationMotion.getY(), -random(minMotionXZ, maxMotionXZ));
-
-        // Сталкиваемся с хитбоксом по -X
         if (rotationPoint.x <= -(lenghtX - 0.05) / 2f)
             rotationMotion = new Vec3d(random(minMotionXZ, 0.03f), rotationMotion.getY(), rotationMotion.getZ());
-
-        // Сталкиваемся с хитбоксом по -Y
         if (rotationPoint.y <= 0.05)
             rotationMotion = new Vec3d(rotationMotion.getX(), random(minMotionY, maxMotionY), rotationMotion.getZ());
-
-        // Сталкиваемся с хитбоксом по -Z
         if (rotationPoint.z <= -(lenghtZ - 0.05) / 2f)
             rotationMotion = new Vec3d(rotationMotion.getX(), rotationMotion.getY(), random(minMotionXZ, maxMotionXZ));
 
-        // Добавляем джиттер
         rotationPoint.add(random(-0.03f, 0.03f), 0f, random(-0.03f, 0.03f));
 
         if (!mc.player.canSee(target)) {
@@ -942,15 +934,11 @@ public class Aura extends Module {
                 rotationPoint = new Vec3d(random(-0.1f, 0.1f), target.getEyeHeight(target.getPose()) / (random(1.8f, 2.5f)), random(-0.1f, 0.1f));
             } else {
                 float halfBox = (float) (lenghtX / 2f);
-
                 for (float x1 = -halfBox; x1 <= halfBox; x1 += 0.05f) {
                     for (float z1 = -halfBox; z1 <= halfBox; z1 += 0.05f) {
                         for (float y1 = 0.05f; y1 <= target.getBoundingBox().getLengthY(); y1 += 0.15f) {
-
                             Vec3d v1 = new Vec3d(target.getX() + x1, target.getY() + y1, target.getZ() + z1);
-
                             if (PlayerUtility.squaredDistanceFromEyes(v1) > attackRange.getPow2Value()) continue;
-
                             rotation = Managers.PLAYER.calcAngle(v1);
                             if (Managers.PLAYER.checkRtx(rotation[0], rotation[1], getRange(), 0, rayTrace.getValue())) {
                                 rotationPoint = new Vec3d(x1, y1, z1);
@@ -965,7 +953,6 @@ public class Aura extends Module {
     }
 
     public boolean isInRange(Entity target) {
-
         if (PlayerUtility.squaredDistanceFromEyes(target.getPos().add(0, target.getEyeHeight(target.getPose()), 0)) > getSquaredRotateDistance() + 4) {
             return false;
         }
@@ -1006,18 +993,13 @@ public class Aura extends Module {
         return switch (sort.getValue()) {
             case LowestDistance ->
                     first_stage.stream().min(Comparator.comparing(e -> (mc.player.squaredDistanceTo(e.getPos())))).orElse(null);
-
             case HighestDistance ->
                     first_stage.stream().max(Comparator.comparing(e -> (mc.player.squaredDistanceTo(e.getPos())))).orElse(null);
-
             case FOV -> first_stage.stream().min(Comparator.comparing(this::getFOVAngle)).orElse(null);
-
             case LowestHealth ->
                     first_stage.stream().min(Comparator.comparing(e -> (e.getHealth() + e.getAbsorptionAmount()))).orElse(null);
-
             case HighestHealth ->
                     first_stage.stream().max(Comparator.comparing(e -> (e.getHealth() + e.getAbsorptionAmount()))).orElse(null);
-
             case LowestDurability -> first_stage.stream().min(Comparator.comparing(e -> {
                         float v = 0;
                         for (ItemStack armor : e.getArmorItems())
@@ -1027,7 +1009,6 @@ public class Aura extends Module {
                         return v;
                     }
             )).orElse(null);
-
             case HighestDurability -> first_stage.stream().max(Comparator.comparing(e -> {
                         float v = 0;
                         for (ItemStack armor : e.getArmorItems())
@@ -1077,13 +1058,9 @@ public class Aura extends Module {
     private boolean skipNotSelected(Entity entity) {
         if (entity instanceof SlimeEntity && !Slimes.getValue()) return true;
         if (entity instanceof HostileEntity he) {
-            if (!hostiles.getValue())
-                return true;
-
-            if (onlyAngry.getValue())
-                return !he.isAngryAt(mc.player);
+            if (!hostiles.getValue()) return true;
+            if (onlyAngry.getValue()) return !he.isAngryAt(mc.player);
         }
-
         if (entity instanceof PlayerEntity && !Players.getValue()) return true;
         if (entity instanceof VillagerEntity && !Villagers.getValue()) return true;
         if (entity instanceof MobEntity && !Mobs.getValue()) return true;
@@ -1112,76 +1089,28 @@ public class Aura extends Module {
     public static class Position {
         private double x, y, z;
         private int ticks;
-
         public Position(double x, double y, double z) {
             this.x = x;
             this.y = y;
             this.z = z;
         }
-
         public boolean shouldRemove() {
             return ticks++ > ModuleManager.aura.backTicks.getValue();
         }
-
-        public double getX() {
-            return x;
-        }
-
-        public double getY() {
-            return y;
-        }
-
-        public double getZ() {
-            return z;
-
-        }
+        public double getX() { return x; }
+        public double getY() { return y; }
+        public double getZ() { return z; }
     }
 
-    public enum RayTrace {
-        OFF, OnlyTarget, AllEntities
-    }
-
-    public enum Sort {
-        LowestDistance, HighestDistance, LowestHealth, HighestHealth, LowestDurability, HighestDurability, FOV
-    }
-
-    public enum Switch {
-        Normal, None, Silent
-    }
-
-    public enum Resolver {
-        Off, Advantage, Predictive, BackTrack
-    }
-
-    public enum Mode {
-        Interact, Track, Grim, None, Alternative, Interact2, HvH, Chinese  // 添加中国风旋转模式
-    }
-
-    public enum AttackHand {
-        MainHand, OffHand, None
-    }
-
-    public enum ESP {
-        Off, ThunderHack, NurikZapen, CelkaPasta, ThunderHackV2
-    }
-
-    public enum AccelerateOnHit {
-        Off, Yaw, Pitch, Both
-    }
-
-    public enum WallsBypass {
-        Off, V1, V2
-    }
-
-    public enum HvHTarget {
-        Head, Body, Random
-    }
-
-    // 中国风模式瞄准点选择
-    public enum ChineseTargetPoint {
-        Head,   // 头部
-        Chest,  // 胸部
-        Legs,   // 腿部
-        Random  // 随机
-    }
+    public enum RayTrace { OFF, OnlyTarget, AllEntities }
+    public enum Sort { LowestDistance, HighestDistance, LowestHealth, HighestHealth, LowestDurability, HighestDurability, FOV }
+    public enum Switch { Normal, None, Silent }
+    public enum Resolver { Off, Advantage, Predictive, BackTrack }
+    public enum Mode { Interact, Track, Grim, None, Alternative, Interact2, HvH, Chinese }
+    public enum AttackHand { MainHand, OffHand, None }
+    public enum ESP { Off, ThunderHack, NurikZapen, CelkaPasta, ThunderHackV2 }
+    public enum AccelerateOnHit { Off, Yaw, Pitch, Both }
+    public enum WallsBypass { Off, V1, V2 }
+    public enum HvHTarget { Head, Body, Random }
+    public enum ChineseTargetPoint { Head, Chest, Legs, Random }
 }
