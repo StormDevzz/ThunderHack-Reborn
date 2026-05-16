@@ -32,6 +32,7 @@ public class ModuleManager implements IManager {
 
     public static AutoDupe autoDupe = new AutoDupe();
     public static PenisESP penisESP = new PenisESP();
+    public static AutoReconnect autoReconnect = new AutoReconnect();
     public static ShiftInterp shiftInterp = new ShiftInterp();
     public static Ambience ambience = new Ambience();
     public static SmallUser smallUser = new SmallUser();
@@ -285,7 +286,8 @@ public class ModuleManager implements IManager {
 
     public Module get(String name) {
         for (Module module : modules) {
-            if (!module.getName().equalsIgnoreCase(name)) continue;
+            if (!module.getName().equalsIgnoreCase(name))
+                continue;
             return module;
         }
         return null;
@@ -294,7 +296,8 @@ public class ModuleManager implements IManager {
     public ArrayList<Module> getEnabledModules() {
         ArrayList<Module> enabledModules = new ArrayList<>();
         for (Module module : modules) {
-            if (!module.isEnabled()) continue;
+            if (!module.isEnabled())
+                continue;
             enabledModules.add(module);
         }
         return enabledModules;
@@ -336,12 +339,14 @@ public class ModuleManager implements IManager {
     }
 
     public void onUpdate() {
-        if (Module.fullNullCheck()) return;
+        if (Module.fullNullCheck())
+            return;
         modules.stream().filter(Module::isEnabled).forEach(Module::onUpdate);
     }
 
     public void onRender2D(DrawContext context) {
-        if (mc.getDebugHud().shouldShowDebugHud() || mc.options.hudHidden) return;
+        if (mc.getDebugHud().shouldShowDebugHud() || mc.options.hudHidden)
+            return;
         com.mojang.blaze3d.systems.RenderSystem.enableBlend();
         com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
         HudElement.anyHovered = false;
@@ -358,7 +363,10 @@ public class ModuleManager implements IManager {
     }
 
     public void sortModules() {
-        sortedModules = getEnabledModules().stream().filter(Module::isDrawn).sorted(Comparator.comparing(module -> FontRenderers.getModulesRenderer().getStringWidth(module.getFullArrayString()) * -1)).collect(Collectors.toList());
+        sortedModules = getEnabledModules().stream().filter(Module::isDrawn)
+                .sorted(Comparator.comparing(
+                        module -> FontRenderers.getModulesRenderer().getStringWidth(module.getFullArrayString()) * -1))
+                .collect(Collectors.toList());
     }
 
     public void onLogout() {
@@ -371,7 +379,8 @@ public class ModuleManager implements IManager {
 
     public void onUnload(String category) {
         modules.forEach(module -> {
-            if (module.isEnabled() && (module.getCategory().getName().equalsIgnoreCase(category) || category.equals("none"))) {
+            if (module.isEnabled()
+                    && (module.getCategory().getName().equalsIgnoreCase(category) || category.equals("none"))) {
                 ThunderHack.EVENT_BUS.unsubscribe(module);
                 module.setEnabled(false);
             }
@@ -433,7 +442,8 @@ public class ModuleManager implements IManager {
     }
 
     public void registerModule(Module module) {
-        if (module == null) return;
+        if (module == null)
+            return;
 
         this.modules.add(module);
 
@@ -442,7 +452,8 @@ public class ModuleManager implements IManager {
     }
 
     public void registerHudElement(HudElement hudElement) {
-        if (hudElement == null) return;
+        if (hudElement == null)
+            return;
 
         this.modules.add(hudElement);
     }

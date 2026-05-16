@@ -35,7 +35,6 @@
   "descriptions.combat.targetstrafe": "Strafes around the targeted player.",
   "descriptions.combat.triggerbot": "Automatically attacks the entity you're looking at.",
   "descriptions.combat.quiver": "Automatically shoots you with a tipped arrow.",
-
   "descriptions.misc.antiafk": "Allows you to avoid being kicked for AFK.",
   "descriptions.misc.autoauth": "Logs you on the servers.",
   "descriptions.misc.autoez": "Sends EZ in the chat after killing targeted players.",
@@ -46,6 +45,7 @@
   "descriptions.misc.autosign": "Automatically places text onto signs.",
   "descriptions.misc.autosoup": "Auto heal for old KitPvP servers.",
   "descriptions.misc.autotpaccept": "Automatically accepts teleport requests.",
+  "descriptions.misc.autoreconnect": "Automatically reconnect to the server.",
   "descriptions.misc.chatutils": "Chat modifications.",
   "descriptions.misc.cheststealer": "Steals items from chests.",
   "descriptions.misc.chorusexploit": "Delays teleport from chorus.",
@@ -74,7 +74,6 @@
   "descriptions.misc.worldtweaks": "Tweaks for world.",
   "descriptions.misc.xray": "Diamonds? No problem.",
   "descriptions.misc.autodupe": "Automatically dupes items using a duplication glitch.",
-
   "descriptions.render.ambience": "Changes the ambience of the world.",
   "descriptions.render.animations": "Nice hand animations.",
   "descriptions.render.aspectratio": "Allows you to change the screen aspect ratio.",
@@ -113,7 +112,6 @@
   "descriptions.render.viewmodel": "Hands modification.",
   "descriptions.render.voidesp": "Highlights void holes.",
   "descriptions.render.particles": "Various particles in the world.",
-
   "descriptions.movement.antivoid": "Keeps you from falling into the void.",
   "descriptions.movement.antiweb": "Action when collided with a spider web.",
   "descriptions.movement.autosprint": "Holds sprint.",
@@ -153,7 +151,6 @@
   "descriptions.movement.velocity": "Prevents knockback.",
   "descriptions.movement.waterspeed": "Increases your speed in the water.",
   "descriptions.movement.jesus": "Allows you to walk on water.",
-
   "descriptions.player.airplace": "Allows you to place blocks in the air.",
   "descriptions.player.antiaim": "Makes your head crazy (useless).",
   "descriptions.player.antiattack": "Prevents unnecessary attacks.",
@@ -193,7 +190,6 @@
   "descriptions.player.tpssync": "Synchronizes the internal game timer with the server timer.",
   "descriptions.player.viewlock": "Locks your camera.",
   "descriptions.player.xcarry": "Allows you to keep items with crafting lots and a mouse.",
-
   "descriptions.client.anticrash": "Allows the game not to crash due to a shitty crash plugin.",
   "descriptions.client.antiserveradd": "Removes servers that TLauncher adds to your server list.",
   "descriptions.client.antiserverrp": "Disables server's resourcepack.",
@@ -212,7 +208,6 @@
   "descriptions.client.thundergui": "Another variant of gui.",
   "descriptions.client.waypoints": "Renders specified waypoints.",
   "descriptions.client.soundfx": "Changes different sounds in the game.",
-
   "descriptions.commands.bind": "Add bind to module.",
   "descriptions.commands.cfg": "Select/save a config.",
   "descriptions.commands.cheststealer": "Select items that will be ignored/taken by the ChestStealer.",

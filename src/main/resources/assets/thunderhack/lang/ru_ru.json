@@ -35,7 +35,6 @@
   "descriptions.combat.targetstrafe": "Стрейфится вокруг цели.",
   "descriptions.combat.triggerbot": "Атакует существ под прицелом.",
   "descriptions.combat.quiver": "Автоматически бафает стрелами.",
-
   "descriptions.misc.antiafk": "Позволяет избежать кика за АФК.",
   "descriptions.misc.autoauth": "Регистрирует тебя на серверах.",
   "descriptions.misc.autoez": "Пишет EZ при убийстве цели.",
@@ -46,6 +45,7 @@
   "descriptions.misc.autosign": "Вводит текст на таблички.",
   "descriptions.misc.autosoup": "Авто хил китпвп серверов.",
   "descriptions.misc.autotpaccept": "Принимает запросы на телепортацию.",
+  "descriptions.misc.autoreconnect": "Автоматически реконектится к серверу.",
   "descriptions.misc.chatutils": "Модификации чата.",
   "descriptions.misc.cheststealer": "Стиллит предметы из сундуков.",
   "descriptions.misc.chorusexploit": "Задерживает телепорт хоруса.",
@@ -74,7 +74,6 @@
   "descriptions.misc.worldtweaks": "Твики для мира.",
   "descriptions.misc.xray": "Алмазы? Без проблем.",
   "descriptions.misc.autodupe": "Автоматическое дюпание предметов (работает не на всех серверах).",
-
   "descriptions.render.ambience": "Изменяет атмосферу мира.",
   "descriptions.render.animations": "Анимация удара.",
   "descriptions.render.aspectratio": "Позволяет изменять соотношение сторон экрана.",
@@ -113,7 +112,6 @@
   "descriptions.render.viewmodel": "Модификация рук.",
   "descriptions.render.voidesp": "Подсвечивает пустоту.",
   "descriptions.render.particles": "Различные частицы в мире.",
-
   "descriptions.movement.antivoid": "Не позволяет упасть в бездну.",
   "descriptions.movement.antiweb": "Действия при столкновении с паутиной.",
   "descriptions.movement.autosprint": "Спринт.",
@@ -152,7 +150,6 @@
   "descriptions.movement.velocity": "Предотвращает отбрасывание.",
   "descriptions.movement.waterspeed": "Увеличивает скорость в воде.",
   "descriptions.movement.jesus": "Позволяет ходить по воде.",
-
   "descriptions.player.airplace": "Позволяет размещать блоки в воздухе.",
   "descriptions.player.antiaim": "Утро первого января (бесполезно).",
   "descriptions.player.antiattack": "Предотвращает ненужные атаки.",
@@ -192,7 +189,6 @@
   "descriptions.player.viewlock": "Блокирует камеру.",
   "descriptions.player.xcarry": "Позволяет хранить предметы в крафте и мышке.",
   "descriptions.player.portalinventory": "Позволяет открыть инвентарь в портале.",
-
   "descriptions.client.anticrash": "Позволяет игре не крашится от ебанутого плагина на краш.",
   "descriptions.client.antiserveradd": "Убирает сервера которые добавляет TLauncher",
   "descriptions.client.antiserverrp": "Отключает ресурспаки сервера.",
@@ -211,7 +207,6 @@
   "descriptions.client.thundergui": "Еще один вариант графического интерфейса.",
   "descriptions.client.waypoints": "Отображает вейпоинты.",
   "descriptions.client.soundfx": "Изменяет разные звуки в игре.",
-
   "descriptions.commands.bind": "Добавить бинд к модулю.",
   "descriptions.commands.cfg": "Выбрать/сохранить конфигурацию.",
   "descriptions.commands.cheststealer": "Выбрать предметы, которые ChestStealer будет игнорировать/забирать.",
