@@ -46,6 +46,7 @@
   "descriptions.misc.autosoup": "Auto heal for old KitPvP servers.",
   "descriptions.misc.autotpaccept": "Automatically accepts teleport requests.",
   "descriptions.misc.autoreconnect": "Automatically reconnect to the server.",
+  "descriptions.misc.autofarm": "Automatically fuck crops",
   "descriptions.misc.chatutils": "Chat modifications.",
   "descriptions.misc.cheststealer": "Steals items from chests.",
   "descriptions.misc.chorusexploit": "Delays teleport from chorus.",
