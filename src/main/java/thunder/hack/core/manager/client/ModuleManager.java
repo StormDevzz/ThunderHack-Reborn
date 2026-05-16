@@ -31,7 +31,6 @@ public class ModuleManager implements IManager {
     public List<Integer> activeMouseKeys = new ArrayList<>();
 
     public static AutoDupe autoDupe = new AutoDupe();
-    public static Weather weather = new Weather();
     public static PenisESP penisESP = new PenisESP();
     public static ShiftInterp shiftInterp = new ShiftInterp();
     public static Ambience ambience = new Ambience();

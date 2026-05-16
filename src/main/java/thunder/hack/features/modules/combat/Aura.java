@@ -151,6 +151,17 @@ public class Aura extends Module {
     public final Setting<Boolean> hvhAntiResolve = new Setting<>("AntiResolve", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
     public final Setting<Boolean> hvhIgnoreCooldown = new Setting<>("IgnoreCooldown", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
 
+    /*   CHINESE ROTATIONS   */  // 中国风旋转模式 - 优雅而精准的旋转算法
+    public final Setting<SettingGroup> chineseSettings = new Setting<>("Chinese", new SettingGroup(false, 0), v -> rotationMode.is(Mode.Chinese));
+    public final Setting<Float> chineseYawSpeed = new Setting<>("YawSpeed", 180f, 30f, 360f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 偏航速度
+    public final Setting<Float> chinesePitchSpeed = new Setting<>("PitchSpeed", 120f, 20f, 240f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 俯仰速度
+    public final Setting<Float> chineseYawNoise = new Setting<>("YawNoise", 1.2f, 0f, 5f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 偏航随机扰动
+    public final Setting<Float> chinesePitchNoise = new Setting<>("PitchNoise", 0.8f, 0f, 5f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 俯仰随机扰动
+    public final Setting<Boolean> chineseSmooth = new Setting<>("SmoothTransition", true, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 平滑过渡
+    public final Setting<Float> chineseAimThreshold = new Setting<>("AimThreshold", 0.3f, 0f, 3f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 瞄准阈值
+    public final Setting<ChineseTargetPoint> chineseTargetPoint = new Setting<>("TargetPoint", ChineseTargetPoint.Chest, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 瞄准点选择
+    public final Setting<Boolean> chineseQiStyle = new Setting<>("QiStyle", true, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 气功风格 - 增加命中率
+
     /*   TARGETS   */
     public final Setting<SettingGroup> targets = new Setting<>("Targets", new SettingGroup(false, 0));
     public final Setting<Boolean> Players = new Setting<>("Players", true).addToGroup(targets);
@@ -252,6 +263,7 @@ public class Aura extends Module {
         return rotationMode.getValue() == Mode.None || rayTrace.getValue() == RayTrace.OFF
                 || rotationMode.is(Mode.Grim)
                 || rotationMode.is(Mode.HvH)
+                || rotationMode.is(Mode.Chinese)  // 中国风模式也跳过射线追踪
                 || (rotationMode.is(Mode.Interact) && (interactTicks.getValue() <= 1
                 || mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.25, 0.0, -0.25).offset(0.0, 1, 0.0)).iterator().hasNext()))
                 || (rotationMode.is(Mode.Interact2) && (interact2Ticks.getValue() <= 1
@@ -340,7 +352,6 @@ public class Aura extends Module {
     }
 
     private int getHitTicks() {
-        // HvH теперь использует ту же систему задержек, что и OldDelay/обычная
         return oldDelay.getValue().isEnabled() ? 1 + (int) (20f / random(minCPS.getValue(), maxCPS.getValue())) : (shouldRandomizeDelay() ? (int) MathUtility.random(11, 13) : attackTickLimit.getValue());
     }
 
@@ -412,12 +423,6 @@ public class Aura extends Module {
 
         if (e.getPacket() instanceof EntityStatusS2CPacket pac && pac.getStatus() == 3 && pac.getEntity(mc.world) == mc.player && deathDisable.getValue())
             disable(isRu() ? "Отключаю из-за смерти!" : "Disabling due to death!");
-
-        /*
-        if (resolver.is(Resolver.BackTrack) && e.getPacket() instanceof CommonPingS2CPacket ping && target != null) {
-            Managers.ASYNC.run(() -> mc.executeSync(() -> ping.apply(mc.getNetworkHandler())), backTicks.getValue() * 25L);
-            e.cancel();
-        }*/
     }
 
     @Override
@@ -536,6 +541,86 @@ public class Aura extends Module {
     }
 
     private void calcRotations(boolean ready) {
+        // --- 中国风旋转模式 (优雅精准) --- 中国风旋转算法 - 结合太极理念的平滑瞄准
+        if (rotationMode.is(Mode.Chinese)) {
+            if (target == null) return;
+
+            // 选择瞄准点
+            Vec3d targetVec;
+            switch (chineseTargetPoint.getValue()) {
+                case Head:
+                    targetVec = target.getEyePos();
+                    break;
+                case Chest:
+                    targetVec = target.getPos().add(0, target.getHeight() * 0.7, 0);
+                    break;
+                case Legs:
+                    targetVec = target.getPos().add(0, target.getHeight() * 0.3, 0);
+                    break;
+                case Random:
+                    Box box = target.getBoundingBox();
+                    targetVec = new Vec3d(
+                        box.minX + Math.random() * (box.maxX - box.minX),
+                        box.minY + Math.random() * (box.maxY - box.minY),
+                        box.minZ + Math.random() * (box.maxZ - box.minZ)
+                    );
+                    break;
+                default:
+                    targetVec = target.getPos().add(0, target.getHeight() / 2, 0);
+            }
+
+            // 计算目标角度
+            double diffX = targetVec.x - mc.player.getX();
+            double diffZ = targetVec.z - mc.player.getZ();
+            double diffY = targetVec.y - (mc.player.getY() + mc.player.getEyeHeight(mc.player.getPose()));
+            double distanceXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
+
+            float targetYaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90f;
+            float targetPitch = (float) -Math.toDegrees(Math.atan2(diffY, distanceXZ));
+            targetPitch = MathHelper.clamp(targetPitch, -90f, 90f);
+
+            // 添加随机扰动 (气功风格)
+            if (chineseQiStyle.getValue()) {
+                targetYaw += (Math.random() - 0.5) * chineseYawNoise.getValue();
+                targetPitch += (Math.random() - 0.5) * chinesePitchNoise.getValue();
+            }
+
+            // 计算角度差
+            float deltaYaw = MathHelper.wrapDegrees(targetYaw - rotationYaw);
+            float deltaPitch = targetPitch - rotationPitch;
+
+            // 瞄准阈值
+            if (Math.abs(deltaYaw) < chineseAimThreshold.getValue() && Math.abs(deltaPitch) < chineseAimThreshold.getValue()) {
+                // 已在阈值内，不做调整
+            } else {
+                float maxYawChange = chineseYawSpeed.getValue() * 0.05f;
+                float maxPitchChange = chinesePitchSpeed.getValue() * 0.05f;
+
+                float yawChange = MathHelper.clamp(deltaYaw, -maxYawChange, maxYawChange);
+                float pitchChange = MathHelper.clamp(deltaPitch, -maxPitchChange, maxPitchChange);
+
+                if (chineseSmooth.getValue()) {
+                    // 平滑过渡
+                    rotationYaw += yawChange * 0.6f;
+                    rotationPitch += pitchChange * 0.6f;
+                } else {
+                    rotationYaw += yawChange;
+                    rotationPitch += pitchChange;
+                }
+
+                rotationPitch = MathHelper.clamp(rotationPitch, -90f, 90f);
+            }
+
+            // GCD修正
+            double gcdFix = (Math.pow(mc.options.getMouseSensitivity().getValue() * 0.6 + 0.2, 3.0)) * 1.2;
+            rotationYaw = (float) (rotationYaw - (rotationYaw % gcdFix));
+            rotationPitch = (float) (rotationPitch - (rotationPitch % gcdFix));
+
+            ModuleManager.rotations.fixRotation = rotationYaw;
+            lookingAtHitbox = Managers.PLAYER.checkRtx(rotationYaw, rotationPitch, getRange(), getWallRange(), rayTrace.getValue());
+            return;
+        }
+
         // --- Альтернативный режим ротаций ---
         if (rotationMode.is(Mode.Alternative)) {
             if (target == null) return;
@@ -1069,7 +1154,7 @@ public class Aura extends Module {
     }
 
     public enum Mode {
-        Interact, Track, Grim, None, Alternative, Interact2, HvH
+        Interact, Track, Grim, None, Alternative, Interact2, HvH, Chinese  // 添加中国风旋转模式
     }
 
     public enum AttackHand {
@@ -1090,5 +1175,13 @@ public class Aura extends Module {
 
     public enum HvHTarget {
         Head, Body, Random
+    }
+
+    // 中国风模式瞄准点选择
+    public enum ChineseTargetPoint {
+        Head,   // 头部
+        Chest,  // 胸部
+        Legs,   // 腿部
+        Random  // 随机
     }
 }
