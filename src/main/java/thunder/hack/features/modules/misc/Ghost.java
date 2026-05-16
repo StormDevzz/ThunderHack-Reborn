@@ -28,12 +28,14 @@ public class Ghost extends Module {
     @Override
     public void onUpdate() {
         if (mc.player == null || mc.world == null) return;
-        if (mc.player.getHealth() == 0.0f) {
+        if (mc.player.getHealth() <= 0.0f) {
             mc.player.setHealth(20.0f);
             bypass = true;
             mc.setScreen(null);
             mc.player.setPosition(mc.player.getX(), mc.player.getY(), mc.player.getZ());
             sendMessage(isRu() ? "Для возрождения выключи модуль!" : "To revive, turn off the module!");
+        } else {
+            bypass = false;
         }
     }
 

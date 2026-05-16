@@ -135,15 +135,25 @@ public abstract class MixinEntity implements IEntity {
 
     @ModifyVariable(method = "changeLookDirection", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     private double changeLookDirectionHook0(double value) {
+        if ((Object) this != mc.player) return value;
         if(ModuleManager.viewLock.isEnabled() && ModuleManager.viewLock.yaw.getValue())
             return 0d;
+        if (ModuleManager.freeLook != null && ModuleManager.freeLook.isEnabled()) {
+            ModuleManager.freeLook.handleMouseYaw(value);
+            return 0d;
+        }
         return value;
     }
 
     @ModifyVariable(method = "changeLookDirection", at = @At("HEAD"), ordinal = 1, argsOnly = true)
     private double changeLookDirectionHook1(double value) {
+        if ((Object) this != mc.player) return value;
         if(ModuleManager.viewLock.isEnabled() && ModuleManager.viewLock.pitch.getValue())
             return 0d;
+        if (ModuleManager.freeLook != null && ModuleManager.freeLook.isEnabled()) {
+            ModuleManager.freeLook.handleMousePitch(value);
+            return 0d;
+        }
         return value;
     }
 }

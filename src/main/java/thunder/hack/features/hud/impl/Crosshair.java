@@ -27,7 +27,7 @@ public class Crosshair extends Module {
     private final Setting<Boolean> dot = new Setting<>("Dot", false, v -> mode.is(Mode.Default));
     private final Setting<Boolean> t = new Setting<>("T", false, v -> mode.is(Mode.Default));
     private final Setting<ColorMode> colorMode = new Setting<>("ColorMode", ColorMode.Sync);
-    public final Setting<ColorSetting> color = new Setting<>("Color", new ColorSetting(0x2250b4b4));
+    private final Setting<ColorSetting> crossColor = new Setting<>("CrossColor", new ColorSetting(new Color(80, 180, 180)));
     private final Setting<Boolean> dynamic = new Setting<>("Dynamic", true);
     private final Setting<Float> range = new Setting<>("Range", 30.0f, 0.1f, 120f);
     private final Setting<Float> speed = new Setting<>("Speed", 3.0f, 0.1f, 20f);
@@ -72,15 +72,15 @@ public class Crosshair extends Module {
 
         switch (mode.getValue()) {
             case Circle -> {
-                Color c1 = colorMode.getValue() == ColorMode.Sync ? HudEditor.hcolor1.getValue().getColorObject() : color.getValue().getColorObject();
-                Color c2 = colorMode.getValue() == ColorMode.Sync ? HudEditor.acolor.getValue().getColorObject() : color.getValue().getColorObject();
+                Color c1 = colorMode.getValue() == ColorMode.Sync ? HudEditor.hcolor1.getValue().getColorObject() : crossColor.getValue().getColorObject();
+                Color c2 = colorMode.getValue() == ColorMode.Sync ? HudEditor.acolor.getValue().getColorObject() : crossColor.getValue().getColorObject();
 
                 Render2DEngine.drawArc(context.getMatrices(), xAnim - 25, yAnim - 25, 50, 50, 0.05f, 0.12f, 0,
                         Render2DEngine.interpolateFloat(prevProgress, progress, Render3DEngine.getTickDelta()), c1, c2);
                 prevProgress = progress;
             }
             case WiseTree -> {
-                Color color = this.color.getValue().getColorObject();
+                Color color = this.crossColor.getValue().getColorObject();
                 context.getMatrices().push();
                 context.getMatrices().translate(xAnim, yAnim, 0);
                 context.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotation((System.currentTimeMillis() % 70000) / 70000f * 360f));
@@ -102,7 +102,7 @@ public class Crosshair extends Module {
                 BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
                 RenderSystem.setShaderTexture(0, TextureStorage.firefly);
-                Color color1 = colorMode.getValue() == ColorMode.Sync ? HudEditor.getColor(1) : color.getValue().getColorObject();
+                Color color1 = colorMode.getValue() == ColorMode.Sync ? HudEditor.getColor(1) : crossColor.getValue().getColorObject();
                 Matrix4f posMatrix = context.getMatrices().peek().getPositionMatrix();
                 bufferBuilder.vertex(posMatrix, 0, -8f, 0).texture(0f, 1f).color(color1.getRGB());
                 bufferBuilder.vertex(posMatrix, -8f, -8f, 0).texture(1f, 1f).color(color1.getRGB());
@@ -113,7 +113,7 @@ public class Crosshair extends Module {
                 context.getMatrices().pop();
             }
             case Default -> {
-                Color color = this.color.getValue().getColorObject();
+                Color color = this.crossColor.getValue().getColorObject();
 
                 float offset = animated.getValue() ? -3f + (Render2DEngine.interpolateFloat(prevProgress, progress, Render3DEngine.getTickDelta()) / 100f) : 0;
                 prevProgress = progress;
