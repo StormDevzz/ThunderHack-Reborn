@@ -56,6 +56,7 @@ public class ModuleManager implements IManager {
     public static ChatTranslator chatTranslator = new ChatTranslator();
     public static PacketCanceler packetCanceler = new PacketCanceler();
     public static PacketLimiter packetLimiter = new PacketLimiter();
+    public static PacketLogger packetLogger = new PacketLogger();
     public static ClientSettings clientSettings = new ClientSettings();
     public static TimerIndicator timerIndicator = new TimerIndicator();
     public static ThunderHackGui thunderHackGui = new ThunderHackGui();

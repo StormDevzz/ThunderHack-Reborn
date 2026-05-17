@@ -20,6 +20,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ShulkerBoxScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -35,6 +36,7 @@ import thunder.hack.core.Core;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.gui.misc.PeekScreen;
 import thunder.hack.features.modules.Module;
+import thunder.hack.features.modules.misc.ChestStealer;
 import thunder.hack.features.modules.render.Tooltips;
 import thunder.hack.utility.Timer;
 import thunder.hack.utility.render.Render2DEngine;
@@ -98,6 +100,12 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
     private static final ItemStack[] ITEMS = new ItemStack[27];
 
     private Map<Render2DEngine.Rectangle, Integer> clickableRects = new HashMap<>();
+    @Unique
+    private final Map<Render2DEngine.Rectangle, String> chestButtons = new HashMap<>();
+    @Unique
+    private boolean stealHovered;
+    @Unique
+    private boolean dumpHovered;
 
     @Inject(method = "render", at = @At("TAIL"))
     private void onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
@@ -150,6 +158,27 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
                 postRender.run();
                 postRender = null;
             }
+        }
+
+        if (ModuleManager.chestStealer.isEnabled()
+                && ModuleManager.chestStealer.mode.getValue() == ChestStealer.Mode.Button
+                && mc.player.currentScreenHandler instanceof net.minecraft.screen.GenericContainerScreenHandler) {
+            chestButtons.clear();
+            int btnWidth = 50;
+            int btnHeight = 14;
+            int btnX = x + 176 - btnWidth * 2 - 8;
+            int btnY = y - 14;
+
+            stealHovered = mouseX >= btnX && mouseX <= btnX + btnWidth && mouseY >= btnY && mouseY <= btnY + btnHeight;
+            dumpHovered = mouseX >= btnX + btnWidth + 4 && mouseX <= btnX + btnWidth * 2 + 4 && mouseY >= btnY && mouseY <= btnY + btnHeight;
+
+            Render2DEngine.Rectangle stealRect = new Render2DEngine.Rectangle(btnX, btnY, btnX + btnWidth, btnY + btnHeight);
+            chestButtons.put(stealRect, "steal");
+            drawVanillaButton(context, btnX, btnY, btnWidth, btnHeight, "Steal", stealHovered);
+
+            Render2DEngine.Rectangle dumpRect = new Render2DEngine.Rectangle(btnX + btnWidth + 4, btnY, btnX + btnWidth * 2 + 4, btnY + btnHeight);
+            chestButtons.put(dumpRect, "dump");
+            drawVanillaButton(context, btnX + btnWidth + 4, btnY, btnWidth, btnHeight, "Dump", dumpHovered);
         }
     }
 
@@ -230,6 +259,22 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
         RenderSystem.enableBlend();
     }
 
+    @Unique
+    private void drawVanillaButton(DrawContext context, int btnX, int btnY, int width, int height, String text, boolean hovered) {
+        int bgColor = hovered ? 0xFFD6D6D6 : 0xFFC6C6C6;
+        int topLeftBorder = 0xFFFFFFFF;
+        int bottomRightBorder = 0xFF555555;
+        int textColor = 0xFF000000;
+
+        context.fill(btnX, btnY, btnX + width, btnY + height, bgColor);
+        context.fill(btnX, btnY, btnX + width - 1, btnY + 1, topLeftBorder);
+        context.fill(btnX, btnY, btnX + 1, btnY + height - 1, topLeftBorder);
+        context.fill(btnX + 1, btnY + height - 1, btnX + width, btnY + height, bottomRightBorder);
+        context.fill(btnX + width - 1, btnY + 1, btnX + width, btnY + height, bottomRightBorder);
+
+        context.drawText(mc.textRenderer, Text.literal(text), btnX + (width - mc.textRenderer.getWidth(text)) / 2, btnY + 3, textColor, false);
+    }
+
     private void drawMapPreview(DrawContext context, ItemStack stack, int x, int y) {
         RenderSystem.enableBlend();
         context.getMatrices().push();
@@ -284,6 +329,18 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
                 } else {
                     mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, clickableRects.get(rect), 0, SlotActionType.PICKUP, mc.player);
                 }
+            }
+        }
+        for (Render2DEngine.Rectangle rect : chestButtons.keySet()) {
+            if (rect.contains(mouseX, mouseY)) {
+                client.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 1f, 1f);
+                String action = chestButtons.get(rect);
+                if ("steal".equals(action)) {
+                    ModuleManager.chestStealer.startStealTask(mc.player.currentScreenHandler);
+                } else if ("dump".equals(action)) {
+                    ModuleManager.chestStealer.startDumpTask(mc.player.currentScreenHandler);
+                }
+                cir.setReturnValue(true);
             }
         }
     }
