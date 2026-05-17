@@ -78,6 +78,7 @@ public class Aura extends Module {
     public final Setting<BooleanSettingGroup> smartCrit = new Setting<>("SmartCrit", new BooleanSettingGroup(true));
     public final Setting<Boolean> onlySpace = new Setting<>("OnlyCrit", false).addToGroup(smartCrit);
     public final Setting<Boolean> autoJump = new Setting<>("AutoJump", false).addToGroup(smartCrit);
+    public final Setting<SprintMode> sprintMode = new Setting<>("SprintMode", SprintMode.Legit);
     public final Setting<Boolean> shieldBreaker = new Setting<>("ShieldBreaker", true);
     public final Setting<Boolean> pauseWhileEating = new Setting<>("PauseWhileEating", false);
     public final Setting<Boolean> tpsSync = new Setting<>("TPSSync", false);
@@ -103,8 +104,6 @@ public class Aura extends Module {
     public final Setting<Float> aimRange = new Setting<>("AimRange", 3.1f, 0f, 6.0f).addToGroup(advanced);
     public final Setting<Boolean> randomHitDelay = new Setting<>("RandomHitDelay", false).addToGroup(advanced);
     public final Setting<Boolean> pauseInInventory = new Setting<>("PauseInInventory", true).addToGroup(advanced);
-    public final Setting<Boolean> dropSprint = new Setting<>("DropSprint", true).addToGroup(advanced);
-    public final Setting<Boolean> returnSprint = new Setting<>("ReturnSprint", true, v -> dropSprint.getValue()).addToGroup(advanced);
     public final Setting<RayTrace> rayTrace = new Setting<>("RayTrace", RayTrace.OnlyTarget).addToGroup(advanced);
     public final Setting<Boolean> grimRayTrace = new Setting<>("GrimRayTrace", true).addToGroup(advanced);
     public final Setting<Boolean> unpressShield = new Setting<>("UnpressShield", true).addToGroup(advanced);
@@ -140,6 +139,9 @@ public class Aura extends Module {
     /*   INTERACT2 ROTATIONS   */
     public final Setting<SettingGroup> interact2Settings = new Setting<>("Interact2", new SettingGroup(false, 0), v -> rotationMode.is(Mode.Interact2));
     public final Setting<Integer> interact2Ticks = new Setting<>("Interact2Ticks", 5, 1, 20, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
+    public final Setting<Float> interact2YawSpeed = new Setting<>("YawSpeed", 180f, 30f, 360f, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
+    public final Setting<Float> interact2PitchSpeed = new Setting<>("PitchSpeed", 90f, 20f, 180f, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
+    public final Setting<Float> interact2Noise = new Setting<>("Noise", 0.5f, 0f, 3f, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
 
     /*   HVH ROTATIONS   */
     public final Setting<SettingGroup> hvhSettings = new Setting<>("HvH", new SettingGroup(false, 0), v -> rotationMode.is(Mode.HvH));
@@ -290,8 +292,15 @@ public class Aura extends Module {
             sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, Direction.DOWN));
 
         boolean sprint = Core.serverSprint;
-        if (sprint && dropSprint.getValue())
-            disableSprint();
+        switch (sprintMode.getValue()) {
+            case Legit -> {
+                if (sprint) {
+                    mc.player.setSprinting(false);
+                    mc.options.sprintKey.setPressed(false);
+                }
+            }
+            case HvH -> { if (!sprint) { enableSprint(); sprint = true; } }
+        }
 
         if (rotationMode.is(Mode.Grim))
             sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotationYaw, rotationPitch, mc.player.isOnGround()));
@@ -300,8 +309,10 @@ public class Aura extends Module {
     }
 
     public void postAttack(boolean block, boolean sprint) {
-        if (sprint && returnSprint.getValue() && dropSprint.getValue())
-            enableSprint();
+        switch (sprintMode.getValue()) {
+            case Legit -> {}
+            case HvH -> { if (!mc.player.isSprinting()) enableSprint(); }
+        }
 
         if (block && unpressShield.getValue())
             sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.OFF_HAND, id, rotationYaw, rotationPitch));
@@ -762,23 +773,35 @@ public class Aura extends Module {
 
             if (targetVec == null) return;
 
-            float delta_yaw = wrapDegrees((float) wrapDegrees(Math.toDegrees(Math.atan2(targetVec.z - mc.player.getZ(), (targetVec.x - mc.player.getX()))) - 90) - rotationYaw);
-            float delta_pitch = ((float) (-Math.toDegrees(Math.atan2(targetVec.y - (mc.player.getPos().y + mc.player.getEyeHeight(mc.player.getPose())), Math.sqrt(Math.pow((targetVec.x - mc.player.getX()), 2) + Math.pow(targetVec.z - mc.player.getZ(), 2))))) - rotationPitch);
+            double noiseYaw = (Math.random() - 0.5) * interact2Noise.getValue() * 2;
+            double noisePitch = (Math.random() - 0.5) * interact2Noise.getValue() * 2;
 
-            float yawStep = 360f;
-            float pitchStep = 180f;
+            double diffX = targetVec.x - mc.player.getX();
+            double diffZ = targetVec.z - mc.player.getZ();
+            double diffY = targetVec.y - (mc.player.getY() + mc.player.getEyeHeight(mc.player.getPose()));
+            double distanceXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
 
-            float deltaYaw = MathHelper.clamp(delta_yaw, -yawStep, yawStep);
-            float deltaPitch = MathHelper.clamp(delta_pitch, -pitchStep, pitchStep);
+            float targetYaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90f;
+            float targetPitch = (float) -Math.toDegrees(Math.atan2(diffY, distanceXZ));
 
-            float newYaw = rotationYaw + deltaYaw;
-            float newPitch = MathHelper.clamp(rotationPitch + deltaPitch, -90.0F, 90.0F);
+            targetYaw += noiseYaw;
+            targetPitch += noisePitch;
+            targetPitch = MathHelper.clamp(targetPitch, -90f, 90f);
+
+            float deltaYaw = MathHelper.wrapDegrees(targetYaw - rotationYaw);
+            float deltaPitch = targetPitch - rotationPitch;
+
+            float maxYawChange = interact2YawSpeed.getValue() * 0.05f;
+            float maxPitchChange = interact2PitchSpeed.getValue() * 0.05f;
+
+            float yawChange = MathHelper.clamp(deltaYaw, -maxYawChange, maxYawChange);
+            float pitchChange = MathHelper.clamp(deltaPitch, -maxPitchChange, maxPitchChange);
 
             double gcdFix = (Math.pow(mc.options.getMouseSensitivity().getValue() * 0.6 + 0.2, 3.0)) * 1.2;
 
             if (trackticks > 0) {
-                rotationYaw = (float) (newYaw - (newYaw - rotationYaw) % gcdFix);
-                rotationPitch = (float) (newPitch - (newPitch - rotationPitch) % gcdFix);
+                rotationYaw = (float) (rotationYaw + yawChange - ((rotationYaw + yawChange - rotationYaw) % gcdFix));
+                rotationPitch = (float) (rotationPitch + pitchChange - ((rotationPitch + pitchChange - rotationPitch) % gcdFix));
             } else {
                 rotationYaw = mc.player.getYaw();
                 rotationPitch = mc.player.getPitch();
@@ -1113,4 +1136,5 @@ public class Aura extends Module {
     public enum WallsBypass { Off, V1, V2 }
     public enum HvHTarget { Head, Body, Random }
     public enum ChineseTargetPoint { Head, Chest, Legs, Random }
+    public enum SprintMode { Normal, Legit, HvH }
 }

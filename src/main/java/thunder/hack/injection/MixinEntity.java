@@ -138,6 +138,10 @@ public abstract class MixinEntity implements IEntity {
         if ((Object) this != mc.player) return value;
         if(ModuleManager.viewLock.isEnabled() && ModuleManager.viewLock.yaw.getValue())
             return 0d;
+        if (ModuleManager.freeCam.isEnabled()) {
+            ModuleManager.freeCam.handleMouseYaw(value);
+            return 0d;
+        }
         if (ModuleManager.freeLook != null && ModuleManager.freeLook.isEnabled()) {
             ModuleManager.freeLook.handleMouseYaw(value);
             return 0d;
@@ -150,6 +154,10 @@ public abstract class MixinEntity implements IEntity {
         if ((Object) this != mc.player) return value;
         if(ModuleManager.viewLock.isEnabled() && ModuleManager.viewLock.pitch.getValue())
             return 0d;
+        if (ModuleManager.freeCam.isEnabled()) {
+            ModuleManager.freeCam.handleMousePitch(value);
+            return 0d;
+        }
         if (ModuleManager.freeLook != null && ModuleManager.freeLook.isEnabled()) {
             ModuleManager.freeLook.handleMousePitch(value);
             return 0d;

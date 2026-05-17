@@ -227,6 +227,7 @@ public class ModuleManager implements IManager {
     public static GuiMove guiMove = new GuiMove();
     public static FreeCam freeCam = new FreeCam();
     public static FastUse fastUse = new FastUse();
+    public static GhostHand ghostHand = new GhostHand();
     public static BowSpam bowSpam = new BowSpam();
     public static BoatFly boatFly = new BoatFly();
     public static Blocker blocker = new Blocker();

@@ -4,11 +4,11 @@ import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.orbit.EventPriority;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import thunder.hack.events.impl.*;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
-import thunder.hack.utility.player.MovementUtility;
 import thunder.hack.utility.render.Render2DEngine;
 import thunder.hack.utility.render.Render3DEngine;
 
@@ -21,8 +21,11 @@ public class FreeCam extends Module {
     private final Setting<Float> hspeed = new Setting<>("VSpeed", 0.42f, 0.1f, 3f);
     private final Setting<Boolean> freeze = new Setting<>("Freeze", false);
     public final Setting<Boolean> track = new Setting<>("Track", false);
+    private final Setting<Float> cameraSpeed = new Setting<>("CameraSpeed", 0.2f, 0.1f, 5f);
+    private final Setting<Boolean> invertPitch = new Setting<>("InvertPitch", false);
 
     private float fakeYaw, fakePitch, prevFakeYaw, prevFakePitch, prevScroll;
+    private float lockedYaw, lockedPitch;
     private double fakeX, fakeY, fakeZ, prevFakeX, prevFakeY, prevFakeZ;
     public LivingEntity trackEntity;
 
@@ -33,6 +36,8 @@ public class FreeCam extends Module {
 
         fakePitch = mc.player.getPitch();
         fakeYaw = mc.player.getYaw();
+        lockedYaw = fakeYaw;
+        lockedPitch = fakePitch;
 
         prevFakePitch = fakePitch;
         prevFakeYaw = fakeYaw;
@@ -58,8 +63,13 @@ public class FreeCam extends Module {
         mc.chunkCullingEnabled = true;
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.LOW)
     public void onSync(EventSync e) {
+        mc.player.setYaw(lockedYaw);
+        mc.player.setPitch(lockedPitch);
+        mc.player.prevYaw = lockedYaw;
+        mc.player.prevPitch = lockedPitch;
+
         prevFakeYaw = fakeYaw;
         prevFakePitch = fakePitch;
 
@@ -77,26 +87,48 @@ public class FreeCam extends Module {
             fakeX = trackEntity.getX();
             fakeY = trackEntity.getY() + trackEntity.getEyeHeight(trackEntity.getPose());
             fakeZ = trackEntity.getZ();
-        } else {
-            fakeYaw = mc.player.getYaw();
-            fakePitch = mc.player.getPitch();
         }
     }
 
+
+    public void handleMouseYaw(double deltaYaw) {
+        fakeYaw += (float) (deltaYaw * cameraSpeed.getValue());
+    }
+
+    public void handleMousePitch(double deltaPitch) {
+        float pitch = (invertPitch.getValue() ? -1f : 1f) * (float) (deltaPitch * cameraSpeed.getValue());
+        fakePitch = MathHelper.clamp(fakePitch + pitch, -90f, 90f);
+    }
 
     @EventHandler
     public void onKeyboardInput(EventKeyboardInput e) {
         if (mc.player == null) return;
 
         if (trackEntity == null) {
-            double[] motion = MovementUtility.forward(speed.getValue());
+            float forward = mc.player.input.movementForward;
+            float strafe = mc.player.input.movementSideways;
+            float yaw = fakeYaw;
+
+            if (forward != 0.0f) {
+                if (strafe > 0.0f) {
+                    yaw += (forward > 0.0f) ? -45 : 45;
+                } else if (strafe < 0.0f) {
+                    yaw += (forward > 0.0f) ? 45 : -45;
+                }
+                strafe = 0.0f;
+                if (forward > 0.0f) forward = 1.0f;
+                else if (forward < 0.0f) forward = -1.0f;
+            }
+
+            double sin = Math.sin(Math.toRadians(yaw + 90.0f));
+            double cos = Math.cos(Math.toRadians(yaw + 90.0f));
 
             prevFakeX = fakeX;
             prevFakeY = fakeY;
             prevFakeZ = fakeZ;
 
-            fakeX += motion[0];
-            fakeZ += motion[1];
+            fakeX += forward * speed.getValue() * cos + strafe * speed.getValue() * sin;
+            fakeZ += forward * speed.getValue() * sin - strafe * speed.getValue() * cos;
 
             if (mc.options.jumpKey.isPressed())
                 fakeY += hspeed.getValue();
