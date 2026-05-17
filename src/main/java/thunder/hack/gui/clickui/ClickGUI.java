@@ -207,7 +207,11 @@ public class ClickGUI extends Screen {
                             "\nПерекиньте конфиг в окошко майна, чтобы загрузить его" +
                             "\nShift + Left Mouse Click, чтобы изменить отображение модуля в Array list" +
                             "\nЩелкните колёсиком мыши по слайдеру, чтобы ввести значение с клавиатуры." +
-                            "\nDelete + Left Mouse Click по модулю, чтобы сбросить его настройки"
+                            "\nDelete + Left Mouse Click по модулю, чтобы сбросить его настройки" +
+                            "\nНаведите на модуль, чтобы увидеть его описание" +
+                            "\nПеретащите заголовок категории, чтобы переместить её" +
+                            "\nПКМ по ползунку сбрасывает на значение по умолчанию" +
+                            "\nПрокручивайте колёсиком по настройке, чтобы изменить её значение"
                             :
                             "Left Mouse Click to enable module" +
                                     "\nRight Mouse Click to open module settings" +
@@ -216,8 +220,12 @@ public class ClickGUI extends Screen {
                                     "\nDrag n Drop config there to load" +
                                     "\nShift + Left Mouse Click to change module visibility in Array list" +
                                     "\nMiddle Mouse Click on slider to enter value from keyboard" +
-                                    "\nDelete + Left Mouse Click on module to reset",
-                    5, mc.getWindow().getScaledHeight() - 80, HudEditor.getColor(0).getRGB());
+                                    "\nDelete + Left Mouse Click on module to reset" +
+                                    "\nHover over a module to see its description" +
+                                    "\nDrag the category header to move it" +
+                                    "\nRight Click on a slider to reset to default" +
+                                    "\nScroll on a setting to change its value",
+                    5, mc.getWindow().getScaledHeight() - 140, HudEditor.getColor(0).getRGB());
 
         if (!HudElement.anyHovered && !ClickGUI.anyHovered)
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
