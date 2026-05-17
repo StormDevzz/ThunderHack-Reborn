@@ -5,8 +5,10 @@ import net.minecraft.client.gui.screen.multiplayer.AddServerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import thunder.hack.ThunderHack;
 import thunder.hack.core.Managers;
+import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
+import thunder.hack.utility.ThunderUtility;
 import thunder.hack.utility.Timer;
 import thunder.hack.utility.discord.DiscordEventHandlers;
 import thunder.hack.utility.discord.DiscordRPC;
@@ -40,10 +42,17 @@ public final class RPC extends Module {
     public static Setting<String> nState = new Setting<>("CustomStatus", "Pasting...", v -> rpcMode.getValue() == RPCMode.New && !nAutoState.getValue());
     public static Setting<Boolean> nUseCustomRotation = new Setting<>("UseCustomRotation", false, v -> rpcMode.getValue() == RPCMode.New && nAutoState.getValue());
     public static Setting<String> nCustomStatuses = new Setting<>("CustomStatuses", "pasting;coding;chilling", v -> rpcMode.getValue() == RPCMode.New && nAutoState.getValue() && nUseCustomRotation.getValue());
-    public static Setting<NewImage> nImage = new Setting<>("Image", NewImage.Default, v -> rpcMode.getValue() == RPCMode.New);
+    public static Setting<NewImageType> nImageType = new Setting<>("Image Type", NewImageType.Asset, v -> rpcMode.getValue() == RPCMode.New);
+    public static Setting<NewImage> nImage = new Setting<>("Image", NewImage.Default, v -> rpcMode.getValue() == RPCMode.New && nImageType.getValue() == NewImageType.Asset);
+    public static Setting<GifChoice> nGif = new Setting<>("GIF", GifChoice.Reborn, v -> rpcMode.getValue() == RPCMode.New && nImageType.getValue() == NewImageType.Gif);
 
     public static DiscordRichPresence presence = new DiscordRichPresence();
     public static boolean started;
+    public static final String BUILD_VERSION;
+    static {
+        String v = ThunderUtility.readManifestField("Implementation-Version");
+        BUILD_VERSION = v.equals("0") ? ThunderHack.VERSION : v;
+    }
     static String String1 = "none";
     private final Timer timer_delay = new Timer();
     private final Timer nTimer = new Timer();
@@ -55,8 +64,8 @@ public final class RPC extends Module {
     String[] rpc_perebor_en = {"Parkour", "Reporting cheaters", "Touching grass", "Asks how to bind", "Reporting bugs", "Watching Kilab"};
     String[] rpc_perebor_ru = {"Паркурит", "Репортит читеров", "Трогает траву", "Спрашивает как забиндить", "Репортит баги", "Смотрит Флюгера"};
 
-    String[] rpc_new_en = {"pasting", "making coffee", "smoking grass", "having fun", "idk", "breaking everything", "coding", "resting", "testing", "chilling"};
-    String[] rpc_new_ru = {"пастит", "делает кофеек", "травку курит", "развлекается", "хз", "ломает всё", "кодит", "отдыхает", "тестит", "чиллит"};
+    String[] rpc_new_en = {"pasting", "making coffee", "smoking grass", "having fun", "idk", "breaking everything", "coding", "resting", "testing", "chilling", "exploring", "building", "farming", "raiding", "hunting"};
+    String[] rpc_new_ru = {"пастит", "делает кофеек", "травку курит", "развлекается", "хз", "ломает всё", "кодит", "отдыхает", "тестит", "чиллит", "исследует", "строит", "фермит", "рейдит", "охотится"};
 
     int randomInt;
     int nRandomInt;
@@ -122,7 +131,7 @@ public final class RPC extends Module {
             DiscordEventHandlers handlers = new DiscordEventHandlers();
             rpc.Discord_Initialize(targetId, handlers, true, "");
             presence.startTimestamp = (System.currentTimeMillis() / 1000L);
-            presence.largeImageText = "v" + ThunderHack.VERSION + " [" + ThunderHack.GITHUB_HASH + "]";
+            presence.largeImageText = "v" + BUILD_VERSION + "  ·  " + ThunderHack.GITHUB_HASH;
             rpc.Discord_UpdatePresence(presence);
 
             thread = new Thread(() -> {
@@ -135,7 +144,7 @@ public final class RPC extends Module {
                             case Stats ->
                                     presence.state = "Hacks: " + Managers.MODULE.getEnabledModules().size() + " / " + Managers.MODULE.modules.size();
                             case Custom -> presence.state = state.getValue();
-                            case Version -> presence.state = "v" + ThunderHack.VERSION + " for mc 1.21";
+                            case Version -> presence.state = "v" + BUILD_VERSION + " for mc 1.21";
                         }
 
                         if (nickname.getValue()) {
@@ -159,68 +168,74 @@ public final class RPC extends Module {
                             }
                         }
                     } else {
-                        // New Mode Logic
-                        StringBuilder detailsBuilder = new StringBuilder(nDesc.getValue());
-                        
-                        StringBuilder infoBuilder = new StringBuilder();
-                        if (nServer.getValue()) {
-                            String server = mc.isInSingleplayer() ? "SinglePlayer" : (mc.getCurrentServerEntry() != null ? mc.getCurrentServerEntry().address : "Menu");
-                            infoBuilder.append(server);
-                        }
-                        
-                        if (nNick.getValue()) {
-                            if (infoBuilder.length() > 0) infoBuilder.append(" | ");
-                            infoBuilder.append(mc.getSession().getUsername());
-                        }
-                        
-                        if (nBuild.getValue()) {
-                            if (infoBuilder.length() > 0) infoBuilder.append(" | ");
-                            infoBuilder.append(ThunderHack.GITHUB_HASH);
-                        }
-                        
-                        if (nVersion.getValue()) {
-                            if (infoBuilder.length() > 0) infoBuilder.append(" | ");
-                            infoBuilder.append("v").append(ThunderHack.VERSION);
-                        }
-                        
-                        if (nHandshake.getValue()) {
-                            if (infoBuilder.length() > 0) infoBuilder.append(" | ");
-                            infoBuilder.append("Handshake");
-                        }
-                        
-                        if (infoBuilder.length() > 0) {
-                            detailsBuilder.append(" (").append(infoBuilder).append(")");
-                        }
-                        
-                        presence.details = detailsBuilder.toString();
-                        
+                        // New Mode — clean, structured presence
+                        String status;
                         if (nAutoState.getValue()) {
                             if (nTimer.passedMs(60 * 1000) || nSlov == null) {
                                 if (nUseCustomRotation.getValue()) {
                                     String[] customList = nCustomStatuses.getValue().split(";");
-                                    if (customList.length > 0) {
-                                        nRandomInt = (int) (Math.random() * customList.length);
-                                        nSlov = customList[nRandomInt];
-                                    } else {
-                                        nSlov = "ThunderHack Reborn";
-                                    }
+                                    nSlov = customList.length > 0
+                                        ? customList[(int) (Math.random() * customList.length)]
+                                        : "ThunderHack";
                                 } else {
                                     nRandomInt = (int) (Math.random() * rpc_new_en.length);
                                     nSlov = isRu() ? rpc_new_ru[nRandomInt] : rpc_new_en[nRandomInt];
                                 }
                                 nTimer.reset();
                             }
-                            presence.state = nSlov;
+                            status = nSlov;
                         } else {
-                            presence.state = nState.getValue();
+                            status = nState.getValue();
                         }
-                        
-                        if (nImage.getValue() == NewImage.Default) {
-                             presence.largeImageKey = "logo";
+
+                        String server = mc.isInSingleplayer()
+                            ? "SinglePlayer"
+                            : mc.getCurrentServerEntry() != null ? mc.getCurrentServerEntry().address : "Menu";
+
+                        StringBuilder detailsBuilder = new StringBuilder(status);
+                        if (nServer.getValue()) {
+                            detailsBuilder.append("  |  ").append(server);
+                        }
+                        presence.details = detailsBuilder.toString();
+
+                        StringBuilder stateBuilder = new StringBuilder(nDesc.getValue());
+                        if (nHandshake.getValue()) {
+                            String brand = ModuleManager.clientSpoof.getClientName();
+                            if (brand != null)
+                                stateBuilder.append("  ·  ").append(brand);
+                        }
+                        presence.state = stateBuilder.toString();
+
+                        StringBuilder hoverBuilder = new StringBuilder();
+                        if (nVersion.getValue())
+                            hoverBuilder.append("v").append(BUILD_VERSION);
+                        if (nBuild.getValue())
+                            hoverBuilder.append(hoverBuilder.length() > 0 ? "  ·  " : "").append(ThunderHack.GITHUB_HASH);
+                        if (nNick.getValue())
+                            hoverBuilder.append(hoverBuilder.length() > 0 ? "  ·  " : "").append(mc.getSession().getUsername());
+
+                        presence.largeImageText = hoverBuilder.length() > 0 ? hoverBuilder.toString() : "ThunderHack";
+
+                        if (nImageType.getValue() == NewImageType.Asset) {
+                            if (nImage.getValue() == NewImage.Default)
+                                presence.largeImageKey = "logo";
+                            else
+                                presence.largeImageKey = nImage.getValue().getName();
                         } else {
-                             presence.largeImageKey = nImage.getValue().getName();
+                            switch (nGif.getValue()) {
+                                case Reborn -> presence.largeImageKey = "https://i.imgur.com/yY0z2Uq.gif";
+                                case MegaCute -> presence.largeImageKey = "https://media1.tenor.com/images/6bcbfcc0be97d029613b54f97845bc59/tenor.gif?itemid=26823781";
+                                case CPvP -> presence.largeImageKey = "https://media1.tenor.com/m/32pzMbItFo0AAAAd/2b2t-virgin.gif";
+                                case Bald -> presence.largeImageKey = "https://media1.tenor.com/m/LAsK1qXceVwAAAAC/7zqs-fitmc.gif";
+                                case FuckingHell -> presence.largeImageKey = "https://media1.tenor.com/m/1gTUDBhsOQoAAAAd/hell-sent-to-hell.gif";
+                                case Jocker -> presence.largeImageKey = "https://media1.tenor.com/m/YVP1R3hLzIMAAAAC/bachibachbach-2b2t.gif";
+                                case Femboy -> presence.largeImageKey = "https://media.tenor.com/jbWSVDF4jD0AAAAM/2b2t-femboy.gif";
+                                case Zdarova -> presence.largeImageKey = "https://media1.tenor.com/m/2UjViO0RunsAAAAC/arwyx-2b2t.gif";
+                                case Secret -> presence.largeImageKey = "https://media1.tenor.com/m/a2RLe4oaCuMAAAAC/wynncraft-skyblock.gif";
+                                case PoopBoob -> presence.largeImageKey = "https://media.tenor.com/yKpYBTEnPakAAAAi/popbob-2b2t.gif";
+                            }
                         }
-                        
+
                         presence.smallImageKey = "";
                         presence.smallImageText = "";
                     }
@@ -284,10 +299,25 @@ public final class RPC extends Module {
         Zeleboba1("zeleboba1"),
         Nihua("nihua"),
         Kotost1("kotost1"),
-        Vanya("vanya");
+        Vanya("vanya"),
+        Pyramids("pyramids"),
+        Vozduhan("vozduhan"),
+        Hvh("hvh"),
+        Standoff2("standoff2"),
+        Dog("dog"),
+        Tree("tree"),
+        Vitya("vitya"),
+        Fuck("fuck"),
+        Wypher("wypher"),
+        Wypher1("wypher1"),
+        Pretty("pretty");
 
         private final String name;
         NewImage(String name) { this.name = name; }
         public String getName() { return name; }
     }
+
+    public enum NewImageType {Asset, Gif}
+
+    public enum GifChoice {Reborn, MegaCute, CPvP, Bald, FuckingHell, Jocker, Femboy, Zdarova, Secret, PoopBoob}
 }
