@@ -49,6 +49,53 @@ jobs:
           VERSION=$(grep 'mod_version' gradle.properties | cut -d'=' -f2)
           echo "mod_version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Get commit details
+        id: commit
+        run: |
+          echo "author=$(git log -1 --pretty=format:'%an')" >> "$GITHUB_OUTPUT"
+          echo "date=$(git log -1 --pretty=format:'%ci' | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha_short=$(git log -1 --pretty=format:'%h')" >> "$GITHUB_OUTPUT"
+          git log -1 --pretty=format:'%s' > /tmp/commit_subject.txt
+          git log -1 --pretty=format:'%b' > /tmp/commit_body.txt
+
+      - name: Compose release notes
+        run: |
+          VERSION="${{ steps.version.outputs.mod_version }}"
+
+          cat > /tmp/release-notes.md <<-EOF
+          # 🚀 ThunderHack Reborn — Latest Build
+
+          | | |
+          |---|---|
+          | **Version** | \`$VERSION\` |
+          | **Minecraft** | 1.21 |
+          | **Branch** | ${{ github.ref_name }} |
+          | **Author** | ${{ steps.commit.outputs.author }} |
+          | **Date** | ${{ steps.commit.outputs.date }} |
+          | **Commit** | [\`${{ steps.commit.outputs.sha_short }}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) |
+
+          ---
+
+          ## 📝 What's changed
+
+          EOF
+
+          echo "> $(cat /tmp/commit_subject.txt)" >> /tmp/release-notes.md
+
+          if [ -s /tmp/commit_body.txt ]; then
+            echo "" >> /tmp/release-notes.md
+            cat /tmp/commit_body.txt >> /tmp/release-notes.md
+            echo "" >> /tmp/release-notes.md
+          fi
+
+          cat >> /tmp/release-notes.md <<-EOF
+          ## ⚙️ Build info
+
+          - **Java**: 21 (Zulu)
+          - **Fabric Loom**: 1.7
+          - **Actions Run**: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+
       - name: Publish Release
         if: github.event_name == 'push'
         env:
@@ -56,14 +103,8 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.mod_version }}"
           gh release delete latest --cleanup-tag --yes 2>/dev/null || true
-          cat > /tmp/release-notes.md <<-EOF
-          **Latest Build**
-          - Version: $VERSION
-          - Minecraft: 1.21
-          - Commit: ${{ github.sha }}
-          EOF
           gh release create latest \
-            --title "Latest Build ($VERSION)" \
+            --title "Build $VERSION (${{ steps.commit.outputs.sha_short }})" \
             --notes-file /tmp/release-notes.md \
             --latest \
             ./build/libs/*.jar
