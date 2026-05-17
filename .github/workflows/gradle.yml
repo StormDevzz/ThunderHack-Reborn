@@ -27,17 +27,41 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Build
         run: ./gradlew build
 
-      - name: Remove *-sources.jar
-        run: rm ./build/libs/*-sources.jar || true
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(grep 'mod_version' gradle.properties | cut -d'=' -f2)
+          echo "mod_version=$VERSION" >> $GITHUB_OUTPUT
 
-      - uses: "0xDylan/action-auto-releases-n20@v1.1"
+      - name: Delete old latest release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete latest --cleanup-tag --yes 2>/dev/null || true
+
+      - name: Create Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: false
-          title: "Latest Build (1.21)"
-          files: |
-            ./build/libs/*.jar
+          tag_name: latest
+          name: "Latest Build (${{ steps.version.outputs.mod_version }})"
+          body: |
+            **Автоматическая сборка**
+            - Версия: ${{ steps.version.outputs.mod_version }}
+            - Minecraft: 1.21
+            - Commit: ${{ github.sha }}
+          files: ./build/libs/*.jar
+          make_latest: true
