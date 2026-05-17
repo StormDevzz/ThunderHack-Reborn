@@ -106,6 +106,55 @@ public final class ThunderUtility {
         }
     }
 
+    public static boolean checkLatestVersion() {
+        try {
+            URL url = new URL("https://api.github.com/repos/StormDevzz/ThunderHack-Reborn/releases/latest");
+            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
+            StringBuilder response = new StringBuilder();
+            String inputLine;
+            while ((inputLine = in.readLine()) != null)
+                response.append(inputLine);
+            in.close();
+
+            JsonObject json = JsonParser.parseString(response.toString()).getAsJsonObject();
+            String releaseName = json.get("name").getAsString();
+
+            String remoteVersion = releaseName.replaceAll(".*\\(([^)]+)\\).*", "$1").trim();
+            if (remoteVersion.isEmpty()) return false;
+
+            String currentVersion = ThunderHack.VERSION;
+
+            return compareVersions(remoteVersion, currentVersion) > 0;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    public static boolean isUpdateAvailable(String remoteVersion, String currentVersion) {
+        return compareVersions(remoteVersion, currentVersion) > 0;
+    }
+
+    private static int compareVersions(String remote, String current) {
+        int[] rParts = parseVersion(remote);
+        int[] cParts = parseVersion(current);
+        int len = Math.max(rParts.length, cParts.length);
+        for (int i = 0; i < len; i++) {
+            int r = i < rParts.length ? rParts[i] : 0;
+            int c = i < cParts.length ? cParts[i] : 0;
+            if (r != c) return r - c;
+        }
+        return 0;
+    }
+
+    private static int[] parseVersion(String version) {
+        String numeric = version.replaceAll("^([0-9]+(\\.[0-9]+)*).*", "$1");
+        String[] parts = numeric.split("\\.");
+        int[] result = new int[parts.length];
+        for (int i = 0; i < parts.length; i++)
+            result[i] = Integer.parseInt(parts[i]);
+        return result;
+    }
+
     public static String readManifestField(String fieldName) {
         try {
             Enumeration<URL> en = Thread.currentThread().getContextClassLoader().getResources(JarFile.MANIFEST_NAME);
