@@ -129,6 +129,8 @@
   "descriptions.movement.entitycontrol": "Allows you control unsaddled entities.",
   "descriptions.movement.entityspeed": "Increases horse speed.",
   "descriptions.movement.flight": "Allows you to fly.",
+  "descriptions.movement.fastladder": "Allows you to climb ladders faster.",
+  "descriptions.movement.fastswim": "Another water speed module, but for swimming.",
   "descriptions.movement.guimove": "Allows you to move while in the gui.",
   "descriptions.movement.holeanchor": "Stops movement while above the safe hole.",
   "descriptions.movement.holesnap": "Helps you get into the safe hole.",

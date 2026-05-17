@@ -132,6 +132,8 @@ public class ModuleManager implements IManager {
     public static Fullbright fullbright = new Fullbright();
     public static FpsCounter fpsCounter = new FpsCounter();
     public static FakePlayer fakePlayer = new FakePlayer();
+    public static FastSwim fastSwim = new FastSwim();
+    public static FastLadder fastLadder = new FastLadder();
     public static ElytraSwap elytraSwap = new ElytraSwap();
     public static ElytraPlus elytraPlus = new ElytraPlus();
     public static AutoSprint autoSprint = new AutoSprint();

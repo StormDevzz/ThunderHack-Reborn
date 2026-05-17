@@ -128,6 +128,8 @@
   "descriptions.movement.entitycontrol": "Позволяет управлять сущностями без седел.",
   "descriptions.movement.entityspeed": "Увеличивает скорость лошади.",
   "descriptions.movement.flight": "Позволяет летать.",
+  "descriptions.movement.fastladder": "Позволяет быстрее лазать по лестницам.",
+  "descriptions.movement.fastswim": "Еще один модуль для увеличения скорости в воде, но для плавания.",
   "descriptions.movement.guimove": "Позволяет тебе перемещаться в гуи.",
   "descriptions.movement.holeanchor": "Останавливает движение, находясь над холлкой.",
   "descriptions.movement.holesnap": "Поможет попасть в холлку.",
