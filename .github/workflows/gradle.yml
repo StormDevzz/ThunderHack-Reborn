@@ -40,28 +40,30 @@ jobs:
       - name: Build
         run: ./gradlew build
 
+      - name: Remove sources jar
+        run: rm -f ./build/libs/*-sources.jar
+
       - name: Get version
         id: version
         run: |
           VERSION=$(grep 'mod_version' gradle.properties | cut -d'=' -f2)
-          echo "mod_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "mod_version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Delete old latest release
+      - name: Publish Release
         if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release delete latest --cleanup-tag --yes 2>/dev/null || true
-
-      - name: Create Release
-        if: github.event_name == 'push'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest
-          name: "Latest Build (${{ steps.version.outputs.mod_version }})"
-          body: |
-            **Автоматическая сборка**
-            - Версия: ${{ steps.version.outputs.mod_version }}
-            - Minecraft: 1.21
-            - Commit: ${{ github.sha }}
-          files: ./build/libs/*.jar
-          make_latest: true
+        run: |
+          VERSION="${{ steps.version.outputs.mod_version }}"
+          gh release delete latest --cleanup-tag --yes 2>/dev/null || true
+          cat > /tmp/release-notes.md <<-EOF
+          **Latest Build**
+          - Version: $VERSION
+          - Minecraft: 1.21
+          - Commit: ${{ github.sha }}
+          EOF
+          gh release create latest \
+            --title "Latest Build ($VERSION)" \
+            --notes-file /tmp/release-notes.md \
+            --latest \
+            ./build/libs/*.jar
