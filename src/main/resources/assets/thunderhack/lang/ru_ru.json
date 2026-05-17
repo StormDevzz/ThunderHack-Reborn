@@ -65,6 +65,8 @@
   "descriptions.misc.nocommentexploit": "Ахуевший коорд эксплойт, который заруинил 2b2t.",
   "descriptions.misc.nuker": "Копает блоки вокруг.",
   "descriptions.misc.pearlchaser": "Автоматическое преследование перла.",
+  "descriptions.misc.packetlimiter": "Лимит пакетов",
+  "descriptions.misc.packetcanceller": "Отмена пакетов",
   "descriptions.misc.spammer": "Спамит названием твоего лучшего магазина китов.",
   "descriptions.misc.tapemouse": "Автокликер.",
   "descriptions.misc.tooltips": "Дополнительная информация о предмете.",

@@ -23,6 +23,7 @@
       "MixinDynamic",
       "MixinEndCrystalEntityRenderer",
       "MixinEntityRenderer",
+      "MixinGameMenuScreen",
       "MixinGameRenderer",
       "MixinHandledScreen",
       "MixinHeldItemRenderer",

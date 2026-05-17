@@ -275,7 +275,16 @@ public final class RPC extends Module {
         Ebat("ebat"), 
         Oooh("oooh"), 
         Pivo("pivo"), 
-        Whenmem("whenmem");
+        Whenmem("whenmem"),
+        Ninja("ninja"),
+        Navalniylexa("navalniylexa"),
+        Depression("depression"),
+        Zeleboba("zeleboba"),
+        Akrien("akrien"),
+        Zeleboba1("zeleboba1"),
+        Nihua("nihua"),
+        Kotost1("kotost1"),
+        Vanya("vanya");
 
         private final String name;
         NewImage(String name) { this.name = name; }

@@ -65,6 +65,8 @@
   "descriptions.misc.nocommentexploit": "Awesome coord exploit that fucked 2b2t.",
   "descriptions.misc.nuker": "Automatically mines huge amounts of blocks.",
   "descriptions.misc.pearlchaser": "Automatic pursuit pearl.",
+  "descriptions.misc.packetlimiter": "Limits your packets",
+  "descriptions.misc.packetcanceller": "Cancels packets",
   "descriptions.misc.spammer": "Spamming the name of your best kitshop.",
   "descriptions.misc.tapemouse": "Autoclicker.",
   "descriptions.misc.tooltips": "Shows extra information about items.",

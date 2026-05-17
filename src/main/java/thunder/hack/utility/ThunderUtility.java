@@ -141,7 +141,7 @@ public final class ThunderUtility {
                 JsonArray jsonArray = JsonParser.parseString(inputLine).getAsJsonArray();
 
                 for (int i = 0; i < jsonArray.size(); i++) {
-                    if (commitCount >= 5) break;
+                    if (commitCount >= 30) break;
 
                     JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
                     JsonObject commitObject = jsonObject.getAsJsonObject("commit");
@@ -162,7 +162,7 @@ public final class ThunderUtility {
                     commitCount++;
                 }
 
-                if (commitCount >= 5) break;
+                if (commitCount >= 30) break;
             }
             in.close();
         } catch (Exception e) {
