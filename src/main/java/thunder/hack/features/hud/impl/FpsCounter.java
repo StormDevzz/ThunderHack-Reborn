@@ -31,7 +31,7 @@ public class FpsCounter extends HudElement {
             Render2DEngine.setupRender();
             RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
             RenderSystem.setShaderTexture(0, TextureStorage.fpsIcon);
-            Render2DEngine.renderGradientTexture(context.getMatrices(), pX + 2, getPosY() + 1, 10, 10, 0, 0, 512, 512, 512, 512,
+            Render2DEngine.renderGradientTextureNoSetup(context.getMatrices(), pX + 2, getPosY() + 1, 10, 10, 0, 0, 512, 512, 512, 512,
                     HudEditor.getColor(270), HudEditor.getColor(0), HudEditor.getColor(180), HudEditor.getColor(90));
             Render2DEngine.endRender();
         }

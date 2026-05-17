@@ -280,6 +280,13 @@ public class Render2DEngine {
         endRender();
     }
 
+    public static void renderTextureNoSetup(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+        renderTextureInternal(buffer, matrices, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
+    }
+
     public static void renderTextureInternal(BufferBuilder buffer, MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
         double x1 = x0 + width;
         double y1 = y0 + height;
@@ -298,6 +305,13 @@ public class Render2DEngine {
         renderGradientTextureInternal(buffer, matrices, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, c1, c2, c3, c4);
         BufferRenderer.drawWithGlobalProgram(buffer.end());
         endRender();
+    }
+
+    public static void renderGradientTextureNoSetup(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        renderGradientTextureInternal(buffer, matrices, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, c1, c2, c3, c4);
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
     }
 
     public static void renderGradientTextureInternal(BufferBuilder buff, MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
