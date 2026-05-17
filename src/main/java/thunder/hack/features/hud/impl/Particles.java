@@ -1,11 +1,8 @@
 package thunder.hack.features.hud.impl;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
 import thunder.hack.utility.render.Render2DEngine;
-import thunder.hack.utility.render.TextureStorage;
 
 import java.awt.*;
 
@@ -22,16 +19,10 @@ public class Particles {
     }
 
     public void render2D(MatrixStack matrixStack) {
-        drawStar(matrixStack, (float) x, (float) y, color);
-    }
-
-    public void drawStar(MatrixStack matrices, float x, float y, Color c) {
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        RenderSystem.setShaderTexture(0, TextureStorage.star);
-        RenderSystem.setShaderColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, (float) (opacity / 255f));
-        Render2DEngine.renderTexture(matrices, x + size / 2f, y + size / 2f, size, size, 0, 0, 256, 256, 256, 256);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        matrixStack.push();
+        matrixStack.translate(x, y, 0);
+        Render2DEngine.drawStar(matrixStack, Render2DEngine.injectAlpha(color, (int) opacity), (float) size);
+        matrixStack.pop();
     }
 
     public void updatePosition() {
