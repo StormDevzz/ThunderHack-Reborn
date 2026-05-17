@@ -122,6 +122,16 @@
 
 ---
 
+## Новые Скриншоты / New Screenshots
+
+<details>
+<summary>NEW GUI</summary>
+
+![image](assets/newgui.png)
+</details>
+
+---
+
 ## Аддоны / Addons
 
 ### Ресурсы для разработчиков / Developer Resources
