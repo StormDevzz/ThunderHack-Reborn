@@ -37,6 +37,7 @@ import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.gui.misc.PeekScreen;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.misc.ChestStealer;
+import thunder.hack.features.modules.player.AutoSorter;
 import thunder.hack.features.modules.render.Tooltips;
 import thunder.hack.utility.Timer;
 import thunder.hack.utility.render.Render2DEngine;
@@ -106,6 +107,8 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
     private boolean stealHovered;
     @Unique
     private boolean dumpHovered;
+    @Unique
+    private boolean sortHovered;
 
     @Inject(method = "render", at = @At("TAIL"))
     private void onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
@@ -179,6 +182,24 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
             Render2DEngine.Rectangle dumpRect = new Render2DEngine.Rectangle(btnX + btnWidth + 4, btnY, btnX + btnWidth * 2 + 4, btnY + btnHeight);
             chestButtons.put(dumpRect, "dump");
             drawVanillaButton(context, btnX + btnWidth + 4, btnY, btnWidth, btnHeight, "Dump", dumpHovered);
+        }
+
+        if (ModuleManager.autoSorter.isEnabled()
+                && ModuleManager.autoSorter.showButton.getValue()
+                && mc.player.currentScreenHandler instanceof net.minecraft.screen.GenericContainerScreenHandler) {
+            int sBtnW = 50;
+            int sBtnH = 14;
+            boolean chestBtnShowing = ModuleManager.chestStealer.isEnabled()
+                    && ModuleManager.chestStealer.mode.getValue() == ChestStealer.Mode.Button;
+            if (!chestBtnShowing) chestButtons.clear();
+            int sBtnX = chestBtnShowing ? x + 14 : x + 176 - sBtnW - 8;
+            int sBtnY = y - 14;
+
+            sortHovered = mouseX >= sBtnX && mouseX <= sBtnX + sBtnW && mouseY >= sBtnY && mouseY <= sBtnY + sBtnH;
+
+            Render2DEngine.Rectangle sortRect = new Render2DEngine.Rectangle(sBtnX, sBtnY, sBtnX + sBtnW, sBtnY + sBtnH);
+            chestButtons.put(sortRect, "sort");
+            drawVanillaButton(context, sBtnX, sBtnY, sBtnW, sBtnH, "Sort", sortHovered);
         }
     }
 
@@ -339,6 +360,8 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
                     ModuleManager.chestStealer.startStealTask(mc.player.currentScreenHandler);
                 } else if ("dump".equals(action)) {
                     ModuleManager.chestStealer.startDumpTask(mc.player.currentScreenHandler);
+                } else if ("sort".equals(action)) {
+                    ModuleManager.autoSorter.startSortingTask(mc.player.currentScreenHandler);
                 }
                 cir.setReturnValue(true);
             }

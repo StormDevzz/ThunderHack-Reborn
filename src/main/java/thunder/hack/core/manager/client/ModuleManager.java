@@ -208,6 +208,7 @@ public class ModuleManager implements IManager {
     public static KillFeed killFeed = new KillFeed();
     public static AutoWalk autoWalk = new AutoWalk();
     public static AutoSign autoSign = new AutoSign();
+    public static AutoSorter autoSorter = new AutoSorter();
     public static BlockESP blockESP = new BlockESP();
     public static SafeWalk safeWalk = new SafeWalk();
     public static Windows windows = new Windows();
