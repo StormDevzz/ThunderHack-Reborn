@@ -198,6 +198,7 @@
   "descriptions.client.clickgui": "ThunderHack gui.",
   "descriptions.client.clientsettings": "Main settings of ThunderHack.",
   "descriptions.client.clientspoof": "Forges a HandShake packet to make the server think you are on a vanilla client.",
+  "descriptions.client.capes": "Custom capes",
   "descriptions.client.hudeditor": "Gui for editing hud elements.",
   "descriptions.client.mainsettings": "Global ThunderHack settings.",
   "descriptions.client.media": "Hides nicknames and skins of other players.",
