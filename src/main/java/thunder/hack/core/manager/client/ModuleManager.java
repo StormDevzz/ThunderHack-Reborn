@@ -67,7 +67,6 @@ public class ModuleManager implements IManager {
     public static MouseElytraFix mouseElytraFix = new MouseElytraFix();
     public static TotemAnimation totemAnimation = new TotemAnimation();
     public static PortalGodMode portalGodMode = new PortalGodMode();
-    public static OptifineCapes optifineCapes = new OptifineCapes();
     public static Capes capes = new Capes();
     public static Notifications notifications = new Notifications();
     public static FreeLook freeLook = new FreeLook();

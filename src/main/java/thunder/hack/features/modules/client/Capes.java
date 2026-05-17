@@ -9,6 +9,7 @@ public class Capes extends Module {
     }
 
     public static final Setting<Mode> mode = new Setting<>("Mode", Mode.starcape);
+    public static final Setting<Boolean> optifine = new Setting<>("OptifineCapes", false);
 
     public enum Mode {
         bkgroup, dev, fbgroup, starcape, tester

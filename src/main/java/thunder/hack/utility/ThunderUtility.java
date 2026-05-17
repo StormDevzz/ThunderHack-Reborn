@@ -141,7 +141,7 @@ public final class ThunderUtility {
                 JsonArray jsonArray = JsonParser.parseString(inputLine).getAsJsonArray();
 
                 for (int i = 0; i < jsonArray.size(); i++) {
-                    if (commitCount >= 30) break;
+                    if (commitCount >= 60) break;
 
                     JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
                     JsonObject commitObject = jsonObject.getAsJsonObject("commit");
@@ -155,10 +155,29 @@ public final class ThunderUtility {
                         continue;
                     }
 
-                    String formattedDate = Formatting.GRAY + date.split("T")[0] + Formatting.RESET;
-                    String formattedName = "@" + Formatting.RED + name + Formatting.RESET;
+                    if (info.length() > 72) {
+                        info = info.substring(0, 69) + "...";
+                    }
 
-                    changeLog.add("- " + info + " [" + formattedDate + "]  (" + formattedName + ")");
+                    String formattedDate = Formatting.GRAY + date.split("T")[0] + Formatting.RESET;
+                    String formattedName = Formatting.DARK_GRAY + "@" + Formatting.AQUA + name + Formatting.RESET;
+
+                    String prefix = "";
+                    if (info.startsWith("[+]")) {
+                        prefix = Formatting.GREEN + "[+] ";
+                        info = info.substring(3).trim();
+                    } else if (info.startsWith("[-]")) {
+                        prefix = Formatting.RED + "[-] ";
+                        info = info.substring(3).trim();
+                    } else if (info.startsWith("[/]")) {
+                        prefix = Formatting.LIGHT_PURPLE + "[/] ";
+                        info = info.substring(3).trim();
+                    } else if (info.startsWith("[*]")) {
+                        prefix = Formatting.GOLD + "[*] ";
+                        info = info.substring(3).trim();
+                    }
+
+                    changeLog.add(prefix + Formatting.WHITE + info + Formatting.RESET + " " + formattedDate + " " + formattedName);
                     commitCount++;
                 }
 

@@ -104,8 +104,7 @@ public class MainMenuScreen extends Screen {
 
         int offsetY = 10;
         for (String change : ThunderUtility.changeLog) {
-            String prefix = getPrefix(change);
-            FontRenderers.sf_medium.drawString(context.getMatrices(), prefix, 10, offsetY, Render2DEngine.applyOpacity(-1, 0.4f));
+            FontRenderers.sf_medium.drawString(context.getMatrices(), change, 10, offsetY, Render2DEngine.applyOpacity(-1, 0.4f));
             offsetY += 10;
         }
 

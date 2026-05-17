@@ -86,7 +86,7 @@ public class MixinPlayerListEntry {
                     customCapeTexture = Identifier.of("thunderhack", "textures/capes/starcape.png");
             }
 
-            if (ModuleManager.optifineCapes.isEnabled())
+            if (ModuleManager.capes.isEnabled() && Capes.optifine.getValue())
                 OptifineCapes.loadPlayerCape(profile, id -> {
                     customCapeTexture = id;
                 });
