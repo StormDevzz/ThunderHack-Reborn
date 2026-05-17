@@ -207,7 +207,7 @@ public class WaterMark extends HudElement {
                         Date date = new Date(System.currentTimeMillis());
                         SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
 
-                        String info = Formatting.GREEN + String.format("th9.1| build: 16/05/2026 | rate: %d | %s",
+                        String info = Formatting.GREEN + String.format("th9.2| build: 17/05/2026 | rate: %d | %s",
                                         Math.round(Managers.SERVER.getTPS()), format.format(date));
                         float width = FontRenderers.profont.getStringWidth(info) + 5;
                         Render2DEngine.drawRectWithOutline(context.getMatrices(), getPosX(), getPosY(), width, 8,
