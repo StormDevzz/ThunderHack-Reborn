@@ -1,22 +1,39 @@
 package thunder.hack.core.manager.client;
 
 import meteordevelopment.orbit.EventHandler;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.packet.BrandCustomPayload;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.UnknownCustomPayload;
+import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
+import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.util.Identifier;
 import thunder.hack.core.manager.IManager;
 import thunder.hack.events.impl.PacketEvent;
+import thunder.hack.utility.Timer;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PluginManager implements IManager {
     private String serverBrand = "Unknown";
-    private final Set<Identifier> detectedChannels = new HashSet<>();
+    private final Set<String> detectedPlugins = new LinkedHashSet<>();
+    private final Set<Identifier> passiveChannels = new LinkedHashSet<>();
+    private String rawResponse = null;
+    private boolean awaitingResponse = false;
+    private final Timer requestTimer = new Timer();
+    private boolean hasQueried = false;
+
+    private static final Pattern PLUGIN_LIST_REGEX =
+            Pattern.compile("(?i)(?:plugins|плагины)\\s*\\((\\d+)\\)\\s*:\\s*(.+)");
+    private static final Pattern PERMISSION_ERROR =
+            Pattern.compile("(?i)(unknown command|unknown or incomplete|permission|not allowed|no access|you don't have|you are not)");
 
     private static final Map<String, String> CHANNEL_TO_PLUGIN = new LinkedHashMap<>();
+    private static final Map<String, String> BRAND_SOFTWARE = new LinkedHashMap<>();
 
     static {
         CHANNEL_TO_PLUGIN.put("bungeecord", "BungeeCord");
@@ -25,7 +42,6 @@ public class PluginManager implements IManager {
         CHANNEL_TO_PLUGIN.put("worldedit", "WorldEdit");
         CHANNEL_TO_PLUGIN.put("worldguard", "WorldGuard");
         CHANNEL_TO_PLUGIN.put("authme", "AuthMe");
-        CHANNEL_TO_PLUGIN.put("loginsen", "LoginSecurity");
         CHANNEL_TO_PLUGIN.put("cmi", "CMI");
         CHANNEL_TO_PLUGIN.put("luckperms", "LuckPerms");
         CHANNEL_TO_PLUGIN.put("viaversion", "ViaVersion");
@@ -35,20 +51,34 @@ public class PluginManager implements IManager {
         CHANNEL_TO_PLUGIN.put("mcmmo", "mcMMO");
         CHANNEL_TO_PLUGIN.put("placeholderapi", "PlaceholderAPI");
         CHANNEL_TO_PLUGIN.put("packetevents", "PacketEvents");
-        CHANNEL_TO_PLUGIN.put("minetp", "MineTP");
         CHANNEL_TO_PLUGIN.put("factions", "Factions");
         CHANNEL_TO_PLUGIN.put("towny", "Towny");
         CHANNEL_TO_PLUGIN.put("griefprevention", "GriefPrevention");
         CHANNEL_TO_PLUGIN.put("coreprotect", "CoreProtect");
         CHANNEL_TO_PLUGIN.put("advancedban", "AdvancedBan");
-        CHANNEL_TO_PLUGIN.put("lpb", "LibertyBans");
-        CHANNEL_TO_PLUGIN.put("anticheatreloaded", "AntiCheatReloaded");
-        CHANNEL_TO_PLUGIN.put("ncp", "NoCheatPlus");
-        CHANNEL_TO_PLUGIN.put("acr", "AntiCrystalReloaded");
-        CHANNEL_TO_PLUGIN.put("bedrock", "Geyser");
         CHANNEL_TO_PLUGIN.put("dynmap", "Dynmap");
         CHANNEL_TO_PLUGIN.put("pl3xmap", "Pl3xMap");
-        CHANNEL_TO_PLUGIN.put("blueprint", "BlueMap");
+        CHANNEL_TO_PLUGIN.put("minetp", "MineTP");
+        CHANNEL_TO_PLUGIN.put("lpb", "LibertyBans");
+        CHANNEL_TO_PLUGIN.put("acr", "AntiCrystalReloaded");
+        CHANNEL_TO_PLUGIN.put("plan", "Plan");
+        CHANNEL_TO_PLUGIN.put("nucleus", "Nucleus");
+        CHANNEL_TO_PLUGIN.put("gml", "GMLimbo");
+
+        BRAND_SOFTWARE.put("purpur", "Purpur");
+        BRAND_SOFTWARE.put("paper", "Paper");
+        BRAND_SOFTWARE.put("spigot", "Spigot");
+        BRAND_SOFTWARE.put("fabric", "Fabric");
+        BRAND_SOFTWARE.put("quilt", "Quilt");
+        BRAND_SOFTWARE.put("mohist", "Mohist");
+        BRAND_SOFTWARE.put("catserver", "CatServer");
+        BRAND_SOFTWARE.put("arclight", "Arclight");
+        BRAND_SOFTWARE.put("magma", "Magma");
+        BRAND_SOFTWARE.put("folia", "Folia");
+        BRAND_SOFTWARE.put("velocity", "Velocity (Proxy)");
+        BRAND_SOFTWARE.put("bungeecord", "BungeeCord (Proxy)");
+        BRAND_SOFTWARE.put("bungee", "BungeeCord (Proxy)");
+        BRAND_SOFTWARE.put("waterfall", "Waterfall (Proxy)");
     }
 
     @EventHandler
@@ -58,64 +88,124 @@ public class PluginManager implements IManager {
             if (payload instanceof BrandCustomPayload brand) {
                 serverBrand = brand.brand();
             } else if (payload instanceof UnknownCustomPayload unknown) {
-                detectedChannels.add(unknown.id());
+                Identifier id = unknown.id();
+                if (passiveChannels.add(id)) {
+                    if (!id.getNamespace().equals("minecraft")) {
+                        String plugin = CHANNEL_TO_PLUGIN.get(id.getNamespace());
+                        if (plugin != null) detectedPlugins.add(plugin);
+                    }
+                }
             }
         }
 
         if (event.getPacket() instanceof GameJoinS2CPacket) {
             reset();
         }
+
+        if (event.getPacket() instanceof GameMessageS2CPacket msg) {
+            handleChatMessage(msg.content().getString());
+        }
     }
 
-    public String getServerBrand() {
-        return serverBrand;
+    private void handleChatMessage(String text) {
+        if (!awaitingResponse || requestTimer.passedMs(5000)) {
+            awaitingResponse = false;
+            return;
+        }
+
+        Matcher matcher = PLUGIN_LIST_REGEX.matcher(text);
+        if (matcher.find()) {
+            String list = matcher.group(2);
+            for (String name : list.split(",\\s*")) {
+                String clean = name.replaceAll("\\s+v?[\\d.]+.*$", "").trim();
+                if (!clean.isEmpty()) detectedPlugins.add(clean);
+            }
+            rawResponse = text;
+            awaitingResponse = false;
+            hasQueried = true;
+            return;
+        }
+
+        if (PERMISSION_ERROR.matcher(text).find()) {
+            rawResponse = text;
+            awaitingResponse = false;
+            hasQueried = true;
+            return;
+        }
+
+        if (text.toLowerCase().contains("plugins") || text.toLowerCase().contains("плагины")) {
+            rawResponse = text;
+            awaitingResponse = false;
+            hasQueried = true;
+        }
     }
+
+    public void requestPluginList() {
+        if (mc.getNetworkHandler() == null || mc.player == null) return;
+        detectedPlugins.clear();
+        rawResponse = null;
+
+        mc.getNetworkHandler().sendPacket(new CommandExecutionC2SPacket("plugins"));
+        awaitingResponse = true;
+        hasQueried = false;
+        requestTimer.reset();
+
+        scanFabricChannels();
+    }
+
+    private void scanFabricChannels() {
+        try {
+            Set<Identifier> sendable = ClientPlayNetworking.getSendable();
+            for (Identifier ch : sendable) {
+                passiveChannels.add(ch);
+                if (!ch.getNamespace().equals("minecraft")) {
+                    String plugin = CHANNEL_TO_PLUGIN.get(ch.getNamespace());
+                    if (plugin != null) detectedPlugins.add(plugin);
+                    else detectedPlugins.add("?" + ch.toString());
+                }
+            }
+        } catch (Exception ignored) {}
+
+        try {
+            ClientPlayNetworking.getReceived().stream()
+                    .filter(ch -> !ch.getNamespace().equals("minecraft"))
+                    .forEach(ch -> {
+                        passiveChannels.add(ch);
+                        String plugin = CHANNEL_TO_PLUGIN.get(ch.getNamespace());
+                        if (plugin != null) detectedPlugins.add(plugin);
+                        else detectedPlugins.add("?" + ch.toString());
+                    });
+        } catch (Exception ignored) {}
+    }
+
+    public String getServerBrand() { return serverBrand; }
 
     public String getServerSoftware() {
-        String brand = serverBrand.toLowerCase();
-        if (brand.contains("purpur")) return "Purpur";
-        if (brand.contains("paper")) return "Paper";
-        if (brand.contains("spigot")) return "Spigot";
-        if (brand.contains("fabric")) return "Fabric";
-        if (brand.contains("quilt")) return "Quilt";
-        if (brand.contains("mohist")) return "Mohist";
-        if (brand.contains("catserver")) return "CatServer";
-        if (brand.contains("arclight")) return "Arclight";
-        if (brand.contains("magma")) return "Magma";
-        if (brand.contains("crucible")) return "Crucible";
-        if (brand.contains("folia")) return "Folia";
-        if (brand.contains("velocity")) return "Velocity (Proxy)";
-        if (brand.contains("bungeecord") || brand.contains("bungee")) return "BungeeCord (Proxy)";
-        if (brand.contains("waterfall")) return "Waterfall (Proxy)";
-        return "Unknown";
-    }
-
-    public Set<Identifier> getDetectedChannels() {
-        return detectedChannels;
+        String low = serverBrand.toLowerCase();
+        for (Map.Entry<String, String> e : BRAND_SOFTWARE.entrySet())
+            if (low.contains(e.getKey())) return e.getValue();
+        return "Unknown/Custom";
     }
 
     public Set<String> getDetectedPlugins() {
-        Set<String> plugins = new LinkedHashSet<>();
-        for (Identifier channel : detectedChannels) {
-            String namespace = channel.getNamespace();
-            String plugin = CHANNEL_TO_PLUGIN.get(namespace);
-            if (plugin != null) plugins.add(plugin);
-        }
-        return plugins;
+        scanFabricChannels();
+        return detectedPlugins;
     }
 
-    public Set<Identifier> getUnknownChannels() {
-        Set<Identifier> unknown = new LinkedHashSet<>();
-        for (Identifier channel : detectedChannels) {
-            if (!CHANNEL_TO_PLUGIN.containsKey(channel.getNamespace())) {
-                unknown.add(channel);
-            }
-        }
-        return unknown;
+    public Set<Identifier> getDetectedChannels() {
+        scanFabricChannels();
+        return passiveChannels;
     }
 
-    public void reset() {
+    public String getRawResponse() { return rawResponse; }
+    public boolean hasQueried() { return hasQueried; }
+
+    private void reset() {
         serverBrand = "Unknown";
-        detectedChannels.clear();
+        detectedPlugins.clear();
+        passiveChannels.clear();
+        rawResponse = null;
+        awaitingResponse = false;
+        hasQueried = false;
     }
 }

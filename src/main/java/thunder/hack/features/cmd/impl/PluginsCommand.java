@@ -20,29 +20,45 @@ public class PluginsCommand extends Command {
     @Override
     public void executeBuild(@NotNull LiteralArgumentBuilder<CommandSource> builder) {
         builder.executes(context -> {
-            String brand = Managers.PLUGIN.getServerBrand();
-            String software = Managers.PLUGIN.getServerSoftware();
-            Set<String> plugins = Managers.PLUGIN.getDetectedPlugins();
-            Set<Identifier> unknown = Managers.PLUGIN.getUnknownChannels();
+            boolean hadData = !Managers.PLUGIN.getDetectedPlugins().isEmpty();
 
-            sendMessage(Formatting.GOLD + "Server: " + Formatting.WHITE + brand);
-            sendMessage(Formatting.GOLD + "Software: " + Formatting.WHITE + software);
+            sendMessage(Formatting.GOLD + "Server: " + Formatting.WHITE + Managers.PLUGIN.getServerBrand());
+            sendMessage(Formatting.GOLD + "Software: " + Formatting.WHITE + Managers.PLUGIN.getServerSoftware());
+
+            Set<String> plugins = Managers.PLUGIN.getDetectedPlugins();
+            Set<Identifier> channels = Managers.PLUGIN.getDetectedChannels();
+            String raw = Managers.PLUGIN.getRawResponse();
 
             if (!plugins.isEmpty()) {
-                sendMessage(Formatting.GOLD + "Detected plugins:");
+                sendMessage(Formatting.GOLD + "Plugins (" + plugins.size() + "):");
                 for (String p : plugins) {
-                    sendMessage(Formatting.GREEN + "  \u2713 " + Formatting.WHITE + p);
+                    String color = p.startsWith("?") ? Formatting.DARK_GRAY.toString() : Formatting.GREEN.toString();
+                    sendMessage(color + "  \u2713 " + Formatting.WHITE + p);
                 }
-            } else {
-                sendMessage(Formatting.YELLOW + "No plugins detected yet");
-                sendMessage(Formatting.GRAY + "(Plugin channels appear when plugins send data)");
             }
 
-            if (!unknown.isEmpty()) {
-                sendMessage(Formatting.GOLD + "Unknown channels:");
-                for (Identifier ch : unknown) {
-                    sendMessage(Formatting.DARK_GRAY + "  " + ch.toString());
+            if (!channels.isEmpty()) {
+                sendMessage(Formatting.GOLD + "Channels (" + channels.size() + "):");
+                for (Identifier ch : channels) {
+                    String color = ch.getNamespace().equals("minecraft")
+                            ? Formatting.DARK_GRAY.toString()
+                            : Formatting.GRAY.toString();
+                    sendMessage(color + "  " + ch.toString());
                 }
+            }
+
+            if (raw != null) {
+                sendMessage(Formatting.GOLD + "Raw /plugins:");
+                sendMessage(Formatting.GRAY + "  " + raw);
+            }
+
+            if (!hadData) {
+                sendMessage(Formatting.YELLOW + "Sending /plugins request...");
+                Managers.PLUGIN.requestPluginList();
+                sendMessage(Formatting.GRAY + "Run @plugins again to see results");
+            } else {
+                sendMessage(Formatting.GRAY + "Run @plugins to re-query");
+                Managers.PLUGIN.requestPluginList();
             }
 
             return SINGLE_SUCCESS;
