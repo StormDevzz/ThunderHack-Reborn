@@ -19,31 +19,34 @@ public class WorldTweaks extends Module {
     public static final Setting<Integer> fogStart = new Setting<>("FogStart", 0, 0, 256).addToGroup(fogModify);
     public static final Setting<Integer> fogEnd = new Setting<>("FogEnd", 64, 10, 256).addToGroup(fogModify);
     public static final Setting<ColorSetting> fogColor = new Setting<>("FogColor", new ColorSetting(new Color(0xA900FF))).addToGroup(fogModify);
+
     public final Setting<Boolean> ctime = new Setting<>("ChangeTime", false);
     public final Setting<Integer> ctimeVal = new Setting<>("Time", 21, 0, 23);
 
-    long oldTime;
+    private long oldTime;
 
     @Override
     public void onEnable() {
-        oldTime = mc.world.getTime();
+        if (mc.world != null) oldTime = mc.world.getTime();
     }
 
     @Override
     public void onDisable() {
-        mc.world.setTime(mc.world.getTime(), oldTime, true);
+        if (mc.world != null) mc.world.setTime(mc.world.getTime(), oldTime, true);
     }
 
     @EventHandler
     private void onPacketReceive(PacketEvent.Receive event) {
-        if (event.getPacket() instanceof WorldTimeUpdateS2CPacket && ctime.getValue()) {
-            oldTime = ((WorldTimeUpdateS2CPacket) event.getPacket()).timeOfDay();
+        if (event.getPacket() instanceof WorldTimeUpdateS2CPacket p && ctime.getValue()) {
+            oldTime = p.timeOfDay();
             event.cancel();
         }
     }
 
     @Override
     public void onUpdate() {
-        if (ctime.getValue()) mc.world.setTime(mc.world.getTime(), ctimeVal.getValue() * 1000L, false);
+        if (ctime.getValue() && mc.world != null) {
+            mc.world.setTime(mc.world.getTime(), ctimeVal.getValue() * 1000L, false);
+        }
     }
 }

@@ -327,22 +327,7 @@ public class Render2DEngine {
     }
 
     public static void renderRoundedGradientRect(MatrixStack matrices, Color color1, Color color2, Color color3, Color color4, float x, float y, float width, float height, float Radius) {
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        RenderSystem.colorMask(false, false, false, true);
-        RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        RenderSystem.clear(GL40C.GL_COLOR_BUFFER_BIT);
-        RenderSystem.colorMask(true, true, true, true);
-
-        Render2DEngine.drawRound(matrices, x, y, width, height, Radius, color1);
-        setupRender();
-        RenderSystem.blendFunc(GL40C.GL_DST_ALPHA, GL40C.GL_ONE_MINUS_DST_ALPHA);
-        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
-        bufferBuilder.vertex(matrix, x, y + height, 0.0F).color(color1.getRGB());
-        bufferBuilder.vertex(matrix, x + width, y + height, 0.0F).color(color2.getRGB());
-        bufferBuilder.vertex(matrix, x + width, y, 0.0F).color(color3.getRGB());
-        bufferBuilder.vertex(matrix, x, y, 0.0F).color(color4.getRGB());
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-        endRender();
+        drawRect(matrices, x, y, width, height, Radius, 1f, color1, color2, color3, color4);
     }
 
     public static void drawRound(MatrixStack matrices, float x, float y, float width, float height, float radius, Color color) {
@@ -629,90 +614,53 @@ public class Render2DEngine {
     }
 
     public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        RECTANGLE_SHADER.setParameters(x, y, width, height, radius, alpha);
-        RECTANGLE_SHADER.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
+        drawRound(matrices, x, y, width, height, radius, new Color(1f, 1f, 1f, alpha));
     }
 
     public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha, Color c1, Color c2, Color c3, Color c4) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        RECTANGLE_SHADER.setParameters(x, y, width, height, radius, alpha, c1, c2, c3, c4);
-        RECTANGLE_SHADER.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
+        renderRoundedQuad2(matrices, c1, c2, c3, c4, x, y, x + width, y + height, radius);
     }
 
     public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius) {
-        if (HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-            drawRoundedBlur(matrices, x, y, width, height, radius, HudEditor.blurColor.getValue().getColorObject());
-        } else {
-            BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-            HUD_SHADER.setParameters(x, y, width, height, radius, HudEditor.alpha.getValue(), HudEditor.alpha.getValue(), 0f);
-            HUD_SHADER.use();
-            BufferRenderer.drawWithGlobalProgram(bb.end());
-            endRender();
-        }
+        drawHudBase(matrices, x, y, width, height, radius, HudEditor.alpha.getValue());
     }
 
     public static void drawHudBase2(MatrixStack matrices, float x, float y, float width, float height, float radius, float blurStrenth, float blurOpacity, float animationFactor) {
-        if (HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-            blurStrenth *= animationFactor;
-            blurOpacity = (float) Render2DEngine.interpolate(1f, blurOpacity, animationFactor);
-            Color c = Render2DEngine.interpolateColorC(Color.BLACK, HudEditor.blurColor.getValue().getColorObject(), animationFactor);
-            drawRoundedBlur(matrices, x, y, width, height, radius, c, blurStrenth, blurOpacity);
-        } else {
-            BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-            HUD_SHADER.setParameters(x, y, width, height, radius, HudEditor.alpha.getValue(), HudEditor.alpha.getValue(), 0f);
-            HUD_SHADER.use();
-            BufferRenderer.drawWithGlobalProgram(bb.end());
-            endRender();
-        }
+        int a = (int) (240 * animationFactor);
+        drawRound(matrices, x, y, width, height, radius, new Color(0, 0, 0, a));
     }
 
     public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius, boolean hud) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        HUD_SHADER.setParameters(x, y, width, height, radius, HudEditor.alpha.getValue(), HudEditor.alpha.getValue(), 0f);
-        HUD_SHADER.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
+        drawHudBase(matrices, x, y, width, height, radius, HudEditor.alpha.getValue());
     }
 
     public static void drawRoundedBlur(MatrixStack matrices, float x, float y, float width, float height, float radius, Color c1) {
-        drawRoundedBlur(matrices, x, y, width, height, radius, c1, HudEditor.blurStrength.getValue(), HudEditor.blurOpacity.getValue());
+        drawRound(matrices, x, y, width, height, radius, c1);
     }
 
     public static void drawRoundedBlur(MatrixStack matrices, float x, float y, float width, float height, float radius, Color c1, float blurStrenth, float blurOpacity) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        BLUR_PROGRAM.setParameters(x, y, width, height, radius, c1, blurStrenth, blurOpacity);
-        BLUR_PROGRAM.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
+        float a = Math.min(1f, blurOpacity * 1.5f);
+        drawRound(matrices, x, y, width, height, radius, new Color(c1.getRed(), c1.getGreen(), c1.getBlue(), (int)(a * 255)));
     }
 
     public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        HUD_SHADER.setParameters(x, y, width, height, radius, alpha, HudEditor.alpha.getValue(), 0f);
-        HUD_SHADER.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
+        if (HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
+            Color c = HudEditor.blurColor.getValue().getColorObject();
+            drawRound(matrices, x, y, width, height, radius, new Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(alpha * c.getAlpha())));
+        } else {
+            Color c = HudEditor.plateColor.getValue().getColorObject();
+            drawRound(matrices, x, y, width, height, radius, new Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(alpha * c.getAlpha())));
+        }
     }
 
     public static void drawGuiBase(MatrixStack matrices, float x, float y, float width, float height, float radius, float opacity) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        HUD_SHADER.setParameters(x, y, width, height, radius, 1f, opacity, 0f);
-        HUD_SHADER.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
+        Color c = HudEditor.plateColor.getValue().getColorObject();
+        int a = opacity > 0 ? (int)(opacity * 255) : c.getAlpha();
+        drawRound(matrices, x, y, width, height, radius, new Color(c.getRed(), c.getGreen(), c.getBlue(), Math.min(255, a)));
     }
 
     public static void drawMainMenuShader(MatrixStack matrices, float x, float y, float width, float height) {
-        BufferBuilder bb = preShaderDraw(matrices, x, y, width, height);
-        MAIN_MENU_PROGRAM.setParameters(x, y, width, height);
-        MAIN_MENU_PROGRAM.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
+        verticalGradient(matrices, x, y, x + width, y + height, new Color(0x070015), new Color(0x1a0a2e));
     }
 
     public static BufferBuilder preShaderDraw(MatrixStack matrices, float x, float y, float width, float height) {

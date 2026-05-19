@@ -51,10 +51,10 @@ public class MixinClientWorld {
     }
 
     @Inject(method = "getSkyColor", at = @At("HEAD"), cancellable = true)
-    private void getSkyColorHook(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
+    private void getSkyColorHook(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Integer> cir) {
         if (ModuleManager.worldTweaks.isEnabled() && WorldTweaks.fogModify.getValue().isEnabled()) {
             ColorSetting c = WorldTweaks.fogColor.getValue();
-            cir.setReturnValue(new Vec3d(c.getGlRed(), c.getGlGreen(), c.getGlBlue()));
+            cir.setReturnValue(c.getColorObject().getRGB() & 0xFFFFFF);
         }
     }
 

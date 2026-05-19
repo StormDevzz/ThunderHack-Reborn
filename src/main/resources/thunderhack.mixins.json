@@ -15,6 +15,7 @@
       "MixinClientPlayerInteractionManager",
       "MixinClientPlayNetworkHandler",
       "MixinClientWorld",
+      "MixinDimensionEffects",
       "MixinDrawContext",
       "MixinDynamic",
       "MixinEntityRenderer",
