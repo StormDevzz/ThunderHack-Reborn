@@ -68,7 +68,7 @@ public final class AutoTotem extends Module {
 
     private enum OffHand {Totem, Crystal, GApple, Shield}
 
-    private enum Mode {Default, Alternative, Matrix, MatrixPick, NewVersion}
+    private enum Mode {Default, Alternative, Matrix, NewVersion}
 
     private enum Swap {GappleShield, BallShield, GappleBall, BallTotem}
 
@@ -141,8 +141,7 @@ public final class AutoTotem extends Module {
             delay = 20;
         } else if (invResult.found()) {
             int slot = invResult.slot() >= 36 ? invResult.slot() - 36 : invResult.slot();
-            if (!hotbarFallBack.getValue()) swapTo(slot);
-            else mc.interactionManager.pickFromInventory(slot);
+            swapTo(slot);
             delay = 20;
         }
     }
@@ -196,13 +195,6 @@ public final class AutoTotem extends Module {
                         sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
                         if (resetAttackCooldown.getValue())
                             mc.player.resetLastAttackedTicks();
-                    }
-                    case MatrixPick -> {
-                        debug(slot + " pick");
-                        sendPacket(new PickFromInventoryC2SPacket(slot));
-                        sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN, Direction.DOWN));
-                        int prevSlot = mc.player.getInventory().selectedSlot;
-                        Managers.ASYNC.run(() -> mc.player.getInventory().selectedSlot = prevSlot, 300);
                     }
                     case NewVersion -> {
                         debug(slot + " swap");
@@ -307,7 +299,7 @@ public final class AutoTotem extends Module {
                         else if (gapple.found() || offHandItem == Items.ENCHANTED_GOLDEN_APPLE)
                             item = Items.ENCHANTED_GOLDEN_APPLE;
                     } else {
-                        if (!mc.player.getItemCooldownManager().isCoolingDown(Items.SHIELD)) item = Items.SHIELD;
+                        if (!mc.player.getItemCooldownManager().isCoolingDown(new net.minecraft.item.ItemStack(Items.SHIELD))) item = Items.SHIELD;
                         else {
                             if (crapple.found() || offHandItem == Items.GOLDEN_APPLE)
                                 item = Items.GOLDEN_APPLE;
@@ -336,7 +328,7 @@ public final class AutoTotem extends Module {
         if (onFall.getValue() && (getTriggerHealth()) - (((mc.player.fallDistance - 3) / 2F) + 3.5F) < 0.5)
             item = Items.TOTEM_OF_UNDYING;
 
-        if (onElytra.getValue() && mc.player.isFallFlying())
+        if (onElytra.getValue() && mc.player.isGliding())
             item = Items.TOTEM_OF_UNDYING;
 
         if (onCrystalInHand.getValue()) {

@@ -154,8 +154,8 @@ public class StaffBoard extends HudElement {
 
             Identifier tex = getTexture(player);
             if (tex != null) {
-                context.drawTexture(tex, (int) (getPosX() + 3), (int) (getPosY() + 16 + y_offset), 8, 8, 8, 8, 8, 8, 64, 64);
-                context.drawTexture(tex, (int) (getPosX() + 3), (int) (getPosY() + 16 + y_offset), 8, 8, 40, 8, 8, 8, 64, 64);
+                context.drawTexture(net.minecraft.client.render.RenderLayer::getGuiTextured, tex, (int) (getPosX() + 3), (int) (getPosY() + 16 + y_offset), 8, 8, 8, 8, 8, 64, 64);
+                context.drawTexture(net.minecraft.client.render.RenderLayer::getGuiTextured, tex, (int) (getPosX() + 3), (int) (getPosY() + 16 + y_offset), 8, 8, 40, 8, 8, 64, 64);
             }
 
             FontRenderers.sf_bold_mini.drawString(context.getMatrices(), player.split(":")[0], getPosX() + 13, getPosY() + 19 + y_offset, HudEditor.textColor.getValue().getColor());

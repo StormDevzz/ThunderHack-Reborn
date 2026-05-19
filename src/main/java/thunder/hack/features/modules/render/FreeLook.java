@@ -71,13 +71,13 @@ public class FreeLook extends Module {
             if (packet instanceof PlayerMoveC2SPacket.LookAndOnGround) {
                 e.cancel();
                 mc.player.networkHandler.getConnection().send(
-                    new PlayerMoveC2SPacket.LookAndOnGround(lockedYaw, lockedPitch, mc.player.isOnGround()),
+                    new PlayerMoveC2SPacket.LookAndOnGround(lockedYaw, lockedPitch, mc.player.isOnGround(), false),
                     null
                 );
             } else if (packet instanceof PlayerMoveC2SPacket.Full full) {
                 e.cancel();
                 mc.player.networkHandler.getConnection().send(
-                    new PlayerMoveC2SPacket.Full(full.getX(mc.player.getX()), full.getY(mc.player.getY()), full.getZ(mc.player.getZ()), lockedYaw, lockedPitch, mc.player.isOnGround()),
+                    new PlayerMoveC2SPacket.Full(full.getX(mc.player.getX()), full.getY(mc.player.getY()), full.getZ(mc.player.getZ()), lockedYaw, lockedPitch, mc.player.isOnGround(), false),
                     null
                 );
             }

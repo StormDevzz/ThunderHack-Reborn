@@ -319,7 +319,7 @@ private final Setting<Float> pizdecAccel = new Setting<>("PizdecAccel", 1.25f, 0
             pizdecCurrentSpeed = 0;
         }
         EntityVelocityUpdateS2CPacket velocity;
-        if (e.getPacket() instanceof EntityVelocityUpdateS2CPacket && (velocity = e.getPacket()).getId() == mc.player.getId() && boost.getValue() == Boost.Damage) {
+        if (e.getPacket() instanceof EntityVelocityUpdateS2CPacket && (velocity = e.getPacket()).getEntityId() == mc.player.getId() && boost.getValue() == Boost.Damage) {
             if (mc.player.isOnGround()) return;
 
             double vX = velocity.getVelocityX();

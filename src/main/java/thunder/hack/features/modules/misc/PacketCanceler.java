@@ -52,7 +52,7 @@ public final class PacketCanceler extends Module {
                 && (p.getMode() == ClientCommandC2SPacket.Mode.START_SPRINTING
                  || p.getMode() == ClientCommandC2SPacket.Mode.STOP_SPRINTING))                               e.cancel();
         if (cancelClickSlot.getValue()   && e.getPacket() instanceof ClickSlotC2SPacket)                      e.cancel();
-        if (cancelDropItem.getValue()    && e.getPacket() instanceof PickFromInventoryC2SPacket)               e.cancel();
+        if (cancelDropItem.getValue()    && (e.getPacket() instanceof net.minecraft.network.packet.c2s.play.PickItemFromBlockC2SPacket || e.getPacket() instanceof net.minecraft.network.packet.c2s.play.PickItemFromEntityC2SPacket))               e.cancel();
         if (cancelCloseScreen.getValue() && e.getPacket() instanceof CloseHandledScreenC2SPacket)             e.cancel();
         if (cancelInteract.getValue()    && e.getPacket() instanceof PlayerInteractBlockC2SPacket)            e.cancel();
         if (cancelAttack.getValue()      && e.getPacket() instanceof PlayerInteractEntityC2SPacket)           e.cancel();

@@ -5,6 +5,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.DamageUtil;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffects;
@@ -71,13 +72,13 @@ public final class ExplosionUtility {
         if (mc.world.getDifficulty() == Difficulty.PEACEFUL || target == null) return 0f;
 
         if (explosion == null)
-            explosion = new Explosion(mc.world, mc.player, 1f, 33f, 7f, 6f, false, Explosion.DestructionType.DESTROY);
+            explosion = new MyExplosion(mc.world, mc.player, 1f, 33f, 7f, 6f);
 
         ((IExplosion) explosion).setX(explosionPos.x);
         ((IExplosion) explosion).setY(explosionPos.y);
         ((IExplosion) explosion).setZ(explosionPos.z);
 
-        if (((IExplosion) explosion).getWorld() != mc.world) ((IExplosion) explosion).setWorld(mc.world);
+        if (((IExplosion) explosion).getExplosionWorld() != mc.world) ((IExplosion) explosion).setWorld(mc.world);
 
         if (!new Box(MathHelper.floor(explosionPos.x - 11), MathHelper.floor(explosionPos.y - 11), MathHelper.floor(explosionPos.z - 11), MathHelper.floor(explosionPos.x + 13), MathHelper.floor(explosionPos.y + 13), MathHelper.floor(explosionPos.z + 13)).intersects(target.getBoundingBox()))
             return 0f;
@@ -95,7 +96,7 @@ public final class ExplosionUtility {
                 if (mc.world.getDifficulty() == Difficulty.EASY) toDamage = Math.min(toDamage / 2f + 1f, toDamage);
                 else if (mc.world.getDifficulty() == Difficulty.HARD) toDamage = toDamage * 3f / 2f;
 
-                toDamage = DamageUtil.getDamageLeft(target, toDamage, ((IExplosion) explosion).getDamageSource(), target.getArmor(), (float) target.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).getValue());
+                toDamage = DamageUtil.getDamageLeft(target, toDamage, ((IExplosion) explosion).getDamageSource(), target.getArmor(), (float) target.getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS).getValue());
 
                 if (target.hasStatusEffect(StatusEffects.RESISTANCE)) {
                     int resistance = 25 - (target.getStatusEffect(StatusEffects.RESISTANCE).getAmplifier() + 1) * 5;
@@ -130,13 +131,13 @@ public final class ExplosionUtility {
         if (target == null || predict == null) return 0f;
 
         if (explosion == null)
-            explosion = new Explosion(mc.world, mc.player, 1f, 33f, 7f, 6f, false, Explosion.DestructionType.DESTROY);
+            explosion = new MyExplosion(mc.world, mc.player, 1f, 33f, 7f, 6f);
 
         ((IExplosion) explosion).setX(explosionPos.x);
         ((IExplosion) explosion).setY(explosionPos.y);
         ((IExplosion) explosion).setZ(explosionPos.z);
 
-        if (((IExplosion) explosion).getWorld() != mc.world) ((IExplosion) explosion).setWorld(mc.world);
+        if (((IExplosion) explosion).getExplosionWorld() != mc.world) ((IExplosion) explosion).setWorld(mc.world);
 
         if (!new Box(MathHelper.floor(explosionPos.x - 11d), MathHelper.floor(explosionPos.y - 11d), MathHelper.floor(explosionPos.z - 11d), MathHelper.floor(explosionPos.x + 13d), MathHelper.floor(explosionPos.y + 13d), MathHelper.floor(explosionPos.z + 13d)).intersects(predict))
             return 0f;
@@ -154,7 +155,7 @@ public final class ExplosionUtility {
                 if (mc.world.getDifficulty() == Difficulty.EASY) toDamage = Math.min(toDamage / 2f + 1f, toDamage);
                 else if (mc.world.getDifficulty() == Difficulty.HARD) toDamage = toDamage * 3f / 2f;
 
-                toDamage = DamageUtil.getDamageLeft(target, toDamage, ((IExplosion) explosion).getDamageSource(), target.getArmor(), (float) Objects.requireNonNull(target.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS)).getValue());
+                toDamage = DamageUtil.getDamageLeft(target, toDamage, ((IExplosion) explosion).getDamageSource(), target.getArmor(), (float) Objects.requireNonNull(target.getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS)).getValue());
 
                 if (target.hasStatusEffect(StatusEffects.RESISTANCE)) {
                     int resistance = 25 - (Objects.requireNonNull(target.getStatusEffect(StatusEffects.RESISTANCE)).getAmplifier() + 1) * 5;
@@ -218,13 +219,13 @@ public final class ExplosionUtility {
         if (mc.world.getDifficulty() == Difficulty.PEACEFUL) return 0f;
 
         if (explosion == null)
-            explosion = new Explosion(mc.world, mc.player, 1f, 33f, 7f, 6f, false, Explosion.DestructionType.DESTROY);
+            explosion = new MyExplosion(mc.world, mc.player, 1f, 33f, 7f, 6f);
 
         ((IExplosion) explosion).setX(explosionPos.x);
         ((IExplosion) explosion).setY(explosionPos.y);
         ((IExplosion) explosion).setZ(explosionPos.z);
 
-        if (((IExplosion) explosion).getWorld() != mc.world) ((IExplosion) explosion).setWorld(mc.world);
+        if (((IExplosion) explosion).getExplosionWorld() != mc.world) ((IExplosion) explosion).setWorld(mc.world);
 
         double maxDist = 12;
         if (!new Box(MathHelper.floor(explosionPos.x - maxDist - 1.0), MathHelper.floor(explosionPos.y - maxDist - 1.0), MathHelper.floor(explosionPos.z - maxDist - 1.0), MathHelper.floor(explosionPos.x + maxDist + 1.0), MathHelper.floor(explosionPos.y + maxDist + 1.0), MathHelper.floor(explosionPos.z + maxDist + 1.0)).intersects(target.getBoundingBox())) {
@@ -247,7 +248,7 @@ public final class ExplosionUtility {
                     toDamage = toDamage * 3f / 2f;
                 }
 
-                toDamage = DamageUtil.getDamageLeft(target, toDamage, ((IExplosion) explosion).getDamageSource(), target.getArmor(), (float) target.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).getValue());
+                toDamage = DamageUtil.getDamageLeft(target, toDamage, ((IExplosion) explosion).getDamageSource(), target.getArmor(), (float) target.getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS).getValue());
 
                 if (target.hasStatusEffect(StatusEffects.RESISTANCE)) {
                     int resistance = 25 - (target.getStatusEffect(StatusEffects.RESISTANCE).getAmplifier() + 1) * 5;
@@ -383,8 +384,8 @@ public final class ExplosionUtility {
     }
 
     public static int getProtectionAmount(ItemStack stack) {
-        int modifierBlast = EnchantmentHelper.getLevel(mc.world.getRegistryManager().get(Enchantments.BLAST_PROTECTION.getRegistryRef()).getEntry(Enchantments.BLAST_PROTECTION).get(), stack);
-        int modifier = EnchantmentHelper.getLevel(mc.world.getRegistryManager().get(Enchantments.PROTECTION.getRegistryRef()).getEntry(Enchantments.PROTECTION).get(), stack);
+        int modifierBlast = EnchantmentHelper.getLevel(mc.world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.BLAST_PROTECTION), stack);
+        int modifier = EnchantmentHelper.getLevel(mc.world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.PROTECTION), stack);
         return modifierBlast * 2 + modifier;
     }
 }

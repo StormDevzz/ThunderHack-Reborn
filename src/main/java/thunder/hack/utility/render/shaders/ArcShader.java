@@ -3,11 +3,11 @@ package thunder.hack.utility.render.shaders;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.Identifier;
-import thunder.hack.utility.render.shaders.satin.api.managed.ManagedCoreShader;
-import thunder.hack.utility.render.shaders.satin.api.managed.ShaderEffectManager;
-import thunder.hack.utility.render.shaders.satin.api.managed.uniform.Uniform1f;
-import thunder.hack.utility.render.shaders.satin.api.managed.uniform.Uniform2f;
-import thunder.hack.utility.render.shaders.satin.api.managed.uniform.Uniform4f;
+import org.ladysnake.satin.api.managed.ManagedCoreShader;
+import org.ladysnake.satin.api.managed.ShaderEffectManager;
+import org.ladysnake.satin.api.managed.uniform.Uniform1f;
+import org.ladysnake.satin.api.managed.uniform.Uniform2f;
+import org.ladysnake.satin.api.managed.uniform.Uniform4f;
 
 import java.awt.*;
 
@@ -47,7 +47,7 @@ public class ArcShader {
     }
 
     public void use() {
-        RenderSystem.setShader(ARC::getProgram);
+        RenderSystem.setShader(ARC.getProgram());
     }
 
     protected void setup() {

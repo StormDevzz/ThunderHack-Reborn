@@ -108,7 +108,7 @@ public class BoatFly extends Module {
         for (int i = 0; i < 255; ++i) {
             if (!mc.world.getBlockState(blockPos).isReplaceable() || mc.world.getBlockState(blockPos).getBlock() == Blocks.WATER) {
                 boat.setPosition(boat.getX(), blockPos.getY() + 1, boat.getZ());
-                sendMovePacket(new VehicleMoveC2SPacket(boat));
+                sendMovePacket(VehicleMoveC2SPacket.fromVehicle(boat));
                 boat.setPosition(boat.getX(), boat.getY(), boat.getZ());
                 break;
             }
@@ -207,7 +207,7 @@ public class BoatFly extends Module {
 
         if (mode.getValue() == Mode.Packet) {
             entity.setPosition(predictedX, predictedY, predictedZ);
-            sendMovePacket(new VehicleMoveC2SPacket(entity));
+            sendMovePacket(VehicleMoveC2SPacket.fromVehicle(entity));
         }
 
         if (slotClick.getValue())
@@ -215,10 +215,11 @@ public class BoatFly extends Module {
 
         if (spoofpackets.getValue()) {
             Vec3d vec3d = entity.getPos().add(0.0, randomizeYOffset(), 0.0);
-            BoatEntity entityBoat = new BoatEntity(mc.world, vec3d.x, vec3d.y, vec3d.z);
+            BoatEntity entityBoat = new BoatEntity(net.minecraft.entity.EntityType.OAK_BOAT, mc.world, () -> net.minecraft.item.Items.OAK_BOAT);
+            entityBoat.setPosition(vec3d.x, vec3d.y, vec3d.z);
             entityBoat.setYaw(entity.getYaw());
             entityBoat.setPitch(entity.getPitch());
-            sendMovePacket(new VehicleMoveC2SPacket(entityBoat));
+            sendMovePacket(VehicleMoveC2SPacket.fromVehicle(entityBoat));
         }
 
         ev.cancel();

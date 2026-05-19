@@ -63,7 +63,7 @@ public class FastSwim extends Module {
                 accelerationVal = 0f;
             }
 
-            if (noSink.getValue() && mc.player.getVelocity().y < 0 && !mc.player.input.jumping) {
+            if (noSink.getValue() && mc.player.getVelocity().y < 0 && !mc.player.input.playerInput.jump()) {
                 e.setY(0);
                 e.cancel();
             }
@@ -94,10 +94,10 @@ public class FastSwim extends Module {
             }
             e.cancel();
 
-            if (mc.player.input.jumping) {
+            if (mc.player.input.playerInput.jump()) {
                 e.setY(e.getY() + 0.04 * vSpeed);
             }
-            if (mc.player.input.sneaking) {
+            if (mc.player.input.playerInput.sneak()) {
                 e.setY(e.getY() - 0.04 * vSpeed);
             }
         }

@@ -1,4 +1,5 @@
 package thunder.hack.features.modules.render;
+import net.minecraft.client.gl.ShaderProgramKeys;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -76,15 +77,15 @@ public class Chams extends Module {
             } else {
                 RenderSystem.setShaderTexture(0, TextureStorage.crystalTexture2);
             }
-            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
         } else {
-            RenderSystem.setShader(GameRenderer::getPositionProgram);
+            RenderSystem.setShader(ShaderProgramKeys.POSITION);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
         }
 
         matrixStack.push();
-        float h = staticCrystal.getValue() ? -1.4f : EndCrystalEntityRenderer.getYOffset(endCrystalEntity, g);
+        float h = staticCrystal.getValue() ? -1.4f : EndCrystalEntityRenderer.getYOffset(endCrystalEntity.endCrystalAge + g);
         float j = ((float) endCrystalEntity.endCrystalAge + g) * 3.0f;
         matrixStack.push();
         RenderSystem.setShaderColor(crystalColor.getValue().getGlRed(), crystalColor.getValue().getGlGreen(), crystalColor.getValue().getGlBlue(), crystalColor.getValue().getGlAlpha());
@@ -110,171 +111,6 @@ public class Chams extends Module {
         RenderSystem.disableBlend();
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();
-    }
-
-    public void renderPlayer(PlayerEntity pe, float f, float g, MatrixStack matrixStack, int i, EntityModel model, CallbackInfo ci, Runnable post) {
-        RenderSystem.enableBlend();
-        if (alternativeBlending.getValue())
-            RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        else RenderSystem.defaultBlendFunc();
-        RenderSystem.enableCull();
-        RenderSystem.disableDepthTest();
-        BufferBuilder buffer;
-
-        if (!simple.getValue()) {
-            RenderSystem.setShaderTexture(0, ((AbstractClientPlayerEntity) pe).getSkinTextures().texture());
-            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-            buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        } else {
-            RenderSystem.setShader(GameRenderer::getPositionProgram);
-            buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
-        }
-
-        float n;
-        Direction direction;
-        Entity entity;
-        matrixStack.push();
-
-        if (Managers.FRIEND.isFriend(pe)) {
-            RenderSystem.setShaderColor(friendColor.getValue().getGlRed(), friendColor.getValue().getGlGreen(), friendColor.getValue().getGlBlue(), friendColor.getValue().getGlAlpha());
-        } else {
-            RenderSystem.setShaderColor(playerColor.getValue().getGlRed(), playerColor.getValue().getGlGreen(), playerColor.getValue().getGlBlue(), playerColor.getValue().getGlAlpha());
-        }
-
-        model.handSwingProgress = pe.getHandSwingProgress(g);
-        model.riding = pe.hasVehicle();
-        model.child = false;
-        float h = MathHelper.lerpAngleDegrees(g, pe.prevBodyYaw, pe.bodyYaw);
-        float j = MathHelper.lerpAngleDegrees(g, pe.prevHeadYaw, pe.headYaw);
-        float k = j - h;
-        if (pe.hasVehicle() && (entity = pe.getVehicle()) instanceof LivingEntity) {
-            LivingEntity livingEntity2 = (LivingEntity) entity;
-            h = MathHelper.lerpAngleDegrees(g, livingEntity2.prevBodyYaw, livingEntity2.bodyYaw);
-            k = j - h;
-            float l = MathHelper.wrapDegrees(k);
-            if (l < -85.0f) {
-                l = -85.0f;
-            }
-            if (l >= 85.0f) {
-                l = 85.0f;
-            }
-            h = j - l;
-            if (l * l > 2500.0f) {
-                h += l * 0.2f;
-            }
-            k = j - h;
-        }
-        float m = MathHelper.lerp(g, pe.prevPitch, pe.getPitch());
-        if (LivingEntityRenderer.shouldFlipUpsideDown(pe)) {
-            m *= -1.0f;
-            k *= -1.0f;
-        }
-        if (pe.isInPose(EntityPose.SLEEPING) && (direction = pe.getSleepingDirection()) != null) {
-            n = pe.getEyeHeight(EntityPose.STANDING) - 0.1f;
-            matrixStack.translate((float) (-direction.getOffsetX()) * n, 0.0f, (float) (-direction.getOffsetZ()) * n);
-        }
-        float l = pe.age + g;
-
-        setupTransforms1(pe, matrixStack, l, h, g);
-        matrixStack.scale(-1.0f, -1.0f, 1.0f);
-
-        matrixStack.scale(0.9375f, 0.9375f, 0.9375f);
-        matrixStack.translate(0.0f, -1.501f, 0.0f);
-
-        n = 0.0f;
-        float o = 0.0f;
-        if (!pe.hasVehicle() && pe.isAlive()) {
-            n = pe.limbAnimator.getSpeed(g);
-            o = pe.limbAnimator.getPos(g);
-            if (pe.isBaby())
-                o *= 3.0f;
-
-            if (n > 1.0f)
-                n = 1.0f;
-        }
-        model.animateModel(pe, o, n, g);
-        model.setAngles(pe, o, n, l, k, m);
-        int p = LivingEntityRenderer.getOverlay(pe, 0);
-        model.render(matrixStack, buffer, i, p);
-        Render2DEngine.endBuilding(buffer);
-        RenderSystem.disableBlend();
-        RenderSystem.disableCull();
-        matrixStack.pop();
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        RenderSystem.enableDepthTest();
-        if (!playerTexture.getValue()) {
-            ci.cancel();
-            post.run();
-        }
-    }
-
-    public void setupTransforms1(PlayerEntity abstractClientPlayerEntity, MatrixStack matrixStack, float f, float g, float h) {
-        float j = abstractClientPlayerEntity.getLeaningPitch(h);
-        float k = abstractClientPlayerEntity.getPitch(h);
-        float l;
-        float m;
-        if (abstractClientPlayerEntity.isFallFlying()) {
-            setupTransforms(abstractClientPlayerEntity, matrixStack, f, g, h);
-            l = (float) abstractClientPlayerEntity.getFallFlyingTicks() + h;
-            m = MathHelper.clamp(l * l / 100.0F, 0.0F, 1.0F);
-            if (!abstractClientPlayerEntity.isUsingRiptide()) {
-                matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(m * (-90.0F - k)));
-            }
-
-            Vec3d vec3d = abstractClientPlayerEntity.getRotationVec(h);
-            Vec3d vec3d2 = abstractClientPlayerEntity.getVelocity();
-            double d = vec3d2.horizontalLengthSquared();
-            double e = vec3d.horizontalLengthSquared();
-            if (d > 0.0 && e > 0.0) {
-                double n = (vec3d2.x * vec3d.x + vec3d2.z * vec3d.z) / Math.sqrt(d * e);
-                double o = vec3d2.x * vec3d.z - vec3d2.z * vec3d.x;
-                matrixStack.multiply(RotationAxis.POSITIVE_Y.rotation((float) (Math.signum(o) * Math.acos(n))));
-            }
-        } else if (j > 0.0F) {
-            setupTransforms(abstractClientPlayerEntity, matrixStack, f, g, h);
-            l = abstractClientPlayerEntity.isTouchingWater() ? -90.0F - k : -90.0F;
-            m = MathHelper.lerp(j, 0.0F, l);
-            matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(m));
-            if (abstractClientPlayerEntity.isInSwimmingPose()) {
-                matrixStack.translate(0.0F, -1.0F, 0.3F);
-            }
-        } else {
-            setupTransforms(abstractClientPlayerEntity, matrixStack, f, g, h);
-        }
-    }
-
-    private void setupTransforms(PlayerEntity entity, MatrixStack matrices, float animationProgress, float bodyYaw, float tickDelta) {
-        if (!entity.isInPose(EntityPose.SLEEPING)) {
-            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F - bodyYaw));
-        }
-
-        if (entity.deathTime > 0) {
-            float f = ((float) entity.deathTime + tickDelta - 1.0F) / 20.0F * 1.6F;
-            f = MathHelper.sqrt(f);
-            if (f > 1.0F) {
-                f = 1.0F;
-            }
-
-            matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(f * 90.0F));
-        } else if (entity.isUsingRiptide()) {
-            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-90.0F - entity.getPitch()));
-            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(((float) entity.age + tickDelta) * -75.0F));
-        } else if (entity.isInPose(EntityPose.SLEEPING)) {
-            Direction direction = entity.getSleepingDirection();
-            float g = direction != null ? getYaw(direction) : bodyYaw;
-            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(g));
-            matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(90.0F));
-            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(270.0F));
-        }
-    }
-
-    private static float getYaw(Direction direction) {
-        return switch (direction) {
-            case NORTH -> 270.0f;
-            case SOUTH -> 90.0f;
-            case EAST -> 180.0f;
-            default -> 0.0f;
-        };
     }
 
     @EventHandler

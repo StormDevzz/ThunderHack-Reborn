@@ -8,12 +8,12 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.Identifier;
 import org.lwjgl.opengl.GL30;
 import thunder.hack.utility.render.WindowResizeCallback;
-import thunder.hack.utility.render.shaders.satin.api.managed.ManagedCoreShader;
-import thunder.hack.utility.render.shaders.satin.api.managed.ShaderEffectManager;
-import thunder.hack.utility.render.shaders.satin.api.managed.uniform.SamplerUniform;
-import thunder.hack.utility.render.shaders.satin.api.managed.uniform.Uniform1f;
-import thunder.hack.utility.render.shaders.satin.api.managed.uniform.Uniform2f;
-import thunder.hack.utility.render.shaders.satin.api.managed.uniform.Uniform4f;
+import org.ladysnake.satin.api.managed.ManagedCoreShader;
+import org.ladysnake.satin.api.managed.ShaderEffectManager;
+import org.ladysnake.satin.api.managed.uniform.SamplerUniform;
+import org.ladysnake.satin.api.managed.uniform.Uniform1f;
+import org.ladysnake.satin.api.managed.uniform.Uniform2f;
+import org.ladysnake.satin.api.managed.uniform.Uniform4f;
 
 import java.awt.*;
 
@@ -40,7 +40,7 @@ public class BlurProgram {
 
     public void setParameters(float x, float y, float width, float height, float r, Color c1, float blurStrenth, float blurOpacity) {
         if (input == null)
-            input = new SimpleFramebuffer(mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight(), false, MinecraftClient.IS_SYSTEM_MAC);
+            input = new SimpleFramebuffer(mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight(), false);
 
         float i = (float) mc.getWindow().getScaleFactor();
         radius.set(r * i);
@@ -60,12 +60,12 @@ public class BlurProgram {
         buffer.beginWrite(false);
 
         if (input != null && (input.textureWidth != mc.getWindow().getFramebufferWidth() || input.textureHeight != mc.getWindow().getFramebufferHeight()))
-            input.resize(mc.getWindow().getFramebufferWidth(), mc.getWindow().getFramebufferHeight(), MinecraftClient.IS_SYSTEM_MAC);
+            input.resize(mc.getWindow().getFramebufferWidth(), mc.getWindow().getFramebufferHeight());
 
         inputResolution.set((float) buffer.textureWidth, (float) buffer.textureHeight);
         sampler.set(input.getColorAttachment());
 
-        RenderSystem.setShader(BLUR::getProgram);
+        RenderSystem.setShader(BLUR.getProgram());
     }
 
     protected void setup() {
@@ -79,7 +79,7 @@ public class BlurProgram {
         sampler = BLUR.findSampler("InputSampler");
         WindowResizeCallback.EVENT.register((client, window) -> {
             if (input != null)
-                input.resize(window.getFramebufferWidth(), window.getFramebufferHeight(), MinecraftClient.IS_SYSTEM_MAC);
+                input.resize(window.getFramebufferWidth(), window.getFramebufferHeight());
         });
     }
 }

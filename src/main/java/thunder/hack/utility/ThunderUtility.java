@@ -51,7 +51,9 @@ public final class ThunderUtility {
     }
 
     public static Identifier getCustomImg(String name) throws IOException {
-        return mc.getTextureManager().registerDynamicTexture("th-" + name + "-" + (int) MathUtility.random(0, 1000), new NativeImageBackedTexture(NativeImage.read(new FileInputStream(IMAGES_FOLDER + "/" + name + ".png"))));
+        Identifier id = Identifier.of("th-" + name + "-" + (int) MathUtility.random(0, 1000));
+        mc.getTextureManager().registerTexture(id, new NativeImageBackedTexture(NativeImage.read(new FileInputStream(IMAGES_FOLDER + "/" + name + ".png"))));
+        return id;
     }
 
     public static void syncVersion() {

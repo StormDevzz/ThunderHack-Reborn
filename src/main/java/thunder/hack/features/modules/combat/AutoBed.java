@@ -157,7 +157,7 @@ public final class AutoBed extends Module {
 
         if (bestPos != null && placeTimer.passedMs(placeDelay.getValue()) && !(mc.world.getBlockState(bestPos.hitResult().getBlockPos().up()).getBlock() instanceof BedBlock)) {
             final float angle2 = InteractionUtility.calculateAngle(bestPos.hitResult.getBlockPos().toCenterPos(), bestPos.hitResult.getBlockPos().offset(bestPos.dir).toCenterPos())[0];
-            sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(angle2, 0, mc.player.isOnGround()));
+            sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(angle2, 0, mc.player.isOnGround(), false));
             float prevYaw = mc.player.getYaw();
             mc.player.setYaw(angle2);
             mc.player.prevYaw = angle2;
@@ -297,6 +297,15 @@ public final class AutoBed extends Module {
     }
 
 
+    private static boolean isBedRecipe(net.minecraft.recipe.display.SlotDisplay display) {
+        if (display instanceof net.minecraft.recipe.display.SlotDisplay.ItemSlotDisplay itemDisplay) {
+            return itemDisplay.item().value() instanceof BedItem;
+        } else if (display instanceof net.minecraft.recipe.display.SlotDisplay.StackSlotDisplay stackDisplay) {
+            return stackDisplay.stack().getItem() instanceof BedItem;
+        }
+        return false;
+    }
+
     public void craftBed() {
         int intRange = (int) (Math.floor(range.getValue()) + 1);
         Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getPos()).up()), intRange, intRange, intRange);
@@ -309,10 +318,10 @@ public final class AutoBed extends Module {
                     if (mc.player.currentScreenHandler instanceof CraftingScreenHandler craft) {
                         mc.player.getRecipeBook().setGuiOpen(craft.getCategory(), true);
                         for (RecipeResultCollection results : mc.player.getRecipeBook().getOrderedResults()) {
-                            for (RecipeEntry<?> recipe : results.getRecipes(true)) {
-                                if (recipe.value().getResult(results.getRegistryManager()).getItem() instanceof BedItem) {
+                            for (net.minecraft.recipe.RecipeDisplayEntry recipe : results.getAllRecipes()) {
+                                if (isBedRecipe(recipe.display().result())) {
                                     for (int i = 0; i < bedsPerCraft.getValue(); i++)
-                                        mc.interactionManager.clickRecipe(mc.player.currentScreenHandler.syncId, recipe, false);
+                                        mc.interactionManager.clickRecipe(mc.player.currentScreenHandler.syncId, recipe.id(), false);
                                     mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, 0, 0, SlotActionType.QUICK_MOVE, mc.player);
                                     break;
                                 }

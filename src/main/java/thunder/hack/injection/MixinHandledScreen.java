@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.ScreenHandlerProvider;
 import net.minecraft.client.render.DiffuseLighting;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.component.DataComponentTypes;
@@ -198,7 +199,7 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
             Item focusedItem = stack.getItem();
             if (focusedItem instanceof BlockItem bi && bi.getBlock() instanceof ShulkerBoxBlock) {
                 try {
-                    Color c = new Color(Objects.requireNonNull(ShulkerBoxBlock.getColor(stack.getItem())).getEntityColor());
+                    Color c = new Color(Objects.requireNonNull(((ShulkerBoxBlock) ((BlockItem) stack.getItem()).getBlock()).getColor()).getEntityColor());
                     colors = new float[]{c.getRed() / 255f, c.getGreen() / 255f, c.getRed() / 255f, c.getAlpha() / 255f};
                 } catch (NullPointerException npe) {
                     colors = new float[]{1F, 1F, 1F};
@@ -255,7 +256,7 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
         RenderSystem.setShaderColor(colors[0], colors[1], colors[2], 1F);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
-        context.drawTexture(TextureStorage.container, x, y, 0, 0, 176, 67, 176, 67);
+        context.drawTexture(RenderLayer::getGuiTextured, TextureStorage.container, x, y, 0, 0, 176, 67, 176, 67);
         RenderSystem.enableBlend();
     }
 
@@ -296,7 +297,7 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
             context.getMatrices().translate(x1, y1, z);
             context.getMatrices().scale((float) scale, (float) scale, 0);
             VertexConsumerProvider.Immediate consumer = client.getBufferBuilders().getEntityVertexConsumers();
-            client.gameRenderer.getMapRenderer().draw(context.getMatrices(), consumer, (MapIdComponent) stack.get(DataComponentTypes.MAP_ID), mapState, false, 0xF000F0);
+            client.getMapRenderer().draw(context.getMatrices(), consumer, stack.get(DataComponentTypes.MAP_ID), mapState, false, 0xF000F0);
         }
         context.getMatrices().pop();
     }

@@ -64,7 +64,6 @@ public class ModuleManager implements IManager {
     public static BreakHighLight breakHighLight = new BreakHighLight();
     public static BlockHighLight blockHighLight = new BlockHighLight();
     public static AntiBadEffects antiBadEffects = new AntiBadEffects();
-    public static MouseElytraFix mouseElytraFix = new MouseElytraFix();
     public static TotemAnimation totemAnimation = new TotemAnimation();
     public static PortalGodMode portalGodMode = new PortalGodMode();
     public static Capes capes = new Capes();
@@ -158,7 +157,6 @@ public class ModuleManager implements IManager {
     public static TargetHud targetHud = new TargetHud();
     public static SpeedMine speedMine = new SpeedMine();
     public static PotionHud potionHud = new PotionHud();
-    public static PearlBait pearlBait = new PearlBait();
     public static PacketFly packetFly = new PacketFly();
     public static MultiTask multitask = new MultiTask();
     public static LegacyHud legacyHud = new LegacyHud();
@@ -168,7 +166,6 @@ public class ModuleManager implements IManager {
     public static ChatUtils chatUtils = new ChatUtils();
     public static AutoTotem autoTotem = new AutoTotem();
     public static AutoLeave autoLeave = new AutoLeave();
-    public static AutoFlyme autoFlyme = new AutoFlyme();
     public static AutoArmor autoArmor = new AutoArmor();
     public static Cooldowns cooldowns = new Cooldowns();
     public static TapeMouse tapeMouse = new TapeMouse();
@@ -177,7 +174,6 @@ public class ModuleManager implements IManager {
     public static WexIndicators wexIndicators = new WexIndicators();
     public static PlayerView playerView = new PlayerView();
     public static Companion companion = new Companion();
-    public static AntiCrash antiCrash = new AntiCrash();
     public static AutoGear autoGear = new AutoGear();
     public static ViewLock viewLock = new ViewLock();
     public static Velocity velocity = new Velocity();
@@ -258,7 +254,6 @@ public class ModuleManager implements IManager {
     public static UnHook unHook = new UnHook();
     public static Avoid avoid = new Avoid();
     public static Timer timer = new Timer();
-    public static Regen regen = new Regen();
     public static Speed speed = new Speed();
     public static Reach reach = new Reach();
     public static Radar radar = new Radar();

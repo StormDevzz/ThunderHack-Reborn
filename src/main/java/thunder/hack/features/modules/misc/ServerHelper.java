@@ -291,8 +291,15 @@ public class ServerHelper extends Module {
         if (askSafeMove.getValue() && antiSpawnKill.getValue() && !spawnTimer.passedS(askSafeTime.getValue())) {
             mc.player.input.movementForward = 0;
             mc.player.input.movementSideways = 0;
-            mc.player.input.jumping = false;
-            mc.player.input.sneaking = false;
+            mc.player.input.playerInput = new net.minecraft.util.PlayerInput(
+                mc.player.input.playerInput.forward(),
+                mc.player.input.playerInput.backward(),
+                mc.player.input.playerInput.left(),
+                mc.player.input.playerInput.right(),
+                false,
+                false,
+                mc.player.input.playerInput.sprint()
+            );
         }
 
         if (autoMessage.getValue() && !hasSentMessage) {
@@ -309,7 +316,7 @@ public class ServerHelper extends Module {
             sendMessage("[CoordLog] " + coords);
         }
 
-        if (autoRocket.getValue() && mc.player.isFallFlying() && rocketTimer.every(rocketDelay.getValue().longValue())) {
+        if (autoRocket.getValue() && mc.player.isGliding() && rocketTimer.every(rocketDelay.getValue().longValue())) {
             if (rocketOnlyJump.getValue() && !mc.options.jumpKey.isPressed())
                 return;
 
@@ -371,7 +378,7 @@ public class ServerHelper extends Module {
         if (groupBy.is(GroupBy.Name)) {
             return stack.getName().getString();
         } else {
-            return stack.getTranslationKey();
+            return stack.getItem().getTranslationKey();
         }
     }
 

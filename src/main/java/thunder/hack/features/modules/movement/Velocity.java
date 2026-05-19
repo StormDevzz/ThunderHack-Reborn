@@ -60,9 +60,8 @@ public class Velocity extends Module {
             return;
         }
 
-        // MAIN VELOCITY
         if (e.getPacket() instanceof EntityVelocityUpdateS2CPacket pac) {
-            if (pac.getId() == mc.player.getId() && (!onlyAura.getValue() || ModuleManager.aura.isEnabled())) {
+            if (pac.getEntityId() == mc.player.getId() && (!onlyAura.getValue() || ModuleManager.aura.isEnabled())) {
                 switch (mode.getValue()) {
                     case Matrix -> {
                         if (!flag) {
@@ -89,7 +88,7 @@ public class Velocity extends Module {
                     }
                     case Sunrise -> {
                         e.cancel();
-                        sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), -999.0, mc.player.getZ(), true));
+                        sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), -999.0, mc.player.getZ(), true, false));
                     }
                     case Cancel -> e.cancel();
                     case Jump -> {
@@ -112,19 +111,19 @@ public class Velocity extends Module {
         if (e.getPacket() instanceof ExplosionS2CPacket explosion && explosions.getValue()) {
             switch (mode.getValue()) {
                 case Cancel -> {
-                    ((IExplosionS2CPacket) explosion).setMotionX(0);
-                    ((IExplosionS2CPacket) explosion).setMotionY(0);
-                    ((IExplosionS2CPacket) explosion).setMotionZ(0);
+                    ((IExplosionS2CPacket) (Object) explosion).setMotionX(0);
+                    ((IExplosionS2CPacket) (Object) explosion).setMotionY(0);
+                    ((IExplosionS2CPacket) (Object) explosion).setMotionZ(0);
                 }
                 case Custom -> {
-                    ((IExplosionS2CPacket) explosion).setMotionX(((IExplosionS2CPacket) explosion).getMotionX() * horizontal.getValue() / 100f);
-                    ((IExplosionS2CPacket) explosion).setMotionZ(((IExplosionS2CPacket) explosion).getMotionZ() * horizontal.getValue() / 100f);
-                    ((IExplosionS2CPacket) explosion).setMotionY(((IExplosionS2CPacket) explosion).getMotionY() * vertical.getValue() / 100f);
+                    ((IExplosionS2CPacket) (Object) explosion).setMotionX(((IExplosionS2CPacket) (Object) explosion).getMotionX() * horizontal.getValue() / 100f);
+                    ((IExplosionS2CPacket) (Object) explosion).setMotionZ(((IExplosionS2CPacket) (Object) explosion).getMotionZ() * horizontal.getValue() / 100f);
+                    ((IExplosionS2CPacket) (Object) explosion).setMotionY(((IExplosionS2CPacket) (Object) explosion).getMotionY() * vertical.getValue() / 100f);
                 }
                 case GrimNew -> {
-                    ((IExplosionS2CPacket) explosion).setMotionX(0);
-                    ((IExplosionS2CPacket) explosion).setMotionY(0);
-                    ((IExplosionS2CPacket) explosion).setMotionZ(0);
+                    ((IExplosionS2CPacket) (Object) explosion).setMotionX(0);
+                    ((IExplosionS2CPacket) (Object) explosion).setMotionY(0);
+                    ((IExplosionS2CPacket) (Object) explosion).setMotionZ(0);
                     flag = true;
                 }
             }
@@ -194,7 +193,7 @@ public class Velocity extends Module {
             case GrimNew -> {
                 if (flag) {
                     if (ccCooldown <= 0) {
-                        sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), ((IClientPlayerEntity) mc.player).getLastYaw(), ((IClientPlayerEntity) mc.player).getLastPitch(), mc.player.isOnGround()));
+                        sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), ((IClientPlayerEntity) mc.player).getLastYaw(), ((IClientPlayerEntity) mc.player).getLastPitch(), mc.player.isOnGround(), false));
                         sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, BlockPos.ofFloored(mc.player.getPos()), Direction.DOWN));
                     }
                     flag = false;

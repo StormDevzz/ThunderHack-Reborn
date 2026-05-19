@@ -109,7 +109,7 @@ public class PotionHud extends HudElement {
 
             context.getMatrices().push();
             context.getMatrices().translate(getPosX() + 2, getPosY() + 16 + y_offset, 0);
-            context.drawSprite(0, 0, 0, 8, 8, mc.getStatusEffectSpriteManager().getSprite(potionEffect.getEffectType()));
+            context.drawSpriteStretched(net.minecraft.client.render.RenderLayer::getGuiTextured, mc.getStatusEffectSpriteManager().getSprite(potionEffect.getEffectType()), 0, 0, 8, 8);
             context.getMatrices().pop();
 
             FontRenderers.sf_bold_mini.drawString(context.getMatrices(), potion.getName().getString() + " " + Formatting.RED + (potionEffect.getAmplifier() + 1), getPosX() + 12, getPosY() + 19 + y_offset, HudEditor.textColor.getValue().getColor());

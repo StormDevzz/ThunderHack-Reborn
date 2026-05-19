@@ -20,11 +20,11 @@ public class NoServerRotate extends Module {
         if (e.getPacket() instanceof PlayerPositionLookS2CPacket pac) {
             switch (mode.getValue()) {
                 case Default -> {
-                    ((IPlayerPositionLookS2CPacket) pac).setYaw(mc.player.getYaw());
-                    ((IPlayerPositionLookS2CPacket) pac).setPitch(mc.player.getPitch());
+                    ((IPlayerPositionLookS2CPacket) (Object) pac).setYaw(mc.player.getYaw());
+                    ((IPlayerPositionLookS2CPacket) (Object) pac).setPitch(mc.player.getPitch());
                 }
                 case Alternative -> {
-                    ((IPlayerPositionLookS2CPacket) pac).setPitch(mc.player.getPitch());
+                    ((IPlayerPositionLookS2CPacket) (Object) pac).setPitch(mc.player.getPitch());
                 }
             }
         }

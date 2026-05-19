@@ -19,14 +19,14 @@ public abstract class MixinWorldRenderer {
         return ModuleManager.freeCam.isEnabled() || spectator;
     }
 
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/PostEffectProcessor;render(F)V", ordinal = 0))
-    private void replaceShaderHook(PostEffectProcessor instance, float tickDelta) {
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/PostEffectProcessor;render(Lnet/minecraft/client/render/RenderTickCounter;)V", ordinal = 0))
+    private void replaceShaderHook(PostEffectProcessor instance, RenderTickCounter tickCounter) {
         ShaderManager.Shader shaders = ModuleManager.shaders.mode.getValue();
         if (ModuleManager.shaders.isEnabled() && mc.world != null) {
             if (Managers.SHADER.fullNullCheck()) return;
             Managers.SHADER.setupShader(shaders, Managers.SHADER.getShaderOutline(shaders));
         } else {
-            instance.render(tickDelta);
+            instance.render(tickCounter);
         }
     }
 

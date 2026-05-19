@@ -1,4 +1,5 @@
 package thunder.hack.features.modules.render;
+import net.minecraft.client.gl.ShaderProgramKeys;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -84,7 +85,7 @@ public final class PopChams extends Module {
         popList.add(new Person(entity, ((AbstractClientPlayerEntity) e.getEntity()).getSkinTextures().texture()));
     }
 
-    private void renderEntity(@NotNull MatrixStack matrices, @NotNull LivingEntity entity, @NotNull PlayerEntityModel<PlayerEntity> modelBase, Identifier texture, int alpha) {
+    private void renderEntity(@NotNull MatrixStack matrices, @NotNull LivingEntity entity, @NotNull PlayerEntityModel modelBase, Identifier texture, int alpha) {
         modelBase.leftPants.visible = secondLayer.getValue();
         modelBase.rightPants.visible = secondLayer.getValue();
         modelBase.leftSleeve.visible = secondLayer.getValue();
@@ -106,19 +107,25 @@ public final class PopChams extends Module {
         matrices.multiply(RotationAxis.POSITIVE_Y.rotation(MathUtility.rad(180 - entity.bodyYaw + yRotYaw)));
         prepareScale(matrices);
 
-        modelBase.animateModel((PlayerEntity) entity, entity.limbAnimator.getPos(), entity.limbAnimator.getSpeed(), Render3DEngine.getTickDelta());
+        net.minecraft.client.render.entity.state.PlayerEntityRenderState state = new net.minecraft.client.render.entity.state.PlayerEntityRenderState();
+        state.isInSneakingPose = entity.isSneaking();
+        state.handSwingProgress = entity.handSwingProgress;
+        state.limbFrequency = entity.limbAnimator.getSpeed();
+        state.limbAmplitudeMultiplier = Math.min(entity.limbAnimator.getSpeed(), 1f);
+        state.pitch = entity.getPitch();
+        state.yawDegrees = entity.headYaw;
+        state.bodyYaw = entity.bodyYaw;
+        state.pose = entity.getPose();
 
-        float limbSpeed = Math.min(entity.limbAnimator.getSpeed(), 1f);
-
-        modelBase.setAngles((PlayerEntity) entity, entity.limbAnimator.getPos(), limbSpeed, entity.age, entity.headYaw - entity.bodyYaw, entity.getPitch());
+        modelBase.setAngles(state);
 
         BufferBuilder buffer;
         if (mode.is(Mode.Textured)) {
             RenderSystem.setShaderTexture(0, texture);
-            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
         } else {
-            RenderSystem.setShader(GameRenderer::getPositionProgram);
+            RenderSystem.setShader(ShaderProgramKeys.POSITION);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
         }
 
@@ -138,13 +145,13 @@ public final class PopChams extends Module {
 
     private class Person {
         private final PlayerEntity player;
-        private final PlayerEntityModel<PlayerEntity> modelPlayer;
+        private final PlayerEntityModel modelPlayer;
         private Identifier texture;
         private int alpha;
 
         public Person(PlayerEntity player, Identifier texture) {
             this.player = player;
-            modelPlayer = new PlayerEntityModel<>(new EntityRendererFactory.Context(mc.getEntityRenderDispatcher(), mc.getItemRenderer(), mc.getBlockRenderManager(), mc.getEntityRenderDispatcher().getHeldItemRenderer(), mc.getResourceManager(), mc.getEntityModelLoader(), mc.textRenderer).getPart(EntityModelLayers.PLAYER), false);
+            modelPlayer = new PlayerEntityModel(mc.getLoadedEntityModels().getModelPart(EntityModelLayers.PLAYER), false);
             modelPlayer.getHead().scale(new Vector3f(-0.3f, -0.3f, -0.3f));
             alpha = color.getValue().getAlpha();
             this.texture = texture;
@@ -153,7 +160,7 @@ public final class PopChams extends Module {
         public void update(CopyOnWriteArrayList<Person> arrayList) {
             if (alpha <= 0) {
                 arrayList.remove(this);
-                player.kill();
+                player.discard();
                 player.remove(Entity.RemovalReason.KILLED);
                 player.onRemoved();
                 return;

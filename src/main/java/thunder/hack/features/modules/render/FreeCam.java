@@ -139,8 +139,15 @@ public class FreeCam extends Module {
 
         mc.player.input.movementForward = 0;
         mc.player.input.movementSideways = 0;
-        mc.player.input.jumping = false;
-        mc.player.input.sneaking = false;
+        mc.player.input.playerInput = new net.minecraft.util.PlayerInput(
+            mc.player.input.playerInput.forward(),
+            mc.player.input.playerInput.backward(),
+            mc.player.input.playerInput.left(),
+            mc.player.input.playerInput.right(),
+            false,
+            false,
+            mc.player.input.playerInput.sprint()
+        );
     }
 
     @EventHandler(priority = EventPriority.LOW)

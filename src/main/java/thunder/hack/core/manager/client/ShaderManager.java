@@ -3,8 +3,8 @@ package thunder.hack.core.manager.client;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import thunder.hack.utility.render.Render3DEngine;
-import thunder.hack.utility.render.shaders.satin.api.managed.ManagedShaderEffect;
-import thunder.hack.utility.render.shaders.satin.api.managed.ShaderEffectManager;
+import org.ladysnake.satin.api.managed.ManagedShaderEffect;
+import org.ladysnake.satin.api.managed.ShaderEffectManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.PostEffectProcessor;
@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL30C;
 import thunder.hack.core.manager.IManager;
 import thunder.hack.features.modules.render.Shaders;
-import thunder.hack.utility.interfaces.IShaderEffect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +56,7 @@ public class ShaderManager implements IManager {
         Framebuffer MCBuffer = MinecraftClient.getInstance().getFramebuffer();
         RenderSystem.assertOnRenderThreadOrInit();
         if (shaderBuffer.textureWidth != MCBuffer.textureWidth || shaderBuffer.textureHeight != MCBuffer.textureHeight)
-            shaderBuffer.resize(MCBuffer.textureWidth, MCBuffer.textureHeight, false);
+            shaderBuffer.resize(MCBuffer.textureWidth, MCBuffer.textureHeight);
         GlStateManager._glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, shaderBuffer.fbo);
         shaderBuffer.beginWrite(true);
         runnable.run();
@@ -66,19 +65,15 @@ public class ShaderManager implements IManager {
         MCBuffer.beginWrite(false);
         ManagedShaderEffect shader = getShader(mode);
         Framebuffer mainBuffer = MinecraftClient.getInstance().getFramebuffer();
-        PostEffectProcessor effect = shader.getShaderEffect();
-
-        if (effect != null)
-            ((IShaderEffect) effect).addFakeTargetHook("bufIn", shaderBuffer);
-
-        Framebuffer outBuffer = shader.getShaderEffect().getSecondaryTarget("bufOut");
+        shader.setSamplerUniform("bufIn", shaderBuffer);
+        Framebuffer outBuffer = shader.getTarget("bufOut").getFramebuffer();
         setupShader(mode, shader);
-        shaderBuffer.clear(false);
+        shaderBuffer.clear();
         mainBuffer.beginWrite(false);
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SrcFactor.ZERO, GlStateManager.DstFactor.ONE);
         RenderSystem.backupProjectionMatrix();
-        outBuffer.draw(outBuffer.textureWidth, outBuffer.textureHeight, false);
+        outBuffer.draw(outBuffer.textureWidth, outBuffer.textureHeight);
         RenderSystem.restoreProjectionMatrix();
         RenderSystem.defaultBlendFunc();
     }
@@ -168,52 +163,18 @@ public class ShaderManager implements IManager {
         SNOW = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/snow.json"));
         FADE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/fade.json"));
 
-        FADE_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/fade.json"), managedShaderEffect -> {
-            PostEffectProcessor effect = managedShaderEffect.getShaderEffect();
-            if (effect == null) return;
-
-            ((IShaderEffect) effect).addFakeTargetHook("bufIn", mc.worldRenderer.getEntityOutlinesFramebuffer());
-            ((IShaderEffect) effect).addFakeTargetHook("bufOut", mc.worldRenderer.getEntityOutlinesFramebuffer());
-        });
-
-        DEFAULT_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/outline.json"), managedShaderEffect -> {
-            PostEffectProcessor effect = managedShaderEffect.getShaderEffect();
-            if (effect == null) return;
-
-            ((IShaderEffect) effect).addFakeTargetHook("bufIn", mc.worldRenderer.getEntityOutlinesFramebuffer());
-            ((IShaderEffect) effect).addFakeTargetHook("bufOut", mc.worldRenderer.getEntityOutlinesFramebuffer());
-        });
-
-        SMOKE_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/smoke.json"), managedShaderEffect -> {
-            PostEffectProcessor effect = managedShaderEffect.getShaderEffect();
-            if (effect == null) return;
-
-            ((IShaderEffect) effect).addFakeTargetHook("bufIn", mc.worldRenderer.getEntityOutlinesFramebuffer());
-            ((IShaderEffect) effect).addFakeTargetHook("bufOut", mc.worldRenderer.getEntityOutlinesFramebuffer());
-        });
-
-        GRADIENT_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/gradient.json"), managedShaderEffect -> {
-            PostEffectProcessor effect = managedShaderEffect.getShaderEffect();
-            if (effect == null) return;
-
-            ((IShaderEffect) effect).addFakeTargetHook("bufIn", mc.worldRenderer.getEntityOutlinesFramebuffer());
-            ((IShaderEffect) effect).addFakeTargetHook("bufOut", mc.worldRenderer.getEntityOutlinesFramebuffer());
-        });
-
-        SNOW_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/snow.json"), managedShaderEffect -> {
-            PostEffectProcessor effect = managedShaderEffect.getShaderEffect();
-            if (effect == null) return;
-
-            ((IShaderEffect) effect).addFakeTargetHook("bufIn", mc.worldRenderer.getEntityOutlinesFramebuffer());
-            ((IShaderEffect) effect).addFakeTargetHook("bufOut", mc.worldRenderer.getEntityOutlinesFramebuffer());
-        });
+        FADE_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/fade.json"));
+        DEFAULT_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/outline.json"));
+        SMOKE_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/smoke.json"));
+        GRADIENT_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/gradient.json"));
+        SNOW_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/snow.json"));
     }
 
     public static class ThunderHackFramebuffer extends Framebuffer {
         public ThunderHackFramebuffer(int width, int height) {
             super(false);
             RenderSystem.assertOnRenderThreadOrInit();
-            resize(width, height, true);
+            resize(width, height);
             setClearColor(0f, 0f, 0f, 0f);
         }
     }

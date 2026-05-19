@@ -4,7 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
 import thunder.hack.core.Managers;
-import thunder.hack.utility.render.shaders.satin.impl.ReloadableShaderEffectManager;
 import net.minecraft.client.option.Perspective;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
@@ -70,7 +69,6 @@ public abstract class MixinGameRenderer {
         RenderSystem.getModelViewStack().pushMatrix().mul(matrixStack.peek().getPositionMatrix());
         matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(camera.getPitch()));
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(camera.getYaw() + 180.0f));
-        RenderSystem.applyModelViewMatrix();
 
         Render3DEngine.lastProjMat.set(RenderSystem.getProjectionMatrix());
         Render3DEngine.lastModMat.set(RenderSystem.getModelViewMatrix());
@@ -81,7 +79,6 @@ public abstract class MixinGameRenderer {
         Render3DEngine.onRender3D(matrixStack); // <- не двигать
 
         RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.applyModelViewMatrix();
     }
 
     @Inject(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;renderHand(Lnet/minecraft/client/render/Camera;FLorg/joml/Matrix4f;)V", shift = At.Shift.AFTER))
@@ -94,11 +91,6 @@ public abstract class MixinGameRenderer {
     private float renderWorldHook(float delta, float first, float second) {
         if (ModuleManager.noRender.isEnabled() && ModuleManager.noRender.nausea.getValue()) return 0;
         return MathHelper.lerp(delta, first, second);
-    }
-
-    @Inject(method = "loadPrograms", at = @At(value = "RETURN"))
-    private void loadSatinPrograms(ResourceFactory factory, CallbackInfo ci) {
-        ReloadableShaderEffectManager.INSTANCE.reload(factory);
     }
 
     @Inject(method = "updateCrosshairTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;findCrosshairTarget(Lnet/minecraft/entity/Entity;DDF)Lnet/minecraft/util/hit/HitResult;"), cancellable = true)
@@ -115,7 +107,6 @@ public abstract class MixinGameRenderer {
          */
 
         if (ModuleManager.freeCam.isEnabled()) {
-            mc.getProfiler().pop();
             info.cancel();
             mc.crosshairTarget = Managers.PLAYER.getRtxTarget(ModuleManager.freeCam.getFakeYaw(), ModuleManager.freeCam.getFakePitch(), ModuleManager.freeCam.getFakeX(), ModuleManager.freeCam.getFakeY(), ModuleManager.freeCam.getFakeZ());
         }

@@ -14,4 +14,7 @@ public interface ILivingEntity {
 
     @Accessor("jumpingCooldown")
     void setLastJumpCooldown(int val);
+
+    @org.spongepowered.asm.mixin.gen.Invoker("tryUseDeathProtector")
+    boolean invokeTryUseDeathProtector(net.minecraft.entity.damage.DamageSource source);
 }

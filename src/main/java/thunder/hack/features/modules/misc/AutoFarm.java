@@ -120,7 +120,7 @@ public class AutoFarm extends Module {
         } else if (rotationMode.getValue() == RotationMode.Server) {
             mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.Full(
                     mc.player.getX(), mc.player.getY(), mc.player.getZ(),
-                    yaw, pitch, mc.player.isOnGround()));
+                    yaw, pitch, mc.player.isOnGround(), false));
         }
     }
 

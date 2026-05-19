@@ -1,4 +1,5 @@
 package thunder.hack.features.hud.impl;
+import net.minecraft.client.gl.ShaderProgramKeys;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
@@ -193,11 +194,7 @@ public class TargetHud extends HudElement {
         Render2DEngine.drawRect(context.getMatrices(), getPosX() + 50, getPosY() + 30, 60, 10, new Color(0x9E000000, true));
         Render2DEngine.drawRect(context.getMatrices(), getPosX() + 50, getPosY() + 30, MathUtility.clamp((int) (60 * (health / target.getMaxHealth())), 0, 60), 10, color.getValue().getColorObject().brighter().brighter().brighter());
 
-        if (target instanceof PlayerEntity) {
-            RenderSystem.setShaderTexture(0, ((AbstractClientPlayerEntity) target).getSkinTextures().texture());
-        } else {
-            RenderSystem.setShaderTexture(0, mc.getEntityRenderDispatcher().getRenderer(target).getTexture(target));
-        }
+        RenderSystem.setShaderTexture(0, getEntityTexture(target));
 
         RenderSystem.setShaderColor(1f, 1f - hurtPercent, 1f - hurtPercent, 1f);
         Render2DEngine.renderTexture(context.getMatrices(), getPosX() + 3.5f + hurtPercent, getPosY() + 3.5f + hurtPercent, 40 - hurtPercent * 2, 40 - hurtPercent * 2, 8, 8, 8, 8, 64, 64);
@@ -230,11 +227,7 @@ public class TargetHud extends HudElement {
 
         setBounds(getPosX(), getPosY(), 137, 47.5f);
 
-        if (target instanceof PlayerEntity) {
-            RenderSystem.setShaderTexture(0, ((AbstractClientPlayerEntity) target).getSkinTextures().texture());
-        } else {
-            RenderSystem.setShaderTexture(0, mc.getEntityRenderDispatcher().getRenderer(target).getTexture(target));
-        }
+        RenderSystem.setShaderTexture(0, getEntityTexture(target));
 
         context.getMatrices().push();
         context.getMatrices().translate(getPosX() + 3.5f + 20, getPosY() + 3.5f + 20, 0);
@@ -243,9 +236,9 @@ public class TargetHud extends HudElement {
         RenderSystem.enableBlend();
         RenderSystem.colorMask(false, false, false, true);
         RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        RenderSystem.clear(GL40C.GL_COLOR_BUFFER_BIT, false);
+        RenderSystem.clear(GL40C.GL_COLOR_BUFFER_BIT);
         RenderSystem.colorMask(true, true, true, true);
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
         Render2DEngine.renderRoundedQuadInternal(context.getMatrices().peek().getPositionMatrix(), animationFactor, animationFactor, animationFactor, animationFactor, getPosX() + 3.5f, getPosY() + 3.5f, getPosX() + 3.5f + 40, getPosY() + 3.5f + 40, 7, 10);
         RenderSystem.blendFunc(GL40C.GL_DST_ALPHA, GL40C.GL_ONE_MINUS_DST_ALPHA);
         RenderSystem.setShaderColor(animationFactor, animationFactor - hurtPercent / 2, animationFactor - hurtPercent / 2, (float) MathUtility.clamp(animation.getAnimationd(), 0, 1f));
@@ -281,7 +274,7 @@ public class TargetHud extends HudElement {
                 context.getMatrices().translate(xItemOffset, getPosY() + 15, 0);
                 context.getMatrices().scale(0.75f, 0.75f, 0.75f);
                 context.drawItem(itemStack, 0, 0);
-                context.drawItemInSlot(mc.textRenderer, itemStack, 0, 0);
+                context.drawStackOverlay(mc.textRenderer, itemStack, 0, 0);
                 context.getMatrices().pop();
                 xItemOffset += 12;
             }
@@ -303,11 +296,7 @@ public class TargetHud extends HudElement {
 
         setBounds(getPosX(), getPosY(), 95, 35.5f);
 
-        if (target instanceof PlayerEntity) {
-            RenderSystem.setShaderTexture(0, ((AbstractClientPlayerEntity) target).getSkinTextures().texture());
-        } else {
-            RenderSystem.setShaderTexture(0, mc.getEntityRenderDispatcher().getRenderer(target).getTexture(target));
-        }
+        RenderSystem.setShaderTexture(0, getEntityTexture(target));
 
         context.getMatrices().push();
         context.getMatrices().translate(getPosX() + 2.5 + 15, getPosY() + 2.5 + 15, 0);
@@ -316,9 +305,9 @@ public class TargetHud extends HudElement {
         RenderSystem.enableBlend();
         RenderSystem.colorMask(false, false, false, true);
         RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        RenderSystem.clear(GL40C.GL_COLOR_BUFFER_BIT, false);
+        RenderSystem.clear(GL40C.GL_COLOR_BUFFER_BIT);
         RenderSystem.colorMask(true, true, true, true);
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
         Render2DEngine.renderRoundedQuadInternal(context.getMatrices().peek().getPositionMatrix(), animationFactor, animationFactor, animationFactor, animationFactor, getPosX() + 2.5, getPosY() + 2.5, getPosX() + 2.5 + 30, getPosY() + 2.5 + 30, 5, 10);
         RenderSystem.blendFunc(GL40C.GL_DST_ALPHA, GL40C.GL_ONE_MINUS_DST_ALPHA);
         RenderSystem.setShaderColor(animationFactor, animationFactor - hurtPercent / 2, animationFactor - hurtPercent / 2, animationFactor);
@@ -350,7 +339,7 @@ public class TargetHud extends HudElement {
                 context.getMatrices().translate(xItemOffset, getPosY() + 13, 0);
                 context.getMatrices().scale(0.5f, 0.5f, 0.5f);
                 context.drawItem(itemStack, 0, 0);
-                context.drawItemInSlot(mc.textRenderer, itemStack, 0, 0);
+                context.drawStackOverlay(mc.textRenderer, itemStack, 0, 0);
                 context.getMatrices().pop();
                 xItemOffset += 9;
             }
@@ -426,11 +415,7 @@ public class TargetHud extends HudElement {
         float hurtPercent2 = hurtPercent;
         headAnimation.setValue(hurtPercent2);
 
-        if (target instanceof PlayerEntity) {
-            RenderSystem.setShaderTexture(0, ((AbstractClientPlayerEntity) target).getSkinTextures().texture());
-        } else {
-            RenderSystem.setShaderTexture(0, mc.getEntityRenderDispatcher().getRenderer(target).getTexture(target));
-        }
+        RenderSystem.setShaderTexture(0, getEntityTexture(target));
 
         context.getMatrices().push();
         context.getMatrices().translate(getPosX() + 2.5 + 15, getPosY() + 2.5 + 15, 0);
@@ -439,9 +424,9 @@ public class TargetHud extends HudElement {
         RenderSystem.enableBlend();
         RenderSystem.colorMask(false, false, false, true);
         RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        RenderSystem.clear(GL40C.GL_COLOR_BUFFER_BIT, false);
+        RenderSystem.clear(GL40C.GL_COLOR_BUFFER_BIT);
         RenderSystem.colorMask(true, true, true, true);
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
         Render2DEngine.renderRoundedQuadInternal(context.getMatrices().peek().getPositionMatrix(), animationFactor, animationFactor, animationFactor, animationFactor,
                 getPosX() + 2.5, getPosY() + 2.5, getPosX() + 2.5 + 45, getPosY() + 2.5 + 45, 5, 10);
@@ -476,7 +461,7 @@ public class TargetHud extends HudElement {
                 context.getMatrices().translate(xItemOffset, getPosY() + 35, 0);
                 context.getMatrices().scale(0.75f, 0.75f, 0.75f);
                 context.drawItem(itemStack, 0, 0);
-                context.drawItemInSlot(mc.textRenderer, itemStack, 0, 0);
+                context.drawStackOverlay(mc.textRenderer, itemStack, 0, 0);
 
                 context.getMatrices().pop();
                 xItemOffset += 14;
@@ -552,11 +537,7 @@ public class TargetHud extends HudElement {
         headAnimation.setValue(hurtPercent);
         float smoothHurt = (float) headAnimation.getAnimationD();
 
-        if (target instanceof PlayerEntity) {
-            RenderSystem.setShaderTexture(0, ((AbstractClientPlayerEntity) target).getSkinTextures().texture());
-        } else {
-            RenderSystem.setShaderTexture(0, mc.getEntityRenderDispatcher().getRenderer(target).getTexture(target));
-        }
+        RenderSystem.setShaderTexture(0, getEntityTexture(target));
 
         context.getMatrices().push();
         context.getMatrices().translate(getPosX() + 5.5f + 20, getPosY() + 5.5f + 20, 0);
@@ -565,9 +546,9 @@ public class TargetHud extends HudElement {
         RenderSystem.enableBlend();
         RenderSystem.colorMask(false, false, false, true);
         RenderSystem.clearColor(0, 0, 0, 0);
-        RenderSystem.clear(GL40C.GL_COLOR_BUFFER_BIT, false);
+        RenderSystem.clear(GL40C.GL_COLOR_BUFFER_BIT);
         RenderSystem.colorMask(true, true, true, true);
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
         Render2DEngine.renderRoundedQuadInternal(context.getMatrices().peek().getPositionMatrix(), 1, 1, 1, 1,
                 getPosX() + 5.5f, getPosY() + 5.5f, getPosX() + 5.5f + 39, getPosY() + 5.5f + 39, 6, 10);
         RenderSystem.blendFunc(GL40C.GL_DST_ALPHA, GL40C.GL_ONE_MINUS_DST_ALPHA);
@@ -608,7 +589,7 @@ public class TargetHud extends HudElement {
                 context.getMatrices().translate(xItemOffset, getPosY() + 35, 0);
                 context.getMatrices().scale(0.75f, 0.75f, 0.75f);
                 context.drawItem(itemStack, 0, 0);
-                context.drawItemInSlot(mc.textRenderer, itemStack, 0, 0);
+                context.drawStackOverlay(mc.textRenderer, itemStack, 0, 0);
                 context.getMatrices().pop();
                 xItemOffset += 14;
             }
@@ -636,7 +617,7 @@ public class TargetHud extends HudElement {
                 context.getMatrices().push();
                 context.getMatrices().translate(posX + (i > 1 ? 138 : 118), posY + (i % 2 == 0 ? 5 : 26), 0);
                 context.drawItem(target.getInventory().armor.get(3 - i), 0, 0);
-                context.drawItemInSlot(mc.textRenderer, target.getInventory().armor.get(3 - i), 0, 0);
+                context.drawStackOverlay(mc.textRenderer, target.getInventory().armor.get(3 - i), 0, 0);
                 context.getMatrices().pop();
             }
     }
@@ -702,6 +683,19 @@ public class TargetHud extends HudElement {
         else if (p == StatusEffects.WEAKNESS.value()) return "W";
         else if (p == StatusEffects.RESISTANCE.value()) return "Res";
         return "pon";
+    }
+
+    private Identifier getEntityTexture(LivingEntity entity) {
+        if (entity instanceof PlayerEntity) {
+            return ((AbstractClientPlayerEntity) entity).getSkinTextures().texture();
+        } else {
+            net.minecraft.client.render.entity.EntityRenderer renderer = mc.getEntityRenderDispatcher().getRenderer(entity);
+            net.minecraft.client.render.entity.state.EntityRenderState state = renderer.getAndUpdateRenderState(entity, Render3DEngine.getTickDelta());
+            if (renderer instanceof net.minecraft.client.render.entity.LivingEntityRenderer ler) {
+                return ((net.minecraft.client.render.entity.LivingEntityRenderer<LivingEntity, net.minecraft.client.render.entity.state.LivingEntityRenderState, net.minecraft.client.render.entity.model.EntityModel<net.minecraft.client.render.entity.state.LivingEntityRenderState>>) renderer).getTexture((net.minecraft.client.render.entity.state.LivingEntityRenderState) state);
+            }
+            return ((AbstractClientPlayerEntity) mc.player).getSkinTextures().texture();
+        }
     }
 
     public enum HPmodeEn {

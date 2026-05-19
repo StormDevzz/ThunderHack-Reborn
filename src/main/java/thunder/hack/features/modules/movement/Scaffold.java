@@ -194,7 +194,7 @@ public class Scaffold extends Module {
         int prevItem = prePlace(true);
 
         if (prevItem != -1) {
-            if (mc.player.input.jumping && !MovementUtility.isMoving() && tower.getValue() && !mode.is(Mode.OldGrim) && !mode.is(Mode.NewGrim)) {
+            if (mc.player.input.playerInput.jump() && !MovementUtility.isMoving() && tower.getValue() && !mode.is(Mode.OldGrim) && !mode.is(Mode.NewGrim)) {
                 mc.player.setVelocity(0.0, 0.42, 0.0);
                 if (timer.passedMs(1500)) {
                     mc.player.setVelocity(mc.player.getVelocity().x, -0.28, mc.player.getVelocity().z);
@@ -219,7 +219,7 @@ public class Scaffold extends Module {
                 mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
 
             if (mode.is(Mode.OldGrim))
-                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotations[0], rotations[1], mc.player.isOnGround()));
+                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotations[0], rotations[1], mc.player.isOnGround(), false));
 
             if (mode.is(Mode.NewGrim)) {
                 sendSequencedPacket(id -> new PlayerInteractBlockC2SPacket(prevItem == -2 ? Hand.OFF_HAND : Hand.MAIN_HAND, bhr, id));
@@ -237,7 +237,7 @@ public class Scaffold extends Module {
                 mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
 
             if (mode.is(Mode.OldGrim))
-                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround()));
+                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround(), false));
 
             if (render.getValue())
                 BlockAnimationUtility.renderBlock(currentblock.position(), renderLineColor.getValue().getColorObject(), renderLineWidth.getValue(), renderFillColor.getValue().getColorObject(), animationMode.getValue(), renderMode.getValue());

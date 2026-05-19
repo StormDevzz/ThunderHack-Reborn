@@ -69,7 +69,6 @@ public class PlayerView extends HudElement {
             0.0,
             0.0,
             0.0,
-            0.0f,
             1.0f,
             matrices,
             mc.getBufferBuilders().getEntityVertexConsumers(),

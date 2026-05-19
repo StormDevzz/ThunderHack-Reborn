@@ -160,9 +160,12 @@ public abstract class MixinMinecraftClient {
 
             for (int i = 0; i < imgList.size(); i++) {
                 NativeImage nativeImage = NativeImage.read(imgList.get(i));
+                int[] pixels = new int[nativeImage.getWidth() * nativeImage.getHeight()];
+                for (int p = 0; p < pixels.length; p++) {
+                    pixels[p] = nativeImage.getColorArgb(p % nativeImage.getWidth(), p / nativeImage.getWidth());
+                }
                 ByteBuffer bytebuffer = MemoryUtil.memAlloc(nativeImage.getWidth() * nativeImage.getHeight() * 4);
-
-                bytebuffer.asIntBuffer().put(nativeImage.copyPixelsRgba());
+                bytebuffer.asIntBuffer().put(pixels);
                 buffer.position(i);
                 buffer.width(nativeImage.getWidth());
                 buffer.height(nativeImage.getHeight());

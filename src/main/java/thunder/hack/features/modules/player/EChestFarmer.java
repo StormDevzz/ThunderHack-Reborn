@@ -130,7 +130,7 @@ public class EChestFarmer extends Module {
         } else if (rotate.getValue() == RotMode.Server) {
             mc.player.setYaw(targetYaw);
             mc.player.setPitch(targetPitch);
-            sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(targetYaw, targetPitch, mc.player.isOnGround()));
+            sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(targetYaw, targetPitch, mc.player.isOnGround(), false));
         }
     }
 

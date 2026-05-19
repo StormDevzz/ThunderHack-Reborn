@@ -53,15 +53,15 @@ public class FastLadder extends Module {
         }
 
         if (mode.getValue() == Mode.Custom) {
-            if (onlyWhenMoving.getValue() && !MovementUtility.isMoving() && !mc.player.input.jumping && !mc.player.input.sneaking)
+            if (onlyWhenMoving.getValue() && !MovementUtility.isMoving() && !mc.player.input.playerInput.jump() && !mc.player.input.playerInput.sneak())
                 return;
 
             Vec3d vel = mc.player.getVelocity();
 
             double moveY = 0;
-            if (mc.player.input.jumping) {
+            if (mc.player.input.playerInput.jump()) {
                 moveY = upSpeed.getValue();
-            } else if (mc.player.input.sneaking) {
+            } else if (mc.player.input.playerInput.sneak()) {
                 moveY = -downSpeed.getValue();
             }
 
@@ -84,12 +84,12 @@ public class FastLadder extends Module {
         }
 
         if (mode.getValue() == Mode.Vanilla) {
-            if (!mc.player.input.jumping && !mc.player.input.sneaking) return;
+            if (!mc.player.input.playerInput.jump() && !mc.player.input.playerInput.sneak()) return;
 
             Vec3d vel = mc.player.getVelocity();
-            if (mc.player.input.jumping) {
+            if (mc.player.input.playerInput.jump()) {
                 e.setY(vel.y * vanillaSpeed.getValue());
-            } else if (mc.player.input.sneaking) {
+            } else if (mc.player.input.playerInput.sneak()) {
                 e.setY(vel.y * vanillaSpeed.getValue());
             }
             e.cancel();
@@ -109,10 +109,10 @@ public class FastLadder extends Module {
                 strafeSpeed = 0f;
             }
 
-            if (mc.player.input.jumping) {
+            if (mc.player.input.playerInput.jump()) {
                 e.setY(strafeSpeed * 0.2);
                 e.cancel();
-            } else if (mc.player.input.sneaking) {
+            } else if (mc.player.input.playerInput.sneak()) {
                 e.setY(-strafeSpeed * 0.2);
                 e.cancel();
             }

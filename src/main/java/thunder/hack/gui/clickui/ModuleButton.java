@@ -1,4 +1,5 @@
 package thunder.hack.gui.clickui;
+import net.minecraft.client.gl.ShaderProgramKeys;
 
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.Tessellator;
@@ -123,7 +124,7 @@ public class ModuleButton extends AbstractButton {
                 context.getMatrices().translate(-px, -py, 0.0F);
                 RenderSystem.setShaderTexture(0, TextureStorage.Gear);
                 RenderSystem.enableBlend();
-                RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+                RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
                 RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
                 Color c1 = Render2DEngine.injectAlpha(HudEditor.getColor(270).darker(), 110);
                 Color c2 = Render2DEngine.injectAlpha(HudEditor.getColor(0).darker(), 110);

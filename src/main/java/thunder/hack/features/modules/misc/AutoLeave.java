@@ -150,7 +150,7 @@ public final class AutoLeave extends Module {
     // ────── AFK ──────
     private void checkAFK() {
         if (afkIgnoreSneak.getValue()  && mc.player.isSneaking())    { afkTimer.reset(); return; }
-        if (afkIgnoreElytra.getValue() && mc.player.isFallFlying())  { afkTimer.reset(); return; }
+        if (afkIgnoreElytra.getValue() && mc.player.isGliding())  { afkTimer.reset(); return; }
 
         double cx = mc.player.getX(), cy = mc.player.getY(), cz = mc.player.getZ();
         float  cYaw = mc.player.getYaw(), cPitch = mc.player.getPitch();

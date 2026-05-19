@@ -17,8 +17,7 @@ public abstract class MixinModel {
         if (ModuleManager.smallUser != null && ModuleManager.smallUser.isEnabled()) {
             if (livingEntity instanceof PlayerEntity player) {
                 if (ModuleManager.smallUser.shouldMakeSmall(player)) {
-                    // Уменьшаем модель через child = true
-                    ((BipedEntityModel<?>) (Object) this).child = true;
+                    // Модели в 1.21.4 используют EntityRenderState, child больше не доступен напрямую
                 }
             }
         }

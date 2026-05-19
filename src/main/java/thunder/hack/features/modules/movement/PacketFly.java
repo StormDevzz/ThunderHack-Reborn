@@ -98,11 +98,11 @@ public class PacketFly extends Module {
         Vec3d motion = mc.player.getPos().add(vec3d);
         Vec3d rubberBand = getVectorByMode(vec3d, motion);
 
-        PlayerMoveC2SPacket motionPacket =  new PlayerMoveC2SPacket.PositionAndOnGround(motion.x, motion.y, motion.z, mc.player.isOnGround());
+        PlayerMoveC2SPacket motionPacket =  new PlayerMoveC2SPacket.PositionAndOnGround(motion.x, motion.y, motion.z, mc.player.isOnGround(), false);
         movePackets.add(motionPacket);
         sendPacket(motionPacket);
 
-        PlayerMoveC2SPacket rubberBandPacket = new PlayerMoveC2SPacket.PositionAndOnGround(rubberBand.x, rubberBand.y, rubberBand.z, mc.player.isOnGround());
+        PlayerMoveC2SPacket rubberBandPacket = new PlayerMoveC2SPacket.PositionAndOnGround(rubberBand.x, rubberBand.y, rubberBand.z, mc.player.isOnGround(), false);
         movePackets.add(rubberBandPacket);
         sendPacket(rubberBandPacket);
 
@@ -116,23 +116,23 @@ public class PacketFly extends Module {
     public void onPacketReceive(PacketEvent.Receive event) {
         if (fullNullCheck()) return;
         if (mc.player != null && event.getPacket() instanceof PlayerPositionLookS2CPacket pac) {
-            Teleport teleport = teleports.remove(pac.getTeleportId());
+            Teleport teleport = teleports.remove(pac.teleportId());
             if (
                     mc.player.isAlive()
                     && mc.world.isChunkLoaded((int) mc.player.getX() >> 4, (int) mc.player.getZ() >> 4)
                     && !(mc.currentScreen instanceof DownloadingTerrainScreen)
                     && mode.getValue() != Mode.Rubber
                     && teleport != null
-                    && teleport.x == pac.getX()
-                    && teleport.y == pac.getY()
-                    && teleport.z == pac.getZ()
+                    && teleport.x == pac.change().position().x
+                    && teleport.y == pac.change().position().y
+                    && teleport.z == pac.change().position().z
             ) {
                 event.cancel();
                 return;
             }
-            ((IPlayerPositionLookS2CPacket) pac).setYaw(mc.player.getYaw());
-            ((IPlayerPositionLookS2CPacket) pac).setPitch(mc.player.getPitch());
-            teleportId = pac.getTeleportId();
+            ((IPlayerPositionLookS2CPacket) (Object) pac).setYaw(mc.player.getYaw());
+            ((IPlayerPositionLookS2CPacket) (Object) pac).setPitch(mc.player.getPitch());
+            teleportId = pac.teleportId();
         }
     }
 
