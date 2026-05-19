@@ -76,8 +76,8 @@ public class AsyncManager implements IManager {
                         Managers.MODULE.modules.forEach(m -> {
                             if (m.isEnabled()) m.onThread();
                         });
-                        Thread.sleep(100);
-                    } else Thread.yield();
+                    }
+                    Thread.sleep(100);
                 } catch (Exception exception) {
                     exception.printStackTrace();
                     Command.sendMessage(exception.getMessage());

@@ -9,6 +9,7 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.ScreenHandlerProvider;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.MapRenderState;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.component.DataComponentTypes;
@@ -236,7 +237,7 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
         int i = 0;
         for (ItemStack itemStack : itemStacks) {
             context.drawItem(itemStack, offsetX + 8 + i * 18, offsetY + 7 + row * 18);
-            context.drawItemInSlot(mc.textRenderer, itemStack, offsetX + 8 + i * 18, offsetY + 7 + row * 18);
+            context.drawStackOverlay(mc.textRenderer, itemStack, offsetX + 8 + i * 18, offsetY + 7 + row * 18);
 
             if (mouseX > offsetX + 8 + i * 18 && mouseX < offsetX + 28 + i * 18 && mouseY > offsetY + 7 + row * 18 && mouseY < offsetY + 27 + row * 18)
                 postRender = () -> context.drawTooltip(textRenderer, getTooltipFromItem(mc, itemStack), itemStack.getTooltipData(), mouseX, mouseY);
@@ -297,7 +298,9 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
             context.getMatrices().translate(x1, y1, z);
             context.getMatrices().scale((float) scale, (float) scale, 0);
             VertexConsumerProvider.Immediate consumer = client.getBufferBuilders().getEntityVertexConsumers();
-            client.getMapRenderer().draw(context.getMatrices(), consumer, stack.get(DataComponentTypes.MAP_ID), mapState, false, 0xF000F0);
+            MapRenderState mapRenderState = new MapRenderState();
+            client.getMapRenderer().update(stack.get(DataComponentTypes.MAP_ID), mapState, mapRenderState);
+            client.getMapRenderer().draw(mapRenderState, context.getMatrices(), consumer, false, 0xF000F0);
         }
         context.getMatrices().pop();
     }

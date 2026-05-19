@@ -96,21 +96,25 @@ public class PlayerManager implements IManager {
 
     @EventHandler
     public void onJump(EventPlayerJump e) {
+        if (mc.player == null) return;
         ModuleManager.rotations.onJump(e);
     }
 
     @EventHandler
     public void onPlayerMove(EventFixVelocity e) {
+        if (mc.player == null) return;
         ModuleManager.rotations.onPlayerMove(e);
     }
 
     @EventHandler
     public void modifyVelocity(EventPlayerTravel e) {
+        if (mc.player == null) return;
         ModuleManager.rotations.modifyVelocity(e);
     }
 
     @EventHandler
     public void onKeyInput(EventKeyboardInput e) {
+        if (mc.player == null) return;
         ModuleManager.rotations.onKeyInput(e);
     }
 

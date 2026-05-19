@@ -1,4 +1,6 @@
 {
+  "vertex": "sobel",
+  "fragment": "thunderhack:smoke",
   "targets": [
     "bufIn",
     "swap",

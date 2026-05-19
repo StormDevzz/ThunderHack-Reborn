@@ -6,7 +6,7 @@ import thunder.hack.ThunderHack;
 import thunder.hack.events.impl.EventMove;
 import thunder.hack.events.impl.EventSync;
 import thunder.hack.events.impl.PacketEvent;
-import thunder.hack.injection.accesors.IPlayerPositionLookS2CPacket;
+import thunder.hack.accessors.IPlayerPositionLookS2CPacket;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;

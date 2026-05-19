@@ -13,7 +13,6 @@ import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.PacketEvent;
 import thunder.hack.features.modules.Module;
 import thunder.hack.injection.accesors.IClientPlayerEntity;
-import thunder.hack.injection.accesors.IExplosionS2CPacket;
 import thunder.hack.injection.accesors.ISPacketEntityVelocity;
 import thunder.hack.setting.Setting;
 import thunder.hack.utility.player.MovementUtility;
@@ -109,24 +108,7 @@ public class Velocity extends Module {
 
         // EXPLOSION
         if (e.getPacket() instanceof ExplosionS2CPacket explosion && explosions.getValue()) {
-            switch (mode.getValue()) {
-                case Cancel -> {
-                    ((IExplosionS2CPacket) (Object) explosion).setMotionX(0);
-                    ((IExplosionS2CPacket) (Object) explosion).setMotionY(0);
-                    ((IExplosionS2CPacket) (Object) explosion).setMotionZ(0);
-                }
-                case Custom -> {
-                    ((IExplosionS2CPacket) (Object) explosion).setMotionX(((IExplosionS2CPacket) (Object) explosion).getMotionX() * horizontal.getValue() / 100f);
-                    ((IExplosionS2CPacket) (Object) explosion).setMotionZ(((IExplosionS2CPacket) (Object) explosion).getMotionZ() * horizontal.getValue() / 100f);
-                    ((IExplosionS2CPacket) (Object) explosion).setMotionY(((IExplosionS2CPacket) (Object) explosion).getMotionY() * vertical.getValue() / 100f);
-                }
-                case GrimNew -> {
-                    ((IExplosionS2CPacket) (Object) explosion).setMotionX(0);
-                    ((IExplosionS2CPacket) (Object) explosion).setMotionY(0);
-                    ((IExplosionS2CPacket) (Object) explosion).setMotionZ(0);
-                    flag = true;
-                }
-            }
+            e.cancel();
         }
 
         // PING

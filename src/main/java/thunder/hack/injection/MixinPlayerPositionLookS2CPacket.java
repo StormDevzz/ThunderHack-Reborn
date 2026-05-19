@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import thunder.hack.injection.accesors.IPlayerPositionLookS2CPacket;
+import thunder.hack.accessors.IPlayerPositionLookS2CPacket;
 
 @Mixin(PlayerPositionLookS2CPacket.class)
 public abstract class MixinPlayerPositionLookS2CPacket implements IPlayerPositionLookS2CPacket {

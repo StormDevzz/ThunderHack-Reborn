@@ -44,6 +44,9 @@ public abstract class MixinSplashOverlay {
     }
 
     public void renderCustom(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (System.currentTimeMillis() % 1000 < 50) {
+            System.out.println("[ThunderHack-Debug] reload.isComplete() = " + reload.isComplete() + ", reloading = " + reloading + ", reloadCompleteTime = " + reloadCompleteTime + ", progress = " + progress);
+        }
         int i = mc.getWindow().getScaledWidth();
         int j = mc.getWindow().getScaledHeight();
         long l = Util.getMeasuringTimeMs();

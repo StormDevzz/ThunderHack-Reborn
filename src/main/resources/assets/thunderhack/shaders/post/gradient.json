@@ -1,4 +1,6 @@
 {
+  "vertex": "sobel",
+  "fragment": "thunderhack:gradient",
   "targets": [
     "bufIn",
     "swap",

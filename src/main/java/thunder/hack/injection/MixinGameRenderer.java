@@ -55,7 +55,7 @@ public abstract class MixinGameRenderer {
     @Shadow
     public abstract void tick();
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiler/Profiler;pop()V", ordinal = 1, shift = At.Shift.BEFORE), method = "render")
+    @Inject(at = @At("TAIL"), method = "render")
     void postHudRenderHook(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
         FrameRateCounter.INSTANCE.recordFrame();
     }
@@ -124,7 +124,7 @@ public abstract class MixinGameRenderer {
     }
 
     @Inject(method = "getBasicProjectionMatrix", at = @At("TAIL"), cancellable = true)
-    public void getBasicProjectionMatrixHook(double fov, CallbackInfoReturnable<Matrix4f> cir) {
+    public void getBasicProjectionMatrixHook(float fov, CallbackInfoReturnable<Matrix4f> cir) {
         if (ModuleManager.aspectRatio.isEnabled()) {
             MatrixStack matrixStack = new MatrixStack();
             matrixStack.peek().getPositionMatrix().identity();
@@ -137,21 +137,21 @@ public abstract class MixinGameRenderer {
         }
     }
 
-    @Inject(method = "getFov(Lnet/minecraft/client/render/Camera;FZ)D", at = @At("TAIL"), cancellable = true)
-    public void getFov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Double> cb) {
+    @Inject(method = "getFov(Lnet/minecraft/client/render/Camera;FZ)F", at = @At("TAIL"), cancellable = true)
+    public void getFov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Float> cb) {
         if (ModuleManager.fov.isEnabled()) {
-            if (cb.getReturnValue() == 70 && !ModuleManager.fov.itemFov.getValue() && mc.options.getPerspective() != Perspective.FIRST_PERSON)
+            if (cb.getReturnValue() == 70f && !ModuleManager.fov.itemFov.getValue() && mc.options.getPerspective() != Perspective.FIRST_PERSON)
                 return;
 
-            else if (ModuleManager.fov.itemFov.getValue() && cb.getReturnValue() == 70) {
-                cb.setReturnValue(ModuleManager.fov.itemFovModifier.getValue().doubleValue());
+            else if (ModuleManager.fov.itemFov.getValue() && cb.getReturnValue() == 70f) {
+                cb.setReturnValue(ModuleManager.fov.itemFovModifier.getValue().floatValue());
                 return;
             }
 
             if (mc.player.isSubmergedInWater())
                 return;
 
-            cb.setReturnValue(ModuleManager.fov.fovModifier.getValue().doubleValue());
+            cb.setReturnValue(ModuleManager.fov.fovModifier.getValue().floatValue());
         }
     }
 
