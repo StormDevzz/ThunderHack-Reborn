@@ -4,13 +4,16 @@ import com.mojang.logging.LogUtils;
 import meteordevelopment.orbit.EventBus;
 import meteordevelopment.orbit.IEventBus;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.ModMetadata;
+import net.minecraft.resource.ResourceType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
 import thunder.hack.core.Core;
 import thunder.hack.core.Managers;
+import thunder.hack.core.TextureReloadListener;
 import thunder.hack.core.manager.client.*;
 import thunder.hack.core.hooks.ManagerShutdownHook;
 import thunder.hack.core.hooks.ModuleShutdownHook;
@@ -65,9 +68,9 @@ public class ThunderHack implements ModInitializer {
         EVENT_BUS.subscribe(core);
 
         Managers.init();
+        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new TextureReloadListener());
         Managers.subscribe();
 
-        Render2DEngine.initShaders();
         ModuleManager.rpc.startRpc();
 
         LOGGER.info("[ThunderHack] Init time: {} ms.", System.currentTimeMillis() - initTime);

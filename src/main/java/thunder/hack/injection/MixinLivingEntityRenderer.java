@@ -1,7 +1,9 @@
 package thunder.hack.injection;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.model.EntityModel;
@@ -13,6 +15,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -49,23 +52,71 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extend
     @Final
     protected List<FeatureRenderer> features;
 
+    @Unique
+    private boolean matrixPushed;
+
+    @Unique
+    private Vec3d getCameraOffset() {
+        net.minecraft.client.render.Camera camera = mc.getEntityRenderDispatcher().camera;
+        if (camera == null) return Vec3d.ZERO;
+        return new Vec3d(
+                lastEntity.getX() - camera.getPos().getX(),
+                lastEntity.getY() - camera.getPos().getY(),
+                lastEntity.getZ() - camera.getPos().getZ()
+        );
+    }
+
+    @Inject(method = "updateRenderState", at = @At("HEAD"))
+    private void onUpdateRenderState(T entity, S renderState, float tickDelta, CallbackInfo ci) {
+        if (Module.fullNullCheck()) return;
+        lastEntity = entity;
+    }
 
     @Inject(method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"), cancellable = true)
     public void onRenderPre(net.minecraft.client.render.entity.state.LivingEntityRenderState state, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
         if (Module.fullNullCheck()) return;
-        
-        // Removed broken Chams render logic here to allow compilation.
+
+        matrixPushed = false;
+
+        if (ModuleManager.chams.isEnabled() && ModuleManager.chams.players.getValue()
+                && lastEntity instanceof PlayerEntity pl && lastEntity != mc.player) {
+            ci.cancel();
+            ModuleManager.chams.renderPlayer(state, matrixStack, i, model, pl);
+            return;
+        }
+
+        if (lastEntity instanceof PlayerEntity pl) {
+            if (ModuleManager.smallUser.isEnabled() && ModuleManager.smallUser.shouldMakeSmall(pl)) {
+                Vec3d offset = getCameraOffset();
+                matrixStack.push();
+                matrixPushed = true;
+                matrixStack.translate(offset.x, offset.y, offset.z);
+                matrixStack.scale(0.5f, 0.5f, 0.5f);
+                matrixStack.translate(-offset.x, -offset.y, -offset.z);
+            }
+
+            if (ModuleManager.shiftInterp.isEnabled() && ModuleManager.shiftInterp.shouldShift(pl)) {
+                if (!matrixPushed) {
+                    matrixStack.push();
+                    matrixPushed = true;
+                }
+                matrixStack.translate(0, -0.2, 0);
+            }
+        }
     }
 
     @Unique
     public void postRender(net.minecraft.client.render.entity.state.LivingEntityRenderState state) {
         if (Module.fullNullCheck()) return;
-        // Removed broken rotation resetting logic
     }
 
     @Inject(method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("TAIL"))
     public void onRenderPost(net.minecraft.client.render.entity.state.LivingEntityRenderState state, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
         if (Module.fullNullCheck()) return;
+        if (matrixPushed) {
+            matrixStack.pop();
+            matrixPushed = false;
+        }
         postRender(state);
     }
 

@@ -9,6 +9,8 @@ import net.minecraft.util.Identifier;
 import org.lwjgl.system.MemoryUtil;
 import thunder.hack.injection.accesors.INativeImage;
 
+import org.lwjgl.opengl.GL11;
+
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
@@ -164,10 +166,16 @@ class GlyphMap {
             tex.upload();
             if (RenderSystem.isOnRenderThread()) {
                 MinecraftClient.getInstance().getTextureManager().registerTexture(i, tex);
+                RenderSystem.setShaderTexture(0, i);
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
                 generated = true;
             } else {
                 RenderSystem.recordRenderCall(() -> {
                     MinecraftClient.getInstance().getTextureManager().registerTexture(i, tex);
+                    RenderSystem.setShaderTexture(0, i);
+                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
                     generated = true;
                 });
             }

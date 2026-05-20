@@ -1,6 +1,5 @@
 package thunder.hack.injection;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.HeldItemRenderer;
@@ -35,12 +34,6 @@ public abstract class MixinHeldItemRenderer {
         if(Module.fullNullCheck()) return;
         EventHeldItemRenderer event = new EventHeldItemRenderer(hand, item, equipProgress, matrices);
         ThunderHack.EVENT_BUS.post(event);
-    }
-
-    @Inject(method = "renderFirstPersonItem", at = @At(value = "RETURN"))
-    private void onRenderItemPost(AbstractClientPlayerEntity player, float tickDelta, float pitch, Hand hand, float swingProgress, ItemStack item, float equipProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
-        if (ModuleManager.chams.isEnabled() && ModuleManager.chams.handItems.getValue())
-            RenderSystem.setShaderColor(1f,1f,1f,1f);
     }
 
     @Inject(method = "renderFirstPersonItem", at = @At(value = "HEAD"), cancellable = true)

@@ -21,7 +21,6 @@ import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventFixVelocity;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.combat.HitBox;
-import thunder.hack.features.modules.render.Shaders;
 import thunder.hack.features.modules.render.Trails;
 import thunder.hack.utility.interfaces.IEntity;
 
@@ -90,14 +89,6 @@ public abstract class MixinEntity implements IEntity {
     public final void getBoundingBox(CallbackInfoReturnable<Box> cir) {
         if (ModuleManager.hitBox.isEnabled() && mc != null && mc.player != null && ((Entity) (Object) this).getId() != mc.player.getId() && (ModuleManager.aura.isDisabled() || HitBox.affectToAura.getValue())) {
             cir.setReturnValue(new Box(this.boundingBox.minX - HitBox.XZExpand.getValue() / 2f, this.boundingBox.minY - HitBox.YExpand.getValue() / 2f, this.boundingBox.minZ - HitBox.XZExpand.getValue() / 2f, this.boundingBox.maxX + HitBox.XZExpand.getValue() / 2f, this.boundingBox.maxY + HitBox.YExpand.getValue() / 2f, this.boundingBox.maxZ + HitBox.XZExpand.getValue() / 2f));
-        }
-    }
-
-    @Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true)
-    public void isGlowingHook(CallbackInfoReturnable<Boolean> cir) {
-        Shaders shaders = ModuleManager.shaders;
-        if (shaders.isEnabled()) {
-            cir.setReturnValue(shaders.shouldRender((Entity) (Object) this));
         }
     }
 

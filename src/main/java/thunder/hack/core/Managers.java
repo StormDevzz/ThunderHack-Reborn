@@ -40,7 +40,6 @@ public class Managers {
     public static final ProxyManager PROXY = new ProxyManager();
     public static final ServerManager SERVER = new ServerManager();
     public static final PluginManager PLUGIN = new PluginManager();
-    public static final ShaderManager SHADER = new ShaderManager();
     public static final SoundManager SOUND = new SoundManager();
     public static final TelemetryManager TELEMETRY = new TelemetryManager();
     public static final CommandManager COMMAND = new CommandManager();

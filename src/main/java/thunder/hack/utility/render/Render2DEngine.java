@@ -1,7 +1,6 @@
 package thunder.hack.utility.render;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import thunder.hack.features.modules.client.ClickGui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gui.DrawContext;
@@ -16,11 +15,10 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL40C;
 import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.gui.font.Texture;
 import thunder.hack.utility.math.MathUtility;
-import thunder.hack.utility.render.shaders.*;
+
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -32,12 +30,6 @@ import java.util.HashMap;
 import static thunder.hack.features.modules.Module.mc;
 
 public class Render2DEngine {
-    public static TextureColorProgram TEXTURE_COLOR_PROGRAM;
-    public static HudShader HUD_SHADER;
-    public static RectangleShader RECTANGLE_SHADER;
-    public static MainMenuProgram MAIN_MENU_PROGRAM;
-    public static ArcShader ARC_PROGRAM;
-    public static BlurProgram BLUR_PROGRAM;
     public static HashMap<Integer, BlurredShadow> shadowCache = new HashMap<>();
     public static HashMap<Integer, BlurredShadow> shadowCache1 = new HashMap<>();
 
@@ -606,10 +598,26 @@ public class Render2DEngine {
     }
 
     public static void drawArc(MatrixStack matrices, float x, float y, float width, float height, float radius, float thickness, float start, float end, Color c1, Color c2) {
-        BufferBuilder bb = preShaderDraw(matrices, x - width / 2f, y - height / 2f, x + width / 2f, y + height / 2f);
-        ARC_PROGRAM.setParameters(x, y, width, height, radius, thickness, start, end, c1, c2);
-        ARC_PROGRAM.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
+        setupRender();
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
+        float cx = x;
+        float cy = y;
+        float outerR = Math.max(width, height) / 2f;
+        float innerR = outerR - thickness;
+        int segments = 64;
+        float angleRange = (end - start) * 360f;
+        for (int i = 0; i <= segments; i++) {
+            float angle = (float) Math.toRadians(start * 360f + angleRange * i / segments);
+            float cos = (float) Math.cos(angle);
+            float sin = (float) Math.sin(angle);
+            float r = i / (float) segments;
+            Color c = Render2DEngine.interpolateColorC(c1, c2, r);
+            buffer.vertex(matrix, cx + cos * outerR, cy + sin * outerR, 0).color(c.getRGB());
+            buffer.vertex(matrix, cx + cos * innerR, cy + sin * innerR, 0).color(c.getRGB());
+        }
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
         endRender();
     }
 
@@ -661,14 +669,6 @@ public class Render2DEngine {
 
     public static void drawMainMenuShader(MatrixStack matrices, float x, float y, float width, float height) {
         verticalGradient(matrices, x, y, x + width, y + height, new Color(0x070015), new Color(0x1a0a2e));
-    }
-
-    public static BufferBuilder preShaderDraw(MatrixStack matrices, float x, float y, float width, float height) {
-        setupRender();
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
-        setRectanglePoints(buffer, matrix, x, y, x + width, y + height);
-        return buffer;
     }
 
     public static void setRectanglePoints(BufferBuilder buffer, Matrix4f matrix, float x, float y, float x1, float y1) {
@@ -763,15 +763,6 @@ public class Render2DEngine {
         float b = g2 - g1;
         float c = b2 - b1;
         return (float) Math.sqrt(a * a + b * b + c * c);
-    }
-
-    public static void initShaders() {
-        HUD_SHADER = new HudShader();
-        MAIN_MENU_PROGRAM = new MainMenuProgram();
-        TEXTURE_COLOR_PROGRAM = new TextureColorProgram();
-        ARC_PROGRAM = new ArcShader();
-        RECTANGLE_SHADER = new RectangleShader();
-        BLUR_PROGRAM = new BlurProgram();
     }
 
     public static @NotNull Color getColor(@NotNull Color start, @NotNull Color end, float progress, boolean smooth) {

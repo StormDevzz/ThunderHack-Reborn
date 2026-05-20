@@ -229,7 +229,7 @@ public class Aura extends Module {
 
         if (!mc.options.jumpKey.isPressed() && mc.player.isOnGround() && autoJump.getValue()) {
             mc.player.jump();
-            autoJumpTicks = 2;
+            autoJumpTicks = 3;
         }
 
         boolean readyForAttack;
@@ -281,9 +281,11 @@ public class Aura extends Module {
         Criticals.cancelCrit = true;
 
         if (mc.player.isOnGround()) {
-            ModuleManager.criticals.doCrit();
-        } else if (smartCrit.getValue().isEnabled() && mc.player.getVelocity().y >= 0) {
-            doAirCrit();
+            if (ModuleManager.criticals.isEnabled()) {
+                ModuleManager.criticals.doCrit();
+            } else if (smartCrit.getValue().isEnabled()) {
+                doAirCrit();
+            }
         }
 
         int prevSlot = switchMethod();
@@ -491,6 +493,9 @@ public class Aura extends Module {
             autoJumpTicks--;
             return false;
         }
+
+        if (autoJump.getValue() && !mc.player.isOnGround() && mc.player.getVelocity().y >= 0)
+            return false;
 
         boolean mergeWithTargetStrafe = !ModuleManager.targetStrafe.isEnabled() || !ModuleManager.targetStrafe.jump.getValue();
         boolean mergeWithSpeed = !ModuleManager.speed.isEnabled() || mc.player.isOnGround();

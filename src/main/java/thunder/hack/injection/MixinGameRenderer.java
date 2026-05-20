@@ -81,12 +81,6 @@ public abstract class MixinGameRenderer {
         RenderSystem.getModelViewStack().popMatrix();
     }
 
-    @Inject(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;renderHand(Lnet/minecraft/client/render/Camera;FLorg/joml/Matrix4f;)V", shift = At.Shift.AFTER))
-    public void postRender3dHook(RenderTickCounter tickCounter, CallbackInfo ci) {
-        if (Module.fullNullCheck()) return;
-        Managers.SHADER.renderShaders();
-    }
-
     @Redirect(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;lerp(FFF)F"))
     private float renderWorldHook(float delta, float first, float second) {
         if (ModuleManager.noRender.isEnabled() && ModuleManager.noRender.nausea.getValue()) return 0;

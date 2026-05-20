@@ -110,8 +110,7 @@ public abstract class MixinMinecraftClient {
 
     @Inject(method = "setOverlay", at = @At("HEAD"))
     public void setOverlay(Overlay overlay, CallbackInfo ci) {
-        //   if (overlay instanceof SplashOverlay)
-        //  Managers.SHADER.reloadShaders();
+        // Texture reload is now handled by TextureReloadListener (SynchronizedResourceReloadListener)
     }
 
     @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
