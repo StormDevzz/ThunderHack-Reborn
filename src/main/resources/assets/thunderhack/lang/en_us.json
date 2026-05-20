@@ -39,7 +39,6 @@
   "descriptions.misc.autoauth": "Logs you on the servers.",
   "descriptions.misc.autoez": "Sends EZ in the chat after killing targeted players.",
   "descriptions.misc.autofish": "Automatically fishes.",
-  "descriptions.misc.autoflyme": "Automated /flyme on mcfunny.su.",
   "descriptions.misc.autogear": "Allows you to save inventory configuration and automatically collect it from containers.",
   "descriptions.misc.autoleave": "Disconnects from the server under specified conditions.",
   "descriptions.misc.autosign": "Automatically places text onto signs.",

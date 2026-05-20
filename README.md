@@ -58,6 +58,28 @@
 
 ---
 
+## Зависимости / Dependencies
+
+**RU:**
+- **Minecraft:** 1.21.4 (Fabric)
+- **Fabric Loader:** >= 0.16.10
+- **Fabric API:** 0.119.2+1.21.4
+- **Satin (Ladysnake):** 3.0.0-alpha.1 -- библиотека для шейдеров и пост-эффектов
+- **Orbit (MeteorDevelopment):** 0.2.3 -- EventBus
+- **Netty:** 4.1.90.Final (netty-handler-proxy, netty-codec-socks) -- прокси для соксов
+- **Baritone (опционально):** 1.21.4-SNAPSHOT -- путь-поиск для AutoMine/AutoWalk
+
+**EN:**
+- **Minecraft:** 1.21.4 (Fabric)
+- **Fabric Loader:** >= 0.16.10
+- **Fabric API:** 0.119.2+1.21.4
+- **Satin (Ladysnake):** 3.0.0-alpha.1 -- shader and post-processing library
+- **Orbit (MeteorDevelopment):** 0.2.3 -- EventBus
+- **Netty:** 4.1.90.Final (netty-handler-proxy, netty-codec-socks) -- SOCKS proxy support
+- **Baritone (optional):** 1.21.4-SNAPSHOT -- pathfinding for AutoMine/AutoWalk
+
+---
+
 ## Требования / Requirements
 
 - [Fabric API 1.21](https://www.curseforge.com/minecraft/mc-mods/fabric-api/files/5531908)

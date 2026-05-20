@@ -8,14 +8,14 @@ public class Fullbright extends Module {
         super("Fullbright", Category.RENDER);
     }
 
-    public static Setting<Float> minBright = new Setting<>("MinBright", 0.5f, 0f, 1f);
+    public static Setting<Float> minBright = new Setting<>("MinBright", 1f, 0f, 1f);
 
     private double oldGamma;
 
     @Override
     public void onEnable() {
         oldGamma = mc.options.getGamma().getValue();
-        mc.options.getGamma().setValue(16.0);
+        mc.options.getGamma().setValue(minBright.getValue() * 16.0);
     }
 
     @Override
@@ -25,7 +25,8 @@ public class Fullbright extends Module {
 
     @Override
     public void onUpdate() {
-        if (mc.options.getGamma().getValue() != 16.0)
-            mc.options.getGamma().setValue(16.0);
+        double target = minBright.getValue() * 16.0;
+        if (mc.options.getGamma().getValue() != target)
+            mc.options.getGamma().setValue(target);
     }
 }

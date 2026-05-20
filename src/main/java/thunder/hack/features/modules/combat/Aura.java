@@ -81,7 +81,7 @@ public class Aura extends Module {
     public final Setting<SprintMode> sprintMode = new Setting<>("SprintMode", SprintMode.Legit);
     public final Setting<Boolean> shieldBreaker = new Setting<>("ShieldBreaker", true);
     public final Setting<Boolean> pauseWhileEating = new Setting<>("PauseWhileEating", false);
-    public final Setting<Boolean> tpsSync = new Setting<>("TPSSync", false);
+    public final Setting<Boolean> tpsSync = new Setting<>("TPSSync", true);
     public final Setting<Boolean> clientLook = new Setting<>("ClientLook", false);
     public final Setting<Boolean> pauseBaritone = new Setting<>("PauseBaritone", false);
     public final Setting<BooleanSettingGroup> oldDelay = new Setting<>("OldDelay", new BooleanSettingGroup(false));
@@ -122,9 +122,9 @@ public class Aura extends Module {
     public final Setting<Float> aimedPitchStep = new Setting<>("AimedPitchStep", 1f, 0f, 90f).addToGroup(advanced);
     public final Setting<Float> maxPitchStep = new Setting<>("MaxPitchStep", 8f, 1f, 90f).addToGroup(advanced);
     public final Setting<Float> pitchAccelerate = new Setting<>("PitchAccelerate", 1.65f, 1f, 10f).addToGroup(advanced);
-    public final Setting<Float> attackCooldown = new Setting<>("AttackCooldown", 0.9f, 0.5f, 1f).addToGroup(advanced);
-    public final Setting<Float> attackBaseTime = new Setting<>("AttackBaseTime", 0.5f, 0f, 2f).addToGroup(advanced);
-    public final Setting<Integer> attackTickLimit = new Setting<>("AttackTickLimit", 11, 0, 20).addToGroup(advanced);
+    public final Setting<Float> attackCooldown = new Setting<>("AttackCooldown", 0.8f, 0.5f, 1f).addToGroup(advanced);
+    public final Setting<Float> attackBaseTime = new Setting<>("AttackBaseTime", 0f, 0f, 2f).addToGroup(advanced);
+    public final Setting<Integer> attackTickLimit = new Setting<>("AttackTickLimit", 9, 0, 20).addToGroup(advanced);
     public final Setting<Float> critFallDistance = new Setting<>("CritFallDistance", 0f, 0f, 1f).addToGroup(advanced);
 
     /*   ALTERNATIVE ROTATIONS   */
@@ -198,6 +198,7 @@ public class Aura extends Module {
 
     private final Timer delayTimer = new Timer();
     private final Timer pauseTimer = new Timer();
+    private int autoJumpTicks;
 
     public Box resolvedBox;
     static boolean wasTargeted = false;
@@ -226,8 +227,10 @@ public class Aura extends Module {
             return;
         }
 
-        if (!mc.options.jumpKey.isPressed() && mc.player.isOnGround() && autoJump.getValue())
+        if (!mc.options.jumpKey.isPressed() && mc.player.isOnGround() && autoJump.getValue()) {
             mc.player.jump();
+            autoJumpTicks = 2;
+        }
 
         boolean readyForAttack;
 
@@ -276,7 +279,13 @@ public class Aura extends Module {
 
     public void attack() {
         Criticals.cancelCrit = true;
-        ModuleManager.criticals.doCrit();
+
+        if (mc.player.isOnGround()) {
+            ModuleManager.criticals.doCrit();
+        } else if (smartCrit.getValue().isEnabled() && mc.player.getVelocity().y >= 0) {
+            doAirCrit();
+        }
+
         int prevSlot = switchMethod();
         mc.interactionManager.attackEntity(mc.player, target);
         Criticals.cancelCrit = false;
@@ -284,6 +293,12 @@ public class Aura extends Module {
         hitTicks = getHitTicks();
         if (prevSlot != -1)
             InventoryUtility.switchTo(prevSlot);
+    }
+
+    private void doAirCrit() {
+        double y = mc.player.getY();
+        sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), y + 0.0625, mc.player.getZ(), false, false));
+        sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), y, mc.player.getZ(), false, false));
     }
 
     private boolean @NotNull [] preAttack() {
@@ -447,6 +462,7 @@ public class Aura extends Module {
         rotationYaw = mc.player.getYaw();
         rotationPitch = mc.player.getPitch();
         chineseTicks = 0;
+        autoJumpTicks = 0;
         delayTimer.reset();
     }
 
@@ -471,6 +487,11 @@ public class Aura extends Module {
         if (ModuleManager.criticals.isEnabled() && ModuleManager.criticals.mode.is(Criticals.Mode.Grim))
             return true;
 
+        if (autoJumpTicks > 0) {
+            autoJumpTicks--;
+            return false;
+        }
+
         boolean mergeWithTargetStrafe = !ModuleManager.targetStrafe.isEnabled() || !ModuleManager.targetStrafe.jump.getValue();
         boolean mergeWithSpeed = !ModuleManager.speed.isEnabled() || mc.player.isOnGround();
 
@@ -486,8 +507,11 @@ public class Aura extends Module {
         if (mc.player.fallDistance > 1 && mc.player.fallDistance < 1.14)
             return false;
 
-        if (!reasonForSkipCrit)
-            return !mc.player.isOnGround() && mc.player.fallDistance > (shouldRandomizeFallDistance() ? MathUtility.random(0.15f, 0.7f) : critFallDistance.getValue());
+        if (!reasonForSkipCrit) {
+            if (onlySpace.getValue())
+                return !mc.player.isOnGround() && mc.player.fallDistance > (shouldRandomizeFallDistance() ? MathUtility.random(0.15f, 0.7f) : critFallDistance.getValue());
+            return !mc.player.isOnGround();
+        }
         return true;
     }
 
@@ -1079,10 +1103,14 @@ public class Aura extends Module {
     }
 
     private boolean skipNotSelected(Entity entity) {
-        if (entity instanceof SlimeEntity && !Slimes.getValue()) return true;
+        if (entity instanceof SlimeEntity) {
+            if (!Slimes.getValue()) return true;
+            return false;
+        }
         if (entity instanceof HostileEntity he) {
             if (!hostiles.getValue()) return true;
-            if (onlyAngry.getValue()) return !mc.player.equals(he.getTarget());
+            if (onlyAngry.getValue() && he.getTarget() != null) return !mc.player.equals(he.getTarget());
+            return false;
         }
         if (entity instanceof PlayerEntity && !Players.getValue()) return true;
         if (entity instanceof VillagerEntity && !Villagers.getValue()) return true;

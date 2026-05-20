@@ -1,10 +1,14 @@
 package thunder.hack.features.hud.impl;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.*;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 import thunder.hack.core.Managers;
 import thunder.hack.events.impl.TotemPopEvent;
 import thunder.hack.features.hud.HudElement;
@@ -26,6 +30,7 @@ public class Companion extends HudElement {
     }
 
     public Setting<Integer> scale = new Setting<>("Scale", 50, 0, 100);
+    public Setting<Integer> alpha = new Setting<>("Alpha", 255, 0, 255);
     public Setting<Mode> mode = new Setting<>("Mode", Mode.Boykisser);
 
     public static int currentFrame;
@@ -54,14 +59,24 @@ public class Companion extends HudElement {
         context.getMatrices().translate((int) getPosX() + 100, (int) getPosY() + 100, 0);
         context.getMatrices().scale((float) scale.getValue() / 100f, (float) scale.getValue() / 100f, 1);
         context.getMatrices().translate(-((int) getPosX() + 100), -((int) getPosY() + 100), 0);
+
+        float a = alpha.getValue() / 255f;
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(1f, 1f, 1f, a);
+
         if (mode.getValue() == Mode.Boykisser)
-            context.drawTexture(RenderLayer::getGuiTextured, TextureStorage.boykisser, (int) getPosX(), (int) getPosY(), 0, currentFrame * 128, 130, 128, 130, 6784);
+            drawTextureImmediate(context.getMatrices().peek().getPositionMatrix(), TextureStorage.boykisser, (int) getPosX(), (int) getPosY(), 0, currentFrame * 128, 130, 128, 130, 6784);
         else if (mode.getValue() == Mode.Paimon)
-            context.drawTexture(RenderLayer::getGuiTextured, TextureStorage.paimon, (int) getPosX(), (int) getPosY(), 0, currentFrame * 200, 200, 200, 200, 10600);
+            drawTextureImmediate(context.getMatrices().peek().getPositionMatrix(), TextureStorage.paimon, (int) getPosX(), (int) getPosY(), 0, currentFrame * 200, 200, 200, 200, 10600);
         else if (mode.getValue() == Mode.Baltika)
-            context.drawTexture(RenderLayer::getGuiTextured, TextureStorage.baltika, (int) getPosX(), (int) getPosY(), 0, 0, 421, 800, 421, 800);
+            drawTextureImmediate(context.getMatrices().peek().getPositionMatrix(), TextureStorage.baltika, (int) getPosX(), (int) getPosY(), 0, 0, 421, 800, 421, 800);
         else if (mode.getValue() == Mode.Kowk)
-            context.drawTexture(RenderLayer::getGuiTextured, TextureStorage.kowk, (int) getPosX(), (int) getPosY(), 0, 0, 287, 252, 287, 252);
+            drawTextureImmediate(context.getMatrices().peek().getPositionMatrix(), TextureStorage.kowk, (int) getPosX(), (int) getPosY(), 0, 0, 287, 252, 287, 252);
+
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.disableBlend();
+
         context.getMatrices().pop();
 
         if (!lastPop.passedMs(2000)) {
@@ -97,6 +112,23 @@ public class Companion extends HudElement {
         else
             message = event.getEntity().getName().getString() + " popped " + (event.getPops() > 1 ? event.getPops() + " totems!" : " a totem!");
         lastPop.reset();
+    }
+
+    private void drawTextureImmediate(Matrix4f matrix, Identifier tex, int x, int y, float u, float v, int width, int height, int texWidth, int texHeight) {
+        RenderSystem.setShaderTexture(0, tex);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+        BufferBuilder buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+        int x1 = x + width;
+        int y1 = y + height;
+        float minU = u / texWidth;
+        float maxU = (u + width) / texWidth;
+        float minV = v / texHeight;
+        float maxV = (v + height) / texHeight;
+        buf.vertex(matrix, x, y1, 0).texture(minU, maxV);
+        buf.vertex(matrix, x1, y1, 0).texture(maxU, maxV);
+        buf.vertex(matrix, x1, y, 0).texture(maxU, minV);
+        buf.vertex(matrix, x, y, 0).texture(minU, minV);
+        BufferRenderer.drawWithGlobalProgram(buf.end());
     }
 
     private enum Mode {

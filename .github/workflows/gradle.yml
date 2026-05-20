@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: build
 
 on:
   push:
@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -43,6 +44,27 @@ jobs:
       - name: Remove sources jar
         run: rm -f ./build/libs/*-sources.jar
 
+      - name: Download dependencies
+        run: |
+          mkdir -p ./build/bundle
+          cp ./build/libs/*.jar ./build/bundle/
+
+          FABRIC_VERSION="0.119.2+1.21.4"
+          SATIN_VERSION="3.0.0-alpha.1"
+
+          curl -sL -o ./build/bundle/fabric-api-$FABRIC_VERSION.jar \
+            "https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/$FABRIC_VERSION/fabric-api-$FABRIC_VERSION.jar"
+
+          curl -sL -o ./build/bundle/satin-$SATIN_VERSION.jar \
+            "https://maven.ladysnake.org/releases/org/ladysnake/satin/$SATIN_VERSION/satin-$SATIN_VERSION.jar"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: thunderhack-reborn
+          path: ./build/bundle/*.jar
+          retention-days: 5
+
       - name: Get version
         id: version
         run: |
@@ -63,24 +85,24 @@ jobs:
           VERSION="${{ steps.version.outputs.mod_version }}"
 
           cat > /tmp/release-notes.md <<-EOF
-          # 🚀 ThunderHack Reborn — Latest Build
+          # ThunderHack Reborn -- Latest Build
 
           | | |
           |---|---|
-          | **Version** | \`$VERSION\` |
-          | **Minecraft** | 1.21 |
-          | **Branch** | ${{ github.ref_name }} |
-          | **Author** | ${{ steps.commit.outputs.author }} |
-          | **Date** | ${{ steps.commit.outputs.date }} |
-          | **Commit** | [\`${{ steps.commit.outputs.sha_short }}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) |
+          | Version | \`$VERSION\` |
+          | Minecraft | 1.21.4 |
+          | Branch | ${{ github.ref_name }} |
+          | Author | ${{ steps.commit.outputs.author }} |
+          | Date | ${{ steps.commit.outputs.date }} |
+          | Commit | [\`${{ steps.commit.outputs.sha_short }}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) |
 
           ---
 
-          ## 📝 What's changed
+          ## What's changed
 
           EOF
 
-          echo "> $(cat /tmp/commit_subject.txt)" >> /tmp/release-notes.md
+          echo "$(cat /tmp/commit_subject.txt)" >> /tmp/release-notes.md
 
           if [ -s /tmp/commit_body.txt ]; then
             echo "" >> /tmp/release-notes.md
@@ -89,11 +111,15 @@ jobs:
           fi
 
           cat >> /tmp/release-notes.md <<-EOF
-          ## ⚙️ Build info
+          ## Build info
+          - Java: 21 (Zulu)
+          - Fabric Loom: 1.9
+          - Actions Run: #${{ github.run_number }}
 
-          - **Java**: 21 (Zulu)
-          - **Fabric Loom**: 1.7
-          - **Actions Run**: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          ## Included in this release
+          - ThunderHack-Reborn jar
+          - Fabric API 0.119.2+1.21.4
+          - Satin 3.0.0-alpha.1 -- just drop all jars into mods/
           EOF
 
       - name: Publish Release
@@ -102,9 +128,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VERSION="${{ steps.version.outputs.mod_version }}"
-          gh release delete latest --cleanup-tag --yes 2>/dev/null || true
+
+          if gh release view latest --json tagName --jq .tagName &>/dev/null; then
+            gh release delete latest --cleanup-tag --yes
+          fi
+
           gh release create latest \
             --title "Build $VERSION (${{ steps.commit.outputs.sha_short }})" \
             --notes-file /tmp/release-notes.md \
             --latest \
-            ./build/libs/*.jar
+            ./build/bundle/*.jar

@@ -172,7 +172,6 @@ public class ModuleManager implements IManager {
     public static Rotations rotations = new Rotations();
     public static MemoryHud memoryHud = new MemoryHud();
     public static WexIndicators wexIndicators = new WexIndicators();
-    public static PlayerView playerView = new PlayerView();
     public static Companion companion = new Companion();
     public static AutoGear autoGear = new AutoGear();
     public static ViewLock viewLock = new ViewLock();
@@ -271,6 +270,7 @@ public class ModuleManager implements IManager {
     public static FOV fov = new FOV();
     public static ESP esp = new ESP();
     public static RPC rpc = new RPC();
+    public static CommitsList commitsList = new CommitsList();
 
     public ModuleManager() {
         for (Field field : getClass().getDeclaredFields()) {
