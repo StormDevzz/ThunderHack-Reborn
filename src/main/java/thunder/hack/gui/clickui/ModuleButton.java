@@ -216,7 +216,7 @@ public class ModuleButton extends AbstractButton {
         }
 
         if (hovered)
-            Render2DEngine.drawRound(context.getMatrices(), x + 4f, y + 1f, width - 8, height - 2, 3, Render2DEngine.applyOpacity(Color.WHITE, 0.1f * animation));
+            Render2DEngine.drawRound(context.getMatrices(), x + 4f, y + 1f, width - 8, height - 2, 2, Render2DEngine.applyOpacity(Color.WHITE, 0.25f));
 
         if (!module.getBind().getBind().equalsIgnoreCase("none") && !binding)
             FontRenderers.sf_medium_modules.drawString(context.getMatrices(), getSbind(), x + width - 11 - FontRenderers.sf_medium_modules.getStringWidth(getSbind()), y + 6, module.isEnabled() ? HudEditor.textColor2.getValue().getColor() : HudEditor.textColor.getValue().getColor());
