@@ -73,6 +73,8 @@ public class Companion extends HudElement {
             drawTextureImmediate(context.getMatrices().peek().getPositionMatrix(), TextureStorage.baltika, (int) getPosX(), (int) getPosY(), 0, 0, 421, 800, 421, 800);
         else if (mode.getValue() == Mode.Kowk)
             drawTextureImmediate(context.getMatrices().peek().getPositionMatrix(), TextureStorage.kowk, (int) getPosX(), (int) getPosY(), 0, 0, 287, 252, 287, 252);
+        else if (mode.getValue() == Mode.ClearSkyGirl)
+            drawTextureImmediate(context.getMatrices().peek().getPositionMatrix(), TextureStorage.clearSkyGirl, (int) getPosX(), (int) getPosY(), 0, 0, 578, 432, 578, 432);
 
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         RenderSystem.disableBlend();
@@ -132,6 +134,6 @@ public class Companion extends HudElement {
     }
 
     private enum Mode {
-        Boykisser, Paimon, Baltika, Kowk
+        Boykisser, Paimon, Baltika, Kowk, ClearSkyGirl
     }
 }

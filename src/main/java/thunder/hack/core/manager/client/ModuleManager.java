@@ -271,6 +271,7 @@ public class ModuleManager implements IManager {
     public static CommitsList commitsList = new CommitsList();
     public static Xiaomi xiaomi = new Xiaomi();
     public static InventoryPreview inventoryPreview = new InventoryPreview();
+    public static MaceSwap maceSwap = new MaceSwap();
 
     public ModuleManager() {
         for (Field field : getClass().getDeclaredFields()) {
