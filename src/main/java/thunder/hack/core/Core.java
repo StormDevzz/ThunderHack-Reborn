@@ -41,6 +41,7 @@ import thunder.hack.utility.render.animation.CaptureMark;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static thunder.hack.features.modules.Module.fullNullCheck;
 import static thunder.hack.features.modules.Module.mc;
@@ -49,7 +50,7 @@ import static thunder.hack.features.modules.client.ClientSettings.isRu;
 public final class Core {
     public static boolean lockSprint, serverSprint, hold_mouse0, showSkull;
     public static final Map<String, Identifier> HEADS = new ConcurrentHashMap<>();
-    public ArrayList<Packet<?>> silentPackets = new ArrayList<>();
+    public List<Packet<?>> silentPackets = new CopyOnWriteArrayList<>();
     private final Timer skullTimer = new Timer();
     private final Timer lastPacket = new Timer();
     private final Timer autoSave = new Timer();

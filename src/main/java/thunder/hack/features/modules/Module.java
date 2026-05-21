@@ -189,10 +189,11 @@ public abstract class Module {
     private static String translateDescription(String key, String fallback) {
         String lang = isRu() ? "ru_ru" : "en_us";
         JsonObject json = langCache.computeIfAbsent(lang, l -> {
-            try {
-                var is = ThunderHack.class.getClassLoader().getResourceAsStream("assets/thunderhack/lang/" + l + ".json");
+            try (var is = ThunderHack.class.getClassLoader().getResourceAsStream("assets/thunderhack/lang/" + l + ".json")) {
                 if (is != null) {
-                    return JsonParser.parseReader(new InputStreamReader(is)).getAsJsonObject();
+                    try (var reader = new InputStreamReader(is)) {
+                        return JsonParser.parseReader(reader).getAsJsonObject();
+                    }
                 }
             } catch (Exception ignored) {}
             return new JsonObject();

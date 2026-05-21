@@ -90,7 +90,6 @@ public final class Surround extends PlaceModule {
 
 
         int placed = 0;
-        if (delay > 0) return;
         while (placed < blocksPerTick.getValue()) {
             if (!getBlockResult().found()) disable(isRu() ? "Нет блоков!" : "No blocks!");
 
