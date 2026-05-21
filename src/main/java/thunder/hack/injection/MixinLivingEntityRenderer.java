@@ -15,7 +15,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -55,17 +54,6 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extend
     @Unique
     private boolean matrixPushed;
 
-    @Unique
-    private Vec3d getCameraOffset() {
-        net.minecraft.client.render.Camera camera = mc.getEntityRenderDispatcher().camera;
-        if (camera == null) return Vec3d.ZERO;
-        return new Vec3d(
-                lastEntity.getX() - camera.getPos().getX(),
-                lastEntity.getY() - camera.getPos().getY(),
-                lastEntity.getZ() - camera.getPos().getZ()
-        );
-    }
-
     @Inject(method = "updateRenderState", at = @At("HEAD"))
     private void onUpdateRenderState(T entity, S renderState, float tickDelta, CallbackInfo ci) {
         if (Module.fullNullCheck()) return;
@@ -87,20 +75,9 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extend
 
         if (lastEntity instanceof PlayerEntity pl) {
             if (ModuleManager.smallUser.isEnabled() && ModuleManager.smallUser.shouldMakeSmall(pl)) {
-                Vec3d offset = getCameraOffset();
                 matrixStack.push();
                 matrixPushed = true;
-                matrixStack.translate(offset.x, offset.y, offset.z);
                 matrixStack.scale(0.5f, 0.5f, 0.5f);
-                matrixStack.translate(-offset.x, -offset.y, -offset.z);
-            }
-
-            if (ModuleManager.shiftInterp.isEnabled() && ModuleManager.shiftInterp.shouldShift(pl)) {
-                if (!matrixPushed) {
-                    matrixStack.push();
-                    matrixPushed = true;
-                }
-                matrixStack.translate(0, -0.2, 0);
             }
         }
     }

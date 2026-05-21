@@ -34,7 +34,6 @@ public class ModuleManager implements IManager {
     public static PenisESP penisESP = new PenisESP();
     public static AutoFarm autoFarm = new AutoFarm();
     public static AutoReconnect autoReconnect = new AutoReconnect();
-    public static ShiftInterp shiftInterp = new ShiftInterp();
     public static Ambience ambience = new Ambience();
     public static SmallUser smallUser = new SmallUser();
     public static EChestFarmer eChestFarmer = new EChestFarmer();
