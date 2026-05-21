@@ -34,9 +34,9 @@ public class ModuleManager implements IManager {
     public static PenisESP penisESP = new PenisESP();
     public static AutoFarm autoFarm = new AutoFarm();
     public static AutoReconnect autoReconnect = new AutoReconnect();
+    public static ShiftInterp shiftInterp = new ShiftInterp();
     public static Ambience ambience = new Ambience();
     public static SmallUser smallUser = new SmallUser();
-    public static ChinaHat chinaHat = new ChinaHat();
     public static EChestFarmer eChestFarmer = new EChestFarmer();
     public static DickAura dickAura = new DickAura();
     public static AntiPacketException antiPacketException = new AntiPacketException();
@@ -215,6 +215,7 @@ public class ModuleManager implements IManager {
     public static Tracker tracker = new Tracker();
     public static TpsSync tpsSync = new TpsSync();
     public static Spammer spammer = new Spammer();
+    public static Shaders shaders = new Shaders();
     public static PingHud pingHud = new PingHud();
     public static ItemESP itemESP = new ItemESP();
     public static HoleESP holeESP = new HoleESP();
@@ -270,7 +271,6 @@ public class ModuleManager implements IManager {
     public static ESP esp = new ESP();
     public static RPC rpc = new RPC();
     public static CommitsList commitsList = new CommitsList();
-    public static Xiaomi xiaomi = new Xiaomi();
 
     public ModuleManager() {
         for (Field field : getClass().getDeclaredFields()) {
