@@ -90,6 +90,48 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extend
     @Inject(method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("TAIL"))
     public void onRenderPost(net.minecraft.client.render.entity.state.LivingEntityRenderState state, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
         if (Module.fullNullCheck()) return;
+
+        if (ModuleManager.chinaHat.isEnabled() && lastEntity instanceof PlayerEntity pl && ModuleManager.chinaHat.shouldRender(pl)) {
+            matrixStack.push();
+            matrixStack.translate(0.0f, -0.249f, 0.0f);
+
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableCull();
+            RenderSystem.enableDepthTest();
+
+            java.awt.Color color = ModuleManager.chinaHat.color.getValue().getColorObject();
+            RenderSystem.setShaderColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+            RenderSystem.setShader(ShaderProgramKeys.POSITION);
+
+            BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION);
+
+            float radius = 0.3f;
+            float height = 0.4f;
+            int segments = 16;
+
+            for (int seg = 0; seg < segments; seg++) {
+                float a1 = (float) (seg * 2 * Math.PI / segments);
+                float a2 = (float) ((seg + 1) * 2 * Math.PI / segments);
+                float x1 = radius * MathHelper.cos(a1);
+                float z1 = radius * MathHelper.sin(a1);
+                float x2 = radius * MathHelper.cos(a2);
+                float z2 = radius * MathHelper.sin(a2);
+
+                buffer.vertex(matrixStack.peek().getPositionMatrix(), x1, 0, z1);
+                buffer.vertex(matrixStack.peek().getPositionMatrix(), 0, height, 0);
+                buffer.vertex(matrixStack.peek().getPositionMatrix(), x2, 0, z2);
+            }
+
+            Render2DEngine.endBuilding(buffer);
+
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+            RenderSystem.enableCull();
+            RenderSystem.disableBlend();
+
+            matrixStack.pop();
+        }
+
         if (matrixPushed) {
             matrixStack.pop();
             matrixPushed = false;

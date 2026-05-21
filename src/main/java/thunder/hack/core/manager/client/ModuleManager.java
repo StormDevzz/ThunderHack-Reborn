@@ -36,6 +36,7 @@ public class ModuleManager implements IManager {
     public static AutoReconnect autoReconnect = new AutoReconnect();
     public static Ambience ambience = new Ambience();
     public static SmallUser smallUser = new SmallUser();
+    public static ChinaHat chinaHat = new ChinaHat();
     public static EChestFarmer eChestFarmer = new EChestFarmer();
     public static DickAura dickAura = new DickAura();
     public static AntiPacketException antiPacketException = new AntiPacketException();
