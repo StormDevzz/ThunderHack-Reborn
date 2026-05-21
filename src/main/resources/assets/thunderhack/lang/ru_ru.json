@@ -192,6 +192,7 @@
   "descriptions.player.portalgodmode": "Делает тебя неуязвимым после телепортации.",
   "descriptions.player.regen": "Позволяет быстрее регенерировать здоровье (1.8).",
   "descriptions.player.speedmine": "Увеличивает скорость копания.",
+  "descriptions.player.sourcefiller": "Убирает водичку.",
   "descriptions.player.toolsaver": "Переключает инструмент если его прочность на исходе.",
   "descriptions.player.tpssync": "Синхронизирует внутренний игровой таймер с таймером сервера.",
   "descriptions.player.viewlock": "Блокирует камеру.",
