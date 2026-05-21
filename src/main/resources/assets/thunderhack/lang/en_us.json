@@ -194,6 +194,7 @@
   "descriptions.player.portalinventory": "Allows you to open inventory in the portal.",
   "descriptions.player.regen": "Allows you to regenerate health faster (1.8).",
   "descriptions.player.speedmine": "Increases your mining speed (not hashrate).",
+  "descriptions.player.sourcefiller": "Just fuck water.",
   "descriptions.player.toolsaver": "Switches the tool if its durability is running low.",
   "descriptions.player.tpssync": "Synchronizes the internal game timer with the server timer.",
   "descriptions.player.viewlock": "Locks your camera.",

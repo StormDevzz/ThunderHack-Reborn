@@ -33,7 +33,6 @@ public class ModuleManager implements IManager {
     public static PenisESP penisESP = new PenisESP();
     public static AutoFarm autoFarm = new AutoFarm();
     public static AutoReconnect autoReconnect = new AutoReconnect();
-    public static ShiftInterp shiftInterp = new ShiftInterp();
     public static Ambience ambience = new Ambience();
     public static SmallUser smallUser = new SmallUser();
     public static EChestFarmer eChestFarmer = new EChestFarmer();
@@ -196,6 +195,7 @@ public class ModuleManager implements IManager {
     public static AutoAuth autoAuth = new AutoAuth();
     public static ArmorHud armorHud = new ArmorHud();
     public static AirPlace airPlace = new AirPlace();
+    public static SourceFiller sourceFiller = new SourceFiller();
     public static SelfTrap selfTrap = new SelfTrap();
     public static AntiVoid antiVoid = new AntiVoid();
     public static KillFeed killFeed = new KillFeed();
@@ -270,6 +270,7 @@ public class ModuleManager implements IManager {
     public static RPC rpc = new RPC();
     public static CommitsList commitsList = new CommitsList();
     public static Xiaomi xiaomi = new Xiaomi();
+    public static InventoryPreview inventoryPreview = new InventoryPreview();
 
     public ModuleManager() {
         for (Field field : getClass().getDeclaredFields()) {
@@ -351,6 +352,7 @@ public class ModuleManager implements IManager {
         com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
         HudElement.anyHovered = false;
         modules.stream().filter(Module::isEnabled).forEach(module -> module.onRender2D(context));
+
         if (!HudElement.anyHovered && !ClickGUI.anyHovered)
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
                 GLFW.glfwSetCursor(mc.getWindow().getHandle(), GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR));
