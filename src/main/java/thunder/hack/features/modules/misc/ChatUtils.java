@@ -41,6 +41,7 @@ public class ChatUtils extends Module {
     private final Setting<Boolean> cute = new Setting<>("Cute", false);
     private final Setting<Boolean> nya = new Setting<>("Nya", false);
     private final Setting<Boolean> potuzhno = new Setting<>("Potuzhno", false);
+    private final Setting<Boolean> sleepy = new Setting<>("Sleepy", false);
 
     private final Timer timer = new Timer();
     private final Timer antiSpam = new Timer();
@@ -301,6 +302,11 @@ public class ChatUtils extends Module {
 
             if (nya.getValue()) {
                 message += "~";
+                changed = true;
+            }
+
+            if (sleepy.getValue()) {
+                message += " ~~zzZ";
                 changed = true;
             }
 

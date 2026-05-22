@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import thunder.hack.core.manager.client.ModuleManager;
+import thunder.hack.features.modules.misc.Weather;
 import thunder.hack.features.modules.render.WorldTweaks;
 import thunder.hack.setting.impl.ColorSetting;
 
@@ -24,6 +25,10 @@ public class MixinBackgroundRenderer {
             float end = WorldTweaks.fogEnd.getValue();
             ColorSetting c = WorldTweaks.fogColor.getValue();
             cir.setReturnValue(new Fog(start, end, original.shape(), c.getGlRed(), c.getGlGreen(), c.getGlBlue(), 1.0f));
+        }
+        if (ModuleManager.weather.isEnabled() && ModuleManager.weather.weatherMode.is(Weather.WeatherMode.Fog)) {
+            Fog original = cir.getReturnValue();
+            cir.setReturnValue(new Fog(ModuleManager.weather.fogStart.getValue(), ModuleManager.weather.fogEnd.getValue(), original.shape(), original.red(), original.green(), original.blue(), 1.0f));
         }
     }
 

@@ -165,6 +165,7 @@ public class ModuleManager implements IManager {
     public static AutoTotem autoTotem = new AutoTotem();
     public static AutoLeave autoLeave = new AutoLeave();
     public static AutoArmor autoArmor = new AutoArmor();
+    public static AutoBuild autoBuild = new AutoBuild();
     public static Cooldowns cooldowns = new Cooldowns();
     public static TapeMouse tapeMouse = new TapeMouse();
     public static Rotations rotations = new Rotations();
@@ -272,6 +273,7 @@ public class ModuleManager implements IManager {
     public static Xiaomi xiaomi = new Xiaomi();
     public static InventoryPreview inventoryPreview = new InventoryPreview();
     public static MaceSwap maceSwap = new MaceSwap();
+    public static Weather weather = new Weather();
 
     public ModuleManager() {
         for (Field field : getClass().getDeclaredFields()) {
