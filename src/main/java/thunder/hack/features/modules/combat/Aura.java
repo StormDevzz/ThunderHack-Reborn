@@ -75,11 +75,21 @@ public class Aura extends Module {
     public final Setting<Integer> interactTicks = new Setting<>("InteractTicks", 3, 1, 10, v -> rotationMode.getValue() == Mode.Interact);
     public final Setting<Switch> switchMode = new Setting<>("AutoWeapon", Switch.None);
     public final Setting<Boolean> onlyWeapon = new Setting<>("OnlyWeapon", false, v -> switchMode.getValue() != Switch.Silent);
-    public final Setting<BooleanSettingGroup> smartCrit = new Setting<>("SmartCrit", new BooleanSettingGroup(true));
-    public final Setting<Boolean> onlySpace = new Setting<>("OnlyCrit", false).addToGroup(smartCrit);
-    public final Setting<Boolean> autoJump = new Setting<>("AutoJump", false).addToGroup(smartCrit);
+    public final Setting<SettingGroup> critGroup = new Setting<>("Criticals", new SettingGroup(false, 0));
+    public final Setting<Boolean> smartCrit = new Setting<>("SmartCrit", true).addToGroup(critGroup);
+    public final Setting<CritMode> critMode = new Setting<>("CritMode", CritMode.Auto, v -> smartCrit.getValue()).addToGroup(critGroup);
+    public final Setting<Boolean> onlySpace = new Setting<>("OnlyCrit", false, v -> smartCrit.getValue()).addToGroup(critGroup);
+    public final Setting<Boolean> autoJump = new Setting<>("AutoJump", false, v -> smartCrit.getValue()).addToGroup(critGroup);
+    public final Setting<CritTrigger> critTrigger = new Setting<>("CritTrigger", CritTrigger.Falling, v -> smartCrit.getValue() && critMode.getValue() == CritMode.Custom).addToGroup(critGroup);
+    public final Setting<Float> critFallDistance = new Setting<>("CritFallDistance", 0.15f, 0f, 1f, v -> smartCrit.getValue() && (critMode.getValue() == CritMode.Auto || critTrigger.getValue() != CritTrigger.Falling)).addToGroup(critGroup);
+    public final Setting<Float> critMaxFallDistance = new Setting<>("CritMaxFallDistance", 0.8f, 0f, 2f, v -> smartCrit.getValue() && critMode.getValue() == CritMode.Custom && critTrigger.getValue() != CritTrigger.Falling).addToGroup(critGroup);
+    public final Setting<Boolean> bypassAirDelay = new Setting<>("BypassAirDelay", true, v -> smartCrit.getValue() && critMode.getValue() == CritMode.Custom).addToGroup(critGroup);
+    public final Setting<Boolean> bypassAirCooldown = new Setting<>("BypassAirCooldown", true, v -> smartCrit.getValue() && critMode.getValue() == CritMode.Custom).addToGroup(critGroup);
     public final Setting<SprintMode> sprintMode = new Setting<>("SprintMode", SprintMode.Legit);
-    public final Setting<Boolean> shieldBreaker = new Setting<>("ShieldBreaker", true);
+
+    public final Setting<SettingGroup> shieldGroup = new Setting<>("Shields", new SettingGroup(false, 0));
+    public final Setting<Boolean> shieldBreaker = new Setting<>("ShieldBreaker", true).addToGroup(shieldGroup);
+    public final Setting<Boolean> legitShieldBreak = new Setting<>("LegitShieldBreak", true, v -> shieldBreaker.getValue()).addToGroup(shieldGroup);
     public final Setting<Boolean> pauseWhileEating = new Setting<>("PauseWhileEating", false);
     public final Setting<Boolean> tpsSync = new Setting<>("TPSSync", true);
     public final Setting<Boolean> clientLook = new Setting<>("ClientLook", false);
@@ -125,7 +135,7 @@ public class Aura extends Module {
     public final Setting<Float> attackCooldown = new Setting<>("AttackCooldown", 0.8f, 0.5f, 1f).addToGroup(advanced);
     public final Setting<Float> attackBaseTime = new Setting<>("AttackBaseTime", 0f, 0f, 2f).addToGroup(advanced);
     public final Setting<Integer> attackTickLimit = new Setting<>("AttackTickLimit", 9, 0, 20).addToGroup(advanced);
-    public final Setting<Float> critFallDistance = new Setting<>("CritFallDistance", 0f, 0f, 1f).addToGroup(advanced);
+
 
     /*   ALTERNATIVE ROTATIONS   */
     public final Setting<SettingGroup> alternativeRotations = new Setting<>("Alternative", new SettingGroup(false, 0), v -> rotationMode.is(Mode.Alternative));
@@ -228,19 +238,17 @@ public class Aura extends Module {
         }
 
         if (!mc.options.jumpKey.isPressed() && mc.player.isOnGround() && autoJump.getValue()) {
-            mc.player.jump();
-            autoJumpTicks = 3;
+            float cd = attackCooldown.getValue();
+            if (smartCrit.getValue()) cd = Math.max(cd, 1.0f);
+            float requiredTicks = cd * getAttackCooldownProgressPerTick();
+            if (((ILivingEntity) mc.player).getLastAttackedTicks() >= requiredTicks - 9) {
+                mc.player.jump();
+                autoJumpTicks = 3;
+            }
         }
 
-        boolean readyForAttack;
-
-        if (grimRayTrace.getValue()) {
-            readyForAttack = autoCrit() && (lookingAtHitbox || skipRayTraceCheck());
-            calcRotations(autoCrit());
-        } else {
-            calcRotations(autoCrit());
-            readyForAttack = autoCrit() && (lookingAtHitbox || skipRayTraceCheck());
-        }
+        calcRotations(true);
+        boolean readyForAttack = autoCrit() && (lookingAtHitbox || skipRayTraceCheck());
 
         if (readyForAttack) {
             if (shieldBreaker(false))
@@ -283,7 +291,7 @@ public class Aura extends Module {
         if (mc.player.isOnGround()) {
             if (ModuleManager.criticals.isEnabled()) {
                 ModuleManager.criticals.doCrit();
-            } else if (smartCrit.getValue().isEnabled()) {
+            } else if (smartCrit.getValue()) {
                 doAirCrit();
             }
         }
@@ -382,6 +390,7 @@ public class Aura extends Module {
     }
 
     private int getHitTicks() {
+        if (mc.options.jumpKey.isPressed()) return 0;
         return oldDelay.getValue().isEnabled() ? 1 + (int) (20f / random(minCPS.getValue(), maxCPS.getValue())) : (shouldRandomizeDelay() ? (int) MathUtility.random(11, 13) : attackTickLimit.getValue());
     }
 
@@ -470,53 +479,67 @@ public class Aura extends Module {
 
     private boolean autoCrit() {
         boolean reasonForSkipCrit =
-                !smartCrit.getValue().isEnabled()
+                !smartCrit.getValue()
                         || mc.player.getAbilities().flying
                         || (mc.player.isGliding() || ModuleManager.elytraPlus.isEnabled())
                         || mc.player.hasStatusEffect(StatusEffects.BLINDNESS)
                         || mc.player.hasStatusEffect(StatusEffects.SLOW_FALLING)
-                        || Managers.PLAYER.isInWeb();
+                        || mc.player.hasVehicle()
+                        || Managers.PLAYER.isInWeb()
+                        || isAboveWater();
 
-        if (hitTicks > 0)
+        // 1. hitTicks Delay Bypass Check
+        boolean isAirDelayBypassed = critMode.getValue() == CritMode.Auto || bypassAirDelay.getValue();
+        if (hitTicks > 0 && (!isAirDelayBypassed || mc.player.isOnGround()))
             return false;
 
         if (pauseInInventory.getValue() && Managers.PLAYER.inInventory)
             return false;
 
-        if (getAttackCooldown() < attackCooldown.getValue() && !oldDelay.getValue().isEnabled() && !(rotationMode.is(Mode.HvH) && hvhIgnoreCooldown.getValue()))
+        // 2. Attack Cooldown Bypass Check
+        boolean isAirCooldownBypassed = critMode.getValue() == CritMode.Auto ? mc.options.jumpKey.isPressed() : bypassAirCooldown.getValue();
+        if (getAttackCooldown() < attackCooldown.getValue() && !oldDelay.getValue().isEnabled() && !(rotationMode.is(Mode.HvH) && hvhIgnoreCooldown.getValue()) && (!isAirCooldownBypassed || mc.player.isOnGround()))
             return false;
 
-        if (ModuleManager.criticals.isEnabled() && ModuleManager.criticals.mode.is(Criticals.Mode.Grim))
-            return true;
-
-        if (autoJumpTicks > 0) {
-            autoJumpTicks--;
-            return false;
-        }
-
-        if (autoJump.getValue() && !mc.player.isOnGround() && mc.player.getVelocity().y >= 0)
-            return false;
-
-        boolean mergeWithTargetStrafe = !ModuleManager.targetStrafe.isEnabled() || !ModuleManager.targetStrafe.jump.getValue();
-        boolean mergeWithSpeed = !ModuleManager.speed.isEnabled() || mc.player.isOnGround();
-
-        if (!mc.options.jumpKey.isPressed() && mergeWithTargetStrafe && mergeWithSpeed && !onlySpace.getValue() && !autoJump.getValue())
+        if (ModuleManager.criticals.isEnabled())
             return true;
 
         if (mc.player.isInLava() || mc.player.isSubmergedInWater())
             return true;
 
-        if (!mc.options.jumpKey.isPressed() && isAboveWater())
-            return true;
-
-        if (mc.player.fallDistance > 1 && mc.player.fallDistance < 1.14)
-            return false;
-
-        if (!reasonForSkipCrit) {
-            if (onlySpace.getValue())
-                return !mc.player.isOnGround() && mc.player.fallDistance > (shouldRandomizeFallDistance() ? MathUtility.random(0.15f, 0.7f) : critFallDistance.getValue());
-            return !mc.player.isOnGround();
+        // Если мы в воздухе и криты не отключены (SmartCrit включен)
+        if (!mc.player.isOnGround() && !reasonForSkipCrit) {
+            if (critMode.getValue() == CritMode.Auto) {
+                float requiredFall = mc.options.jumpKey.isPressed() ? 0.01f : critFallDistance.getValue();
+                return mc.player.fallDistance > requiredFall;
+            } else {
+                // Custom mode checks
+                boolean triggerCondition = false;
+                switch (critTrigger.getValue()) {
+                    case Falling:
+                        triggerCondition = mc.player.getVelocity().y < 0;
+                        break;
+                    case FallDistance:
+                        triggerCondition = mc.player.fallDistance >= critFallDistance.getValue() && mc.player.fallDistance <= critMaxFallDistance.getValue();
+                        break;
+                    case Both:
+                        triggerCondition = mc.player.getVelocity().y < 0 && mc.player.fallDistance >= critFallDistance.getValue() && mc.player.fallDistance <= critMaxFallDistance.getValue();
+                        break;
+                }
+                return triggerCondition;
+            }
         }
+
+        // Если мы на земле, и включен OnlyCrits, то ждем прыжка
+        if (onlySpace.getValue() && !reasonForSkipCrit) {
+            return false;
+        }
+
+        // Если зажат пробел, мы вот-вот прыгнем, так что лучше подождать и дать крит
+        if (mc.options.jumpKey.isPressed() && !reasonForSkipCrit && !autoJump.getValue()) {
+            return false;
+        }
+
         return true;
     }
 
@@ -529,18 +552,36 @@ public class Aura extends Module {
         if (((PlayerEntity) target).getOffHandStack().getItem() != Items.SHIELD && ((PlayerEntity) target).getMainHandStack().getItem() != Items.SHIELD)
             return false;
 
-        if (axeSlot >= 9) {
-            mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, axeSlot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
-            sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
-            mc.interactionManager.attackEntity(mc.player, target);
-            swingHand();
-            mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, axeSlot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
-            sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
+        // Если включен LegitShieldBreak, мы ломаем щит легитно
+        if (legitShieldBreak.getValue()) {
+            if (axeSlot < 9) {
+                // Топор в хотбаре - легитно переключаемся
+                sendPacket(new UpdateSelectedSlotC2SPacket(axeSlot));
+                mc.interactionManager.attackEntity(mc.player, target);
+                swingHand();
+                sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().selectedSlot));
+            } else {
+                // Топор в инвентаре - легитно берем в руку через инвентарь без спама пакетов клика/закрытия
+                mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, axeSlot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
+                mc.interactionManager.attackEntity(mc.player, target);
+                swingHand();
+                mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, axeSlot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
+            }
         } else {
-            sendPacket(new UpdateSelectedSlotC2SPacket(axeSlot));
-            mc.interactionManager.attackEntity(mc.player, target);
-            swingHand();
-            sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().selectedSlot));
+            // Не легитный обход (быстрый свап)
+            if (axeSlot >= 9) {
+                mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, axeSlot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
+                sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
+                mc.interactionManager.attackEntity(mc.player, target);
+                swingHand();
+                mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, axeSlot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
+                sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
+            } else {
+                sendPacket(new UpdateSelectedSlotC2SPacket(axeSlot));
+                mc.interactionManager.attackEntity(mc.player, target);
+                swingHand();
+                sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().selectedSlot));
+            }
         }
         hitTicks = 10;
         return true;
@@ -1170,4 +1211,6 @@ public class Aura extends Module {
     public enum HvHTarget { Head, Body, Random }
     public enum ChineseTargetPoint { Head, Chest, Legs, Random }
     public enum SprintMode { Normal, Legit, HvH }
+    public enum CritMode { Auto, Custom }
+    public enum CritTrigger { Falling, FallDistance, Both }
 }
