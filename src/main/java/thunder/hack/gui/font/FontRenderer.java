@@ -2,6 +2,25 @@ package thunder.hack.gui.font;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix3x2fStack;
+
+import it.unimi.dsi.fastutil.chars.Char2IntArrayMap;
+import it.unimi.dsi.fastutil.chars.Char2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+import java.awt.*;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -172,110 +191,6 @@ public class FontRenderer implements Closeable {
     }
 
 
-        float r2 = r, g2 = g, b2 = b;
-        stack.pushMatrix();
-        y -= 3f;
-        stack.translate((float) roundToDecimal(x, 1), (float) roundToDecimal(y, 1));
-        stack.scale(1f / this.scaleMul, 1f / this.scaleMul);
-
-        GlStateManager._enableBlend();
-        GlStateManager._blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-        GlStateManager._disableCull();
-        BufferBuilder bb;
-        Matrix4f mat = new Matrix4f();
-        mat.set(
-            stack.m00, stack.m01, 0, stack.m20,
-            stack.m10, stack.m11, 0, stack.m21,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        );
-        char[] chars = s.toCharArray();
-        float xOffset = 0;
-        float yOffset = 0;
-        boolean inSel = false;
-        int lineStart = 0;
-        synchronized (GLYPH_PAGE_CACHE) {
-            for (int i = 0; i < chars.length; i++) {
-                char c = chars[i];
-                if (inSel) {
-                    inSel = false;
-                    char c1 = Character.toUpperCase(c);
-                    if (colorCodes.containsKey(c1)) {
-                        int ii = colorCodes.get(c1);
-                        int[] col = RGBIntToRGB(ii);
-                        r2 = col[0] / 255f;
-                        g2 = col[1] / 255f;
-                        b2 = col[2] / 255f;
-                    } else if (c1 == 'R') {
-                        r2 = r;
-                        g2 = g;
-                        b2 = b;
-                    }
-                    continue;
-                }
-
-                if (gradient) {
-                    Color color = HudEditor.getColor(i * offset);
-                    r2 = color.getRed() / 255f;
-                    g2 = color.getGreen() / 255f;
-                    b2 = color.getBlue() / 255f;
-                    a = color.getAlpha() / 255f;
-                }
-
-                if (c == '§') {
-                    inSel = true;
-                    continue;
-                } else if (c == '\n') {
-                    yOffset += getStringHeight(s.substring(lineStart, i)) * scaleMul;
-                    xOffset = 0;
-                    lineStart = i + 1;
-                    continue;
-                }
-                Glyph glyph = locateGlyph1(c);
-                if (glyph != null) {
-                    if (glyph.value() != ' ') {
-                        Identifier i1 = glyph.owner().bindToTexture;
-                        DrawEntry entry = new DrawEntry(xOffset, yOffset, r2, g2, b2, glyph);
-                        GLYPH_PAGE_CACHE.computeIfAbsent(i1, integer -> new ObjectArrayList<>()).add(entry);
-                    }
-                    xOffset += glyph.width();
-                }
-            }
-            for (Identifier identifier : GLYPH_PAGE_CACHE.keySet()) {
-                RenderSystem.setShaderTexture(0, mc.getTextureManager().getTexture(identifier).getGlTextureView());
-                List<DrawEntry> objects = GLYPH_PAGE_CACHE.get(identifier);
-
-                bb = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-
-                for (DrawEntry object : objects) {
-                    float xo = object.atX;
-                    float yo = object.atY;
-                    float cr = object.r;
-                    float cg = object.g;
-                    float cb = object.b;
-                    Glyph glyph = object.toDraw;
-                    GlyphMap owner = glyph.owner();
-                    float w = glyph.width();
-                    float h = glyph.height();
-                    float u1 = (float) glyph.u() / owner.width;
-                    float v1 = (float) glyph.v() / owner.height;
-                    float u2 = (float) (glyph.u() + glyph.width()) / owner.width;
-                    float v2 = (float) (glyph.v() + glyph.height()) / owner.height;
-
-                    bb.vertex(mat, xo + 0, yo + h, 0).texture(u1, v2).color(cr, cg, cb, a);
-                    bb.vertex(mat, xo + w, yo + h, 0).texture(u2, v2).color(cr, cg, cb, a);
-                    bb.vertex(mat, xo + w, yo + 0, 0).texture(u2, v1).color(cr, cg, cb, a);
-                    bb.vertex(mat, xo + 0, yo + 0, 0).texture(u1, v1).color(cr, cg, cb, a);
-                }
-                Render2DEngine.endBuilding(bb);
-            }
-
-            GLYPH_PAGE_CACHE.clear();
-        }
-        GlStateManager._enableCull();
-        GlStateManager._disableBlend();
-        stack.popMatrix();
-    }
 
     public void drawCenteredString(Matrix3x2fStack stack, String s, double x, double y, int color) {
         float r = ((color >> 16) & 0xff) / 255f;

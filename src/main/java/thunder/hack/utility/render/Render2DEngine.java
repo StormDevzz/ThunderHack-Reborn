@@ -35,7 +35,7 @@ public class Render2DEngine {
 
     public static void begin(DrawContext ctx) { contextStack.push(ctx); }
     public static void end() { contextStack.pop(); }
-    private static DrawContext ctx() { return contextStack.peek(); }
+    public static DrawContext ctx() { return contextStack.peek(); }
 
     public static HashMap<Integer, BlurredShadow> shadowCache = new HashMap<>();
     public static HashMap<Integer, BlurredShadow> shadowCache1 = new HashMap<>();

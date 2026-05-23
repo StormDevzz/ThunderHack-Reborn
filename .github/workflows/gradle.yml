@@ -51,7 +51,7 @@ jobs:
           mkdir -p ./build/bundle
           cp ./build/libs/*.jar ./build/bundle/
 
-          FABRIC_VERSION="0.119.2+1.21.4"
+          FABRIC_VERSION="0.133.11+1.21.9"
           SATIN_VERSION="3.0.0-alpha.1"
 
           curl -sL -o ./build/bundle/fabric-api-$FABRIC_VERSION.jar \
@@ -87,12 +87,12 @@ jobs:
           VERSION="${{ steps.version.outputs.mod_version }}"
 
           cat > /tmp/release-notes.md <<-EOF
-          # ThunderHack Reborn -- Latest Build
+          # ThunderHack Reborn - Latest Build
 
           | | |
           |---|---|
           | Version | \`$VERSION\` |
-          | Minecraft | 1.21.4 |
+          | Minecraft | 1.21.9 |
           | Branch | ${{ github.ref_name }} |
           | Author | ${{ steps.commit.outputs.author }} |
           | Date | ${{ steps.commit.outputs.date }} |
@@ -120,8 +120,8 @@ jobs:
 
           ## Included in this release
           - ThunderHack-Reborn jar
-          - Fabric API 0.119.2+1.21.4
-          - Satin 3.0.0-alpha.1 -- just drop all jars into mods/
+          - Fabric API 0.133.11+1.21.9
+          - Satin 3.0.0-alpha.1 (just drop all jars into mods/) 
           EOF
 
       - name: Publish Release
