@@ -110,9 +110,9 @@ public final class InteractionUtility {
         if (sprint)
             mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
         if (sneak)
-            mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
+            mc.player.setSneaking(true);
 
-        float[] angle = calculateAngle(result.getEntityPos());
+        float[] angle = calculateAngle(result.getPos());
 
         switch (rotate) {
             case None -> {
@@ -134,7 +134,7 @@ public final class InteractionUtility {
             mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround(), false));
 
         if (sneak)
-            mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
+            mc.player.setSneaking(false);
 
         if (sprint)
             mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_SPRINTING));
@@ -150,7 +150,7 @@ public final class InteractionUtility {
 
     public static float @Nullable [] getPlaceAngle(@NotNull BlockPos bp, Interact interact, boolean ignoreEntities) {
         BlockHitResult result = getPlaceResult(bp, interact, ignoreEntities);
-        if (result != null) return calculateAngle(result.getEntityPos());
+        if (result != null) return calculateAngle(result.getPos());
         return null;
     }
 
@@ -367,7 +367,7 @@ public final class InteractionUtility {
 
                         if (squaredDistanceFromEyes(point) < bestDistance)
                             if (result != null && result.getType() == HitResult.Type.BLOCK)
-                                bestData = new BreakData(result.getSide(), result.getEntityPos());
+                                bestData = new BreakData(result.getSide(), result.getPos());
                     }
                 }
             }

@@ -78,7 +78,7 @@ public class GuiScanner extends Screen {
             hovery = mouseY - centery;
         }
 
-        Render2DEngine.addWindow(context, consolex, consoley, consolex1, consoley1 - 10, 1f);
+        // Render2DEngine.addWindow stubbed for 1.21.9
 
         for (NoCommentExploit.Cout out : new ArrayList<>(consoleout)) {
             FontRenderers.monsterrat.drawString(context.getMatrices(), out.out(), consolex + 4, consoley + 6 + (out.posY() * 11) + wheely, -1);
@@ -91,26 +91,7 @@ public class GuiScanner extends Screen {
         FontRenderers.monsterrat.drawString(context.getMatrices(), "Y-", centerx, radary - 8, -1);
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (mouseX > radarx && mouseX < radarx1 && mouseY > radary && mouseY < radary1) {
-            busy = true;
-            searchx = (int) (mouseX - centerx);
-            searchy = (int) (mouseY - centery);
-            ModuleManager.noCommentExploit.rerun(searchx * 64, searchy * 64);
-            consoleout.add(new NoCommentExploit.Cout(ModuleManager.noCommentExploit.couti, "Selected pos " + searchx * 65 + "x " + searchy * 64 + "z "));
-            ++ModuleManager.noCommentExploit.couti;
-        }
-        if (mouseX > consolex && mouseX < consolex1 && mouseY > consoley1 + 20 && mouseY < consoley1 + 36) {
-            track = !track;
-        }
-        if (mouseX > consolex && mouseX < consolex1 && mouseY > consoley1 + 38 && mouseY < consoley1 + 53) {
-            ModuleManager.noCommentExploit.couti = 1;
-            consoleout.clear();
-        }
-
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
+    // mouseClicked stubbed for 1.21.9 (signature changed)
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {

@@ -84,17 +84,13 @@ public abstract class MixinSplashOverlay {
         if (f >= 1.0F) {
             // fade-out phase — render current screen underneath, draw our overlay fading out
             if (mc.currentScreen != null) {
-                context.getMatrices().push();
                 mc.currentScreen.render(context, 0, 0, delta);
-                context.getMatrices().pop();
             }
             fade = 1.0F - MathHelper.clamp(f - 1.0F, 0f, 1f);
         } else if (reloading) {
             // loading phase — fade in from 0 to 1, render current screen behind
             if (mc.currentScreen != null && g < 1.0F) {
-                context.getMatrices().push();
                 mc.currentScreen.render(context, mouseX, mouseY, delta);
-                context.getMatrices().pop();
             }
             fade = MathHelper.clamp(g, 0f, 1f);
         } else {

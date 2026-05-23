@@ -45,32 +45,6 @@ public class Xiaomi extends HudElement {
 
     @Override
     public void onRender2D(DrawContext context) {
-        super.onRender2D(context);
-
-        if (cachedImages.isEmpty()) {
-            setBounds(getPosX(), getPosY(), 0, 0);
-            return;
-        }
-
-        int size = imageSize.getValue();
-        int gapVal = gap.getValue();
-        float labelHeight = FontRenderers.sf_bold.getFontHeight("Ag");
-        float labelOffset = 3f;
-
-        for (int i = 0; i < cachedImages.size(); i++) {
-            ImageEntry entry = cachedImages.get(i);
-            float x = getPosX() + i * (size + gapVal);
-
-            RenderSystem.setShaderTexture(0, entry.id);
-            Render2DEngine.renderTexture(context.getMatrices(), x, getPosY(), size, size, 0, 0, 256, 256, 256, 256);
-
-            float labelWidth = FontRenderers.sf_bold.getStringWidth(entry.label);
-            FontRenderers.sf_bold.drawString(context.getMatrices(), entry.label,
-                    x + (size - labelWidth) / 2f,
-                    getPosY() + size + labelOffset,
-                    Color.WHITE.getRGB());
-        }
-
-        setBounds(getPosX(), getPosY(), cachedImages.size() * size + (cachedImages.size() - 1) * gapVal, size + labelHeight + labelOffset);
+        // stubbed for 1.21.9
     }
 }

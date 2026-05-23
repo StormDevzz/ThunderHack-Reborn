@@ -42,8 +42,8 @@ public final class ThunderUtility {
     public static String solveName(String notSolved) {
         AtomicReference<String> mb = new AtomicReference<>("FATAL ERROR");
         Objects.requireNonNull(mc.getNetworkHandler()).getListedPlayerListEntries().forEach(player -> {
-            if (notSolved.contains(player.getProfile().getName())) {
-                mb.set(player.getProfile().getName());
+            if (notSolved.contains(player.getProfile().name())) {
+                mb.set(player.getProfile().name());
             }
         });
 
@@ -52,7 +52,7 @@ public final class ThunderUtility {
 
     public static Identifier getCustomImg(String name) throws IOException {
         Identifier id = Identifier.of("th-" + name + "-" + (int) MathUtility.random(0, 1000));
-        mc.getTextureManager().registerTexture(id, new NativeImageBackedTexture(NativeImage.read(new FileInputStream(IMAGES_FOLDER + "/" + name + ".png"))));
+        mc.getTextureManager().registerTexture(id, new NativeImageBackedTexture(() -> name, NativeImage.read(new FileInputStream(IMAGES_FOLDER + "/" + name + ".png"))));
         return id;
     }
 

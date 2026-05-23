@@ -35,45 +35,8 @@ public class KillFeed extends HudElement {
     private float vAnimation, hAnimation;
 
     public void onRender2D(DrawContext context) {
-        super.onRender2D(context);
-        int y_offset1 = 0;
-        float scale_x = 30;
-
-        for (KillComponent kc : Lists.newArrayList(players)) {
-            if (FontRenderers.modules.getStringWidth(kc.getString()) > scale_x)
-                scale_x = FontRenderers.modules.getStringWidth(kc.getString());
-            y_offset1 += 15;
-        }
-
-        vAnimation = AnimationUtility.fast(vAnimation, 14 + y_offset1, 15);
-        hAnimation = AnimationUtility.fast(hAnimation, scale_x + 10, 15);
-
-        Render2DEngine.drawHudBase(context.getMatrices(), getPosX(), getPosY(), hAnimation, vAnimation, HudEditor.hudRound.getValue());
-
-        if (HudEditor.hudStyle.is(HudEditor.HudStyle.Glowing)) {
-            FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), "KillFeed", getPosX() + hAnimation / 2, getPosY() + 4, HudEditor.textColor.getValue().getColorObject());
-        } else {
-            FontRenderers.sf_bold.drawGradientCenteredString(context.getMatrices(), "KillFeed", getPosX() + hAnimation / 2, getPosY() + 4, 10);
-        }
-
-        if (y_offset1 > 0) {
-            if (HudEditor.hudStyle.is(HudEditor.HudStyle.Glowing)) {
-                Render2DEngine.horizontalGradient(context.getMatrices(), getPosX() + 2, getPosY() + 13.7f, getPosX() + 2 + hAnimation / 2f - 2, getPosY() + 14, Render2DEngine.injectAlpha(HudEditor.textColor.getValue().getColorObject(), 0), HudEditor.textColor.getValue().getColorObject());
-                Render2DEngine.horizontalGradient(context.getMatrices(), getPosX() + 2 + hAnimation / 2f - 2, getPosY() + 13.7f, getPosX() + 2 + hAnimation - 4, getPosY() + 14, HudEditor.textColor.getValue().getColorObject(), Render2DEngine.injectAlpha(HudEditor.textColor.getValue().getColorObject(), 0));
-            } else {
-                Render2DEngine.drawRectDumbWay(context.getMatrices(), getPosX() + 4, getPosY() + 13, getPosX() + getWidth() - 4, getPosY() + 13.5f, new Color(0x54FFFFFF, true));
-            }
-        }
-
-        Render2DEngine.addWindow(context, getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
-        int y_offset = 3;
-        for (KillComponent kc : Lists.newArrayList(players)) {
-            FontRenderers.modules.drawString(context.getMatrices(), kc.getString(), getPosX() + 5, getPosY() + 18 + y_offset, -1);
-            y_offset += 10;
-        }
-        Render2DEngine.popWindow(context);
-        setBounds(getPosX(), getPosY(), hAnimation, vAnimation);
-    }
+    // stubbed for 1.21.9
+}
 
     @EventHandler
     public void onPacket(PacketEvent.@NotNull Receive e) {

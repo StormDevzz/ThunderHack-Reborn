@@ -118,7 +118,7 @@ public final class Surround extends PlaceModule {
                 handlePacket();
         }
 
-        if (event.getPacket() instanceof BlockUpdateS2CPacket pac && mc.player.squaredDistanceTo(pac.getEntityPos().toCenterPos()) < range.getPow2Value() && pac.getState().isReplaceable())
+        if (event.getPacket() instanceof BlockUpdateS2CPacket pac && mc.player.squaredDistanceTo(pac.getPos().toCenterPos()) < range.getPow2Value() && pac.getState().isReplaceable())
             handlePacket();
 
         if (event.getPacket() instanceof PlayerPositionLookS2CPacket && onTp.getValue() == OnTpAction.Disable)

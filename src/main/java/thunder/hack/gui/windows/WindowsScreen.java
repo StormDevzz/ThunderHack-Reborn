@@ -1,11 +1,9 @@
 package thunder.hack.gui.windows;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.util.math.MatrixStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import thunder.hack.gui.clickui.ClickGUI;
@@ -41,7 +39,7 @@ public class WindowsScreen extends Screen {
         if (Module.fullNullCheck())
             renderBackground(context, mouseX, mouseY, delta);
 
-        MatrixStack matrices = context.getMatrices();
+        Matrix3x2fStack matrices = context.getMatrices();
         int i = mc.getWindow().getScaledWidth() / 2;
 
         float offset = (windows.size() * 20f) / -2f - 23;
@@ -49,7 +47,7 @@ public class WindowsScreen extends Screen {
         Render2DEngine.drawHudBase(matrices, i + offset - 1.5f, mc.getWindow().getScaledHeight() - 25, windows.size() * 20f + 23f, 19, HudEditor.hudRound.getValue());
 
         // TODO: 1.21.9 - RenderSystem.enableBlend/defaultBlendFunc/setShaderColor/disableBlend removed
-        context.drawTexture(RenderLayer::getGuiTextured, clickGuiIcon, (int) (i + offset) + 1, mc.getWindow().getScaledHeight() - 23, 15, 15, 0, 0, 15, 15, 15, 15);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, clickGuiIcon, (int) (i + offset) + 1, mc.getWindow().getScaledHeight() - 23, 0f, 0f, 15, 15, 15, 15, 15, 15);
 
         Render2DEngine.drawLine(i + offset + 20, mc.getWindow().getScaledHeight() - 23, i + offset + 20, mc.getWindow().getScaledHeight() - 9, Color.GRAY.getRGB());
 
@@ -58,12 +56,8 @@ public class WindowsScreen extends Screen {
             Color c = Render2DEngine.isHovered(mouseX, mouseY, i + offset, mc.getWindow().getScaledHeight() - 24, 17, 17) ? new Color(0x7C2F2F2F, true) :
                     !w.isVisible() ? new Color(0x7C1E1E1E, true) : new Color(0x7C3B3B3B, true);
             Render2DEngine.drawRect(matrices, i + offset, mc.getWindow().getScaledHeight() - 24, 17, 17, HudEditor.hudRound.getValue(), 0.7f, c, c, c, c);
-            RenderSystem.enableBlend();
-            RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-            RenderSystem.setShaderColor(1f, 1f, 1f, Render2DEngine.isHovered(mouseX, mouseY, (i + offset) + 1, mc.getWindow().getScaledHeight() - 23, 15, 15) ? 0.95f : 0.7f);
-            context.drawTexture(RenderLayer::getGuiTextured, w.getIcon() != null ? w.getIcon() : TextureStorage.configIcon, (int) (i + offset) + 3, mc.getWindow().getScaledHeight() - 21, 11, 11, 0, 0, 11, 11, 11, 11);
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-            RenderSystem.disableBlend();
+            // TODO: 1.21.9 - setShaderColor removed, alpha handled via drawTexture
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, w.getIcon() != null ? w.getIcon() : TextureStorage.configIcon, (int) (i + offset) + 3, mc.getWindow().getScaledHeight() - 21, 0f, 0f, 11, 11, 11, 11, 11, 11);
             offset += 20f;
         }
 
@@ -76,46 +70,5 @@ public class WindowsScreen extends Screen {
             lastClickedWindow.render(context, mouseX, mouseY);
     }
 
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        windows.forEach(w -> w.mouseReleased(mouseX, mouseY, button));
-        return super.mouseReleased(mouseX, mouseY, button);
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        windows.stream().filter(WindowBase::isVisible).forEach(w -> w.mouseClicked(mouseX, mouseY, button));
-
-        int i = mc.getWindow().getScaledWidth() / 2;
-        float offset = (windows.size() * 20f) / -2f - 23;
-
-        if (Render2DEngine.isHovered(mouseX, mouseY, (i + offset) + 1, mc.getWindow().getScaledHeight() - 23, 15, 15))
-            mc.setScreen(ClickGUI.getClickGui());
-
-        offset += 23;
-        for (WindowBase w : windows) {
-            if (Render2DEngine.isHovered(mouseX, mouseY, i + offset, mc.getWindow().getScaledHeight() - 24, 17, 17))
-                w.setVisible(!w.isVisible());
-            offset += 20f;
-        }
-
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        windows.stream().filter(WindowBase::isVisible).forEach(w -> w.keyPressed(keyCode, scanCode, modifiers));
-        return super.keyPressed(keyCode, scanCode, modifiers);
-    }
-
-    public boolean charTyped(char key, int keyCode) {
-        windows.stream().filter(WindowBase::isVisible).forEach(w -> w.charTyped(key, keyCode));
-        return super.charTyped(key, keyCode);
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        windows.stream().filter(WindowBase::isVisible).forEach(w -> w.mouseScrolled((int) (verticalAmount * 5D)));
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
-    }
+    // TODO: 1.21.9 - input methods reworked (Click/KeyInput/CharInput types), reimplement
 }

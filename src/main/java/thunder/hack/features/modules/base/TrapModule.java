@@ -56,7 +56,7 @@ public abstract class TrapModule extends PlaceModule {
             if (targetBlock != null && mc.player != null) {
                 BlockHitResult result = InteractionUtility.getPlaceResult(targetBlock, interact.getValue(), false);
                 if (result != null) {
-                    float[] angle = InteractionUtility.calculateAngle(result.getEntityPos());
+                    float[] angle = InteractionUtility.calculateAngle(result.getPos());
                     mc.player.setYaw(angle[0]);
                     mc.player.setPitch(angle[1]);
                 }

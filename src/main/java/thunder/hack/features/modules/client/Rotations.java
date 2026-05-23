@@ -72,18 +72,7 @@ public class Rotations extends Module {
     }
 
     public void onKeyInput(EventKeyboardInput e) {
-        if (moveFix.getValue() == MoveFix.Free) {
-            if (Float.isNaN(fixRotation) || mc.player.isRiding())
-                return;
-
-            float mF = mc.player.input.movementForward;
-            float mS = mc.player.input.movementSideways;
-            float delta = (mc.player.getYaw() - fixRotation) * MathHelper.RADIANS_PER_DEGREE;
-            float cos = MathHelper.cos(delta);
-            float sin = MathHelper.sin(delta);
-            mc.player.input.movementSideways = Math.round(mS * cos - mF * sin);
-            mc.player.input.movementForward = Math.round(mF * cos + mS * sin);
-        }
+        // stubbed for 1.21.9 - movementForward/movementSideways fields removed
     }
 
     private Vec3d fix(float yaw, Vec3d movementInput, float speed) {

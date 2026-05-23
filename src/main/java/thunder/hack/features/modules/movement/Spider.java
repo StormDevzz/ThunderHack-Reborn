@@ -127,8 +127,7 @@ public class Spider extends Module {
                     mc.player.setVelocity(mc.player.getVelocity().x, customMotionY.getValue(), mc.player.getVelocity().z);
                 }
             }
-            if (customUseTimer.getValue()) {
-                mc.player.getWorld().getTickManager().setTickRate(customTimer.getValue() * 20.0f);
+                if (customUseTimer.getValue()) {
             }
         }
     }
@@ -152,12 +151,12 @@ public class Spider extends Module {
                 Direction opposite = side.getOpposite();
                 Vec3d hitVec = new Vec3d(neighbour.getX() + 0.5, neighbour.getY() + 0.5, neighbour.getZ() + 0.5).add(new Vec3d(opposite.getUnitVector()).multiply(0.5));
                 sendSequencedPacket(id -> new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, new BlockHitResult(hitVec, opposite, neighbour, false), id));
-                sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
+                mc.player.setSneaking(true);
                 if (mc.world.getBlockState(BlockPos.ofFloored(mc.player.getEntityPos()).add(0, 2, 0)).getBlock() != Blocks.AIR) {
                     sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, neighbour, opposite));
                     sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, neighbour, opposite));
                 }
-                sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
+                mc.player.setSneaking(false);
             }
             mc.player.setOnGround(true);
             mc.player.jump();
@@ -168,7 +167,7 @@ public class Spider extends Module {
     @Override
     public void onDisable() {
         if (mode.getValue() == Mode.Custom && customUseTimer.getValue()) {
-            mc.player.getWorld().getTickManager().setTickRate(20.0f);
+            // stubbed for 1.21.9
         }
     }
 

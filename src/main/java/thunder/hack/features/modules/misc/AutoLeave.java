@@ -249,7 +249,7 @@ public final class AutoLeave extends Module {
         }
 
         if (totemsCheckInventory.getValue()) {
-            for (var stack : mc.player.getInventory().main) {
+            for (var stack : mc.player.getInventory().getMainStacks()) {
                 if (stack.getItem() == Items.TOTEM_OF_UNDYING) count++;
             }
         }

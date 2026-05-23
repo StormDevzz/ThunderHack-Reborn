@@ -41,7 +41,7 @@ public abstract class MixinInGameHud {
 
         if (ModuleManager.hotbar.isEnabled()) {
             ci.cancel();
-            Hotbar.renderHotBarItems(tickCounter.getTickDelta(true), context);
+            Hotbar.renderHotBarItems(mc.getRenderTickCounter().getTickProgress(true), context);
         }
     }
 
@@ -66,7 +66,6 @@ public abstract class MixinInGameHud {
 
         if (ModuleManager.hotbar.isEnabled()) {
             ci.cancel();
-            Hotbar.renderXpBar(x, context.getMatrices());
         }
     }
 

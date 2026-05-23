@@ -120,7 +120,7 @@ public class PacketFly extends Module {
             if (
                     mc.player.isAlive()
                     && mc.world.isChunkLoaded((int) mc.player.getX() >> 4, (int) mc.player.getZ() >> 4)
-                    && !(mc.currentScreen instanceof DownloadingTerrainScreen)
+                    && !(mc.currentScreen instanceof net.minecraft.client.gui.screen.world.LevelLoadingScreen)
                     && mode.getValue() != Mode.Rubber
                     && teleport != null
                     && teleport.x == pac.change().position().x

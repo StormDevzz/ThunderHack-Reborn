@@ -414,27 +414,7 @@ public class ElytraPlus extends Module {
     }
 
     public void onRender3D(MatrixStack stack) {
-        if (mode.is(Mode.FireWork) && grim.getValue().isEnabled() && fireWorkExtender.getValue() && flying && flightZonePos != null) {
-            stack.push();
-            Render3DEngine.setupRender();
-            RenderSystem.disableCull();
-            Tessellator tessellator = Tessellator.getInstance();
-            RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
-            BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
-
-            float cos;
-            float sin;
-            for (int i = 0; i <= 30; i++) {
-                cos = (float) ((flightZonePos.getX() - mc.getEntityRenderDispatcher().camera.getEntityPos().getX()) + Math.cos(i * (Math.PI * 2f) / 30f) * 95);
-                sin = (float) ((flightZonePos.getZ() - mc.getEntityRenderDispatcher().camera.getEntityPos().getZ()) + Math.sin(i * (Math.PI * 2f) / 30f) * 95);
-                bufferBuilder.vertex(stack.peek().getPositionMatrix(), cos, (float) -mc.getEntityRenderDispatcher().camera.getEntityPos().getY(), sin).color(Render2DEngine.injectAlpha(HudEditor.getColor(i), 255).getRGB());
-                bufferBuilder.vertex(stack.peek().getPositionMatrix(), cos, (float) ((float) 128 - mc.getEntityRenderDispatcher().camera.getEntityPos().getY()), sin).color(Render2DEngine.injectAlpha(HudEditor.getColor(i), 0).getRGB());
-            }
-            Render2DEngine.endBuilding(bufferBuilder);
-            RenderSystem.enableCull();
-            Render3DEngine.endRender();
-            stack.pop();
-        }
+        // stubbed for 1.21.9
     }
 
     public void onRender2D(DrawContext context) {
@@ -469,7 +449,7 @@ public class ElytraPlus extends Module {
             MovementUtility.setMotion(Math.min((acceleration = (acceleration + 11.0F / xzSpeed.getValue())) / 100.0F, xzSpeed.getValue()));
             if (!MovementUtility.isMoving()) acceleration = 0;
 
-            if (InputUtil.isKeyPressed(mc.getWindow().getHandle(), bombKey.getValue().getKey())) {
+            if (InputUtil.isKeyPressed(mc.getWindow(), bombKey.getValue().getKey())) {
                 MovementUtility.setMotion(0.8f);
                 mc.player.setVelocity(mc.player.getVelocity().getX(), mc.player.age % 2 == 0 ? 0.41999998688697815 : -0.41999998688697815, mc.player.getVelocity().getZ());
                 acceleration = 70;
@@ -493,7 +473,7 @@ public class ElytraPlus extends Module {
         if (mc.player.getInventory().getStack(38).getItem() != Items.ELYTRA || !mc.player.isGliding() || mc.player.isTouchingWater() || mc.player.isInLava() || !mc.player.isGliding())
             return;
 
-        float moveForward = mc.player.input.movementForward;
+        float moveForward = mc.player.input.getMovementInput().x;
 
         if (cruiseControl.getValue()) {
             if (mc.options.jumpKey.isPressed()) height++;
@@ -867,11 +847,7 @@ public class ElytraPlus extends Module {
             if (!MovementUtility.isMoving())
                 acceleration = 0;
 
-            if (mc.player.input.movementSideways > 0) {
-                mc.player.input.movementSideways = 1;
-            } else if (mc.player.input.movementSideways < 0) {
-                mc.player.input.movementSideways = -1;
-            }
+            // movementSideways normalization removed for 1.21.9
 
             MovementUtility.modifyEventSpeed(e, xzSpeed.getValue() * Math.min((acceleration += 9) / 100.0f, 1.0f));
             if (stayMad.getValue() && !checkGround(3.0f) && Managers.PLAYER.ticksElytraFlying > 10)

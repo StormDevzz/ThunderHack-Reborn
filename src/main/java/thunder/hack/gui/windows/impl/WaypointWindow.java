@@ -141,7 +141,7 @@ public class WaypointWindow extends WindowBase {
         FontRenderers.sf_medium.drawCenteredString(context.getMatrices(), "Server", serverX + serverWidth / 2f, getY() + 40, textColor);
         FontRenderers.sf_medium.drawCenteredString(context.getMatrices(), "Dimension", dimensionX + dimensionWidth / 2f, getY() + 40, textColor);
 
-        Render2DEngine.addWindow(context, getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1, 1f);
+        Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1));
 
         int id = 0;
         for (WaypointPlate waypointPlate : waypointPlates) {
@@ -315,7 +315,7 @@ public class WaypointWindow extends WindowBase {
 
     @Override
     public void keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_F && (InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
+        if (keyCode == GLFW.GLFW_KEY_F && (InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
             listeningId = -2;
             return;
         }

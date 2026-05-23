@@ -9,12 +9,13 @@ import net.minecraft.client.session.Session;
 import net.minecraft.client.session.report.AbuseReportContext;
 import net.minecraft.client.session.report.ReporterEnvironment;
 import net.minecraft.command.CommandSource;
-import net.minecraft.util.Uuids;
 import org.jetbrains.annotations.NotNull;
 import thunder.hack.features.cmd.Command;
 import thunder.hack.injection.accesors.IMinecraftClient;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 import static thunder.hack.features.modules.client.ClientSettings.isRu;
@@ -42,7 +43,7 @@ public class LoginCommand extends Command {
 
     public void login(String name) {
         try {
-            setSession(new Session(name, Uuids.getOfflinePlayerUuid(name), "", Optional.empty(), Optional.empty(), Session.AccountType.MOJANG));
+            setSession(new Session(name, UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(StandardCharsets.UTF_8)), "", Optional.empty(), Optional.empty()));
         } catch (Exception exception) {
             sendMessage((isRu() ? "Неверное имя! " : "Incorrect username! ") + exception);
         }
@@ -51,7 +52,7 @@ public class LoginCommand extends Command {
     public void setSession(Session session) {
         IMinecraftClient mca = (IMinecraftClient) mc;
         mca.setSessionT(session);
-        mc.getGameProfile().getProperties().clear();
+        mc.getGameProfile().properties().clear();
         UserApiService apiService;
         apiService = UserApiService.OFFLINE;
         mca.setUserApiService(apiService);

@@ -211,12 +211,12 @@ public class Scaffold extends Module {
             else
                 bhr = new BlockHitResult(new Vec3d((double) currentblock.position().getX() + Math.random(), currentblock.position().getY() + 0.99f, (double) currentblock.position().getZ() + Math.random()), currentblock.facing(), currentblock.position(), false);
 
-            float[] rotations = InteractionUtility.calculateAngle(bhr.getEntityPos());
+            float[] rotations = InteractionUtility.calculateAngle(bhr.getPos());
 
             boolean sneak = InteractionUtility.needSneak(mc.world.getBlockState(bhr.getBlockPos()).getBlock()) && !mc.player.isSneaking();
 
             if (sneak)
-                mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
+                mc.player.setSneaking(true);
 
             if (mode.is(Mode.OldGrim))
                 sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotations[0], rotations[1], mc.player.isOnGround(), false));
@@ -234,7 +234,7 @@ public class Scaffold extends Module {
             prevY = currentblock.position().getY();
 
             if (sneak)
-                mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
+                mc.player.setSneaking(false);
 
             if (mode.is(Mode.OldGrim))
                 sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround(), false));

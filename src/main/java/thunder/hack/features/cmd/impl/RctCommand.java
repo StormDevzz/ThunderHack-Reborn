@@ -25,16 +25,16 @@ public class RctCommand extends Command {
                 return SINGLE_SUCCESS;
             }
 
-            String an = "an" + ((ScoreboardObjective) mc.player.getScoreboard().getObjectives().toArray()[0]).getDisplayName().getString().substring(10);
+            String an = "an" + ((ScoreboardObjective) mc.world.getScoreboard().getScoreboardObjectives().toArray()[0]).getDisplayName().getString().substring(10);
 
             Managers.ASYNC.run(() -> {
-                mc.player.networkHandler.sendCommand("hub");
+                mc.player.networkHandler.sendChatCommand("hub");
                 long failSafe = System.currentTimeMillis();
                 while (ThunderHack.core.getSetBackTime() > 600) {
                     if (System.currentTimeMillis() - failSafe > 1000)
                         break;
                 }
-                mc.player.networkHandler.sendCommand(an);
+                mc.player.networkHandler.sendChatCommand(an);
             });
             return SINGLE_SUCCESS;
         });

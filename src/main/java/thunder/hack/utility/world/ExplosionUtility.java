@@ -5,6 +5,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.DamageUtil;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -25,6 +27,7 @@ import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.injection.accesors.IExplosion;
 import thunder.hack.utility.math.PredictUtility;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import static thunder.hack.features.modules.Module.mc;
@@ -106,7 +109,7 @@ public final class ExplosionUtility {
 
                 if (toDamage <= 0f) toDamage = 0f;
                 else {
-                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(target.getArmorItems());
+                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(getArmorItems(target));
 
                     if (protAmount > 0)
                         toDamage = DamageUtil.getInflictedDamage(toDamage, protAmount);
@@ -165,7 +168,7 @@ public final class ExplosionUtility {
 
                 if (toDamage <= 0f) toDamage = 0f;
                 else {
-                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(target.getArmorItems());
+                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(getArmorItems(target));
 
                     if (protAmount > 0) toDamage = DamageUtil.getInflictedDamage(toDamage, protAmount);
                 }
@@ -196,8 +199,8 @@ public final class ExplosionUtility {
             VoxelShape voxelShape2 = VoxelShapes.empty();
             BlockHitResult blockHitResult2 = voxelShape2.raycast(vec3d, vec3d2, blockPos);
 
-            double d = blockHitResult == null ? Double.MAX_VALUE : raycastContext.getStart().squaredDistanceTo(blockHitResult.getEntityPos());
-            double e = blockHitResult2 == null ? Double.MAX_VALUE : raycastContext.getStart().squaredDistanceTo(blockHitResult2.getEntityPos());
+            double d = blockHitResult == null ? Double.MAX_VALUE : raycastContext.getStart().squaredDistanceTo(blockHitResult.getPos());
+            double e = blockHitResult2 == null ? Double.MAX_VALUE : raycastContext.getStart().squaredDistanceTo(blockHitResult2.getPos());
 
             return d <= e ? blockHitResult : blockHitResult2;
         }, (raycastContext) -> {
@@ -258,7 +261,7 @@ public final class ExplosionUtility {
 
                 if (toDamage <= 0f) toDamage = 0f;
                 else {
-                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(target.getArmorItems());
+                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(getArmorItems(target));
 
                     if (protAmount > 0) toDamage = DamageUtil.getInflictedDamage(toDamage, protAmount);
                 }
@@ -358,8 +361,8 @@ public final class ExplosionUtility {
             VoxelShape voxelShape = innerContext.getBlockShape(blockState, mc.world, pos);
             BlockHitResult blockHitResult = mc.world.raycastBlock(vec3d, vec3d2, pos, voxelShape, blockState);
             BlockHitResult blockHitResult2 = VoxelShapes.empty().raycast(vec3d, vec3d2, pos);
-            double d = blockHitResult == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(blockHitResult.getEntityPos());
-            double e = blockHitResult2 == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(blockHitResult2.getEntityPos());
+            double d = blockHitResult == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(blockHitResult.getPos());
+            double e = blockHitResult2 == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(blockHitResult2.getPos());
             return d <= e ? blockHitResult : blockHitResult2;
         }, innerContext -> {
             Vec3d vec3d = innerContext.getStart().subtract(innerContext.getEnd());
@@ -376,6 +379,15 @@ public final class ExplosionUtility {
         }, (innerContext) -> HitResult.Type.MISS);
     }
 
+
+    private static Iterable<ItemStack> getArmorItems(LivingEntity entity) {
+        return Arrays.asList(
+                entity.getEquippedStack(EquipmentSlot.FEET),
+                entity.getEquippedStack(EquipmentSlot.LEGS),
+                entity.getEquippedStack(EquipmentSlot.CHEST),
+                entity.getEquippedStack(EquipmentSlot.HEAD)
+        );
+    }
 
     public static int getProtectionAmount(Iterable<ItemStack> equipment) {
         MutableInt mutableInt = new MutableInt();

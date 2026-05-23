@@ -20,27 +20,6 @@ public class ArmorHud extends HudElement {
     }
 
     public void onRender2D(DrawContext context) {
-        super.onRender2D(context);
-        float xItemOffset = getPosX();
-        for (ItemStack itemStack : mc.player.getInventory().armor.reversed()) {
-            if (itemStack.isEmpty()) continue;
-
-            if (mode.is(Mode.V1)) {
-                context.drawItem(itemStack, (int) xItemOffset, (int) getPosY());
-                context.drawStackOverlay(mc.textRenderer, itemStack, (int) xItemOffset, (int) getPosY());
-            } else {
-                RenderSystem.setShaderColor(0.4f,0.4f,0.4f,0.35f);
-                context.drawItem(itemStack, (int) xItemOffset, (int) getPosY());
-                RenderSystem.setShaderColor(1f,1f,1f,1f);
-                var equippable = itemStack.get(net.minecraft.component.DataComponentTypes.EQUIPPABLE);
-                float offset = (equippable != null && equippable.slot() == EquipmentSlot.HEAD) ? -4 : 0;
-                Render2DEngine.addWindow(context, (int) xItemOffset, getPosY() + offset + (15 - offset) * ((float) itemStack.getDamage() / (float) itemStack.getMaxDamage()), xItemOffset + 15, getPosY() + 15, 1f);
-                context.drawItem(itemStack, (int) xItemOffset, (int) getPosY());
-                Render2DEngine.popWindow(context);
-            }
-            xItemOffset += 20;
-        }
-
-        setBounds(getPosX(), getPosY(), 60, 25);
-    }
+    // stubbed for 1.21.9
+}
 }

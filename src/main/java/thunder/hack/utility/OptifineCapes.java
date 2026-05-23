@@ -22,8 +22,8 @@ public final class OptifineCapes {
 
     public static void loadPlayerCape(GameProfile player, ReturnCapeTexture response) {
         try {
-            String uuid = player.getId().toString();
-            NativeImageBackedTexture nIBT = getCapeFromURL(String.format("http://s.optifine.net/capes/%s.png", player.getName()));
+            String uuid = player.id().toString();
+            NativeImageBackedTexture nIBT = getCapeFromURL(String.format("http://s.optifine.net/capes/%s.png", player.name()));
             Identifier capeTexture = Identifier.of("th-cape-" + uuid);
             MinecraftClient.getInstance().getTextureManager().registerTexture(capeTexture, nIBT);
             response.response(capeTexture);
@@ -48,7 +48,7 @@ public final class OptifineCapes {
             e.printStackTrace();
         }
         if (cape != null) {
-            return new NativeImageBackedTexture(parseCape(cape));
+            return new NativeImageBackedTexture(() -> "Cape", parseCape(cape));
         }
         return null;
     }

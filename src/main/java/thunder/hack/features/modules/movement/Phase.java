@@ -52,18 +52,18 @@ public class Phase extends Module {
         BlockPos playerPos = BlockPos.ofFloored(mc.player.getEntityPos());
 
         if (!mode.is(Mode.CCClip) && !mode.is(Mode.Pearl) && !mode.is(Mode.ForceMine) && canNoClip() || afterPearlTime > 0) {
-            if (!e.getEntityPos().equals(playerPos.down()) || mc.options.sneakKey.isPressed())
+            if (!e.getPos().equals(playerPos.down()) || mc.options.sneakKey.isPressed())
                 e.setState(Blocks.AIR.getDefaultState());
         }
 
         if (mode.is(Mode.ForceMine)) {
-            float xDelta = Math.abs(playerPos.getX() - e.getEntityPos().getX());
-            float zDelta = Math.abs(playerPos.getZ() - e.getEntityPos().getZ());
+            float xDelta = Math.abs(playerPos.getX() - e.getPos().getX());
+            float zDelta = Math.abs(playerPos.getZ() - e.getPos().getZ());
 
             if (xDelta != 0 && zDelta != 0 && strict.getValue())
                   return;
 
-            if (!e.getEntityPos().equals(playerPos.down()) || mc.options.sneakKey.isPressed())
+            if (!e.getPos().equals(playerPos.down()) || mc.options.sneakKey.isPressed())
                 e.setState(Blocks.AIR.getDefaultState());
         }
     }

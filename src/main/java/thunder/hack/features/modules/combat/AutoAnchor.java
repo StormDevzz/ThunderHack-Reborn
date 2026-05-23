@@ -447,9 +447,6 @@ public final class AutoAnchor extends Module {
             return;
 
         if (ak47.is(AK47.OFF)) {
-            if (mc.player.isSneaking())
-                sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
-
             if (mc.world.getBlockState(bhr.getBlockPos()).get(RespawnAnchorBlock.CHARGES) == 0) {
                 sendSequencedPacket(id -> new PlayerInteractBlockC2SPacket(offhand ? Hand.OFF_HAND : Hand.MAIN_HAND, bhr, id));
                 mc.player.swingHand(offhand ? Hand.OFF_HAND : Hand.MAIN_HAND);
@@ -459,8 +456,6 @@ public final class AutoAnchor extends Module {
                 mc.player.swingHand(Hand.MAIN_HAND);
             }
         } else {
-            if (mc.player.isSneaking())
-                sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
             sendSequencedPacket(id -> new PlayerInteractBlockC2SPacket(offhand ? Hand.OFF_HAND : Hand.MAIN_HAND, bhr, id));
             mc.player.swingHand(offhand ? Hand.OFF_HAND : Hand.MAIN_HAND);
 

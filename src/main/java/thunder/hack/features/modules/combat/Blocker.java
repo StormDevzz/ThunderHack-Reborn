@@ -92,7 +92,7 @@ public final class Blocker extends PlaceModule {
     private void onPacketReceive(PacketEvent.@NotNull Receive event) {
         if (event.getPacket() instanceof BlockBreakingProgressS2CPacket && onPacket.getValue()) {
             BlockBreakingProgressS2CPacket packet = event.getPacket();
-            doLogic(packet.getEntityPos());
+            doLogic(packet.getPos());
         }
     }
 
@@ -107,7 +107,7 @@ public final class Blocker extends PlaceModule {
     @SuppressWarnings("unused")
     private void onBreak(EventBreakBlock event) {
         if (!onBreak.getValue()) return;
-        doLogic(event.getEntityPos());
+        doLogic(event.getPos());
     }
 
     @EventHandler

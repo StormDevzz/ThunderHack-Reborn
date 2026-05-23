@@ -1,11 +1,7 @@
 package thunder.hack.gui.windows.impl;
-import net.minecraft.client.gl.RenderPipelines;
-
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.*;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.Item;
@@ -66,22 +62,11 @@ public class ItemSelectWindow extends WindowBase {
         Render2DEngine.drawRect(context.getMatrices(), getX() + getWidth() - 90, getY() + 3, 70, 10, hover1 ? new Color(0xC5838383, true) : new Color(0xC5575757, true));
         FontRenderers.sf_medium_mini.drawString(context.getMatrices(), search, getX() + getWidth() - 86, getY() + 7, new Color(0xD5D5D5).getRGB());
 
-        RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
-
         int tabColor1 = allTab ? new Color(0xD5D5D5).getRGB() : Color.GRAY.getRGB();
         int tabColor2 = allTab ? Color.GRAY.getRGB() : new Color(0xBDBDBD).getRGB();
-        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        bufferBuilder.vertex(getX() + 1.5f, getY() + 29, 0f).color(Color.DARK_GRAY.getRGB());
-        bufferBuilder.vertex(getX() + 8, getY() + 29, 0f).color(tabColor1);
-        bufferBuilder.vertex(getX() + 8, getY() + 19, 0f).color(tabColor1);
-        bufferBuilder.vertex(getX() + 48, getY() + 19, 0f).color(tabColor1);
-        bufferBuilder.vertex(getX() + 54, getY() + 29, 0f).color(tabColor1);
-        bufferBuilder.vertex(getX() + 52, getY() + 25, 0f).color(tabColor2);
-        bufferBuilder.vertex(getX() + 52, getY() + 19, 0f).color(tabColor2);
-        bufferBuilder.vertex(getX() + 92, getY() + 19, 0f).color(tabColor2);
-        bufferBuilder.vertex(getX() + 100, getY() + 29, 0f).color(Color.GRAY.getRGB());
-        bufferBuilder.vertex(getX() + getWidth() - 1, getY() + 29, 0f).color(Color.DARK_GRAY.getRGB());
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+        Render2DEngine.drawRect(context.getMatrices(), getX() + 1.5f, getY() + 28, getWidth() - 2, 1, Color.DARK_GRAY);
+        Render2DEngine.drawRect(context.getMatrices(), getX() + 8, getY() + 19, 46, 10, new Color(tabColor1));
+        Render2DEngine.drawRect(context.getMatrices(), getX() + 54, getY() + 19, 46, 10, new Color(tabColor2));
 
         FontRenderers.sf_medium_mini.drawString(context.getMatrices(), "All", getX() + 25, getY() + 25, tabColor1);
         FontRenderers.sf_medium_mini.drawString(context.getMatrices(), "Selected", getX() + 60, getY() + 25, tabColor2);
@@ -91,7 +76,7 @@ public class ItemSelectWindow extends WindowBase {
                     getX() + getWidth() / 2f, getY() + getHeight() / 2f, new Color(0xBDBDBD).getRGB());
         }
 
-        Render2DEngine.addWindow(context, getX(), getY() + 30, getX() + getWidth(), getY() + getHeight() - 1, 1f);
+        Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(getX(), getY() + 30, getX() + getWidth(), getY() + getHeight() - 1));
 
         for (ItemPlate itemPlate : (allTab ? allItems : itemPlates)) {
             if (itemPlate.offset + getY() + 25 + getScrollOffset() > getY() + getHeight() || itemPlate.offset + getScrollOffset() + getY() + 10 < getY())

@@ -24,27 +24,6 @@ public class TPSCounter extends HudElement {
     private final Setting<Boolean> extraTps = new Setting<>("ExtraTPS", true);
 
     public void onRender2D(DrawContext context) {
-        super.onRender2D(context);
-        String str = "TPS " + Formatting.WHITE + Managers.SERVER.getTPS() + (extraTps.getValue() ? " [" + Managers.SERVER.getTPS2() + "]" : "");
-
-        float pX = getPosX() > mc.getWindow().getScaledWidth() / 2f ? getPosX() - FontRenderers.getModulesRenderer().getStringWidth(str) : getPosX();
-
-        if(HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-            Render2DEngine.drawRoundedBlur(context.getMatrices(), pX, getPosY(), FontRenderers.getModulesRenderer().getStringWidth(str) + 21, 13f, 3, HudEditor.blurColor.getValue().getColorObject());
-            Render2DEngine.drawRect(context.getMatrices(), pX + 14, getPosY() + 2, 0.5f, 8, new Color(0x44FFFFFF, true));
-
-            Render2DEngine.setupRender();
-            GlStateManager._blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE, GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-            {
-                AbstractTexture __tex = mc.getTextureManager().getTexture(TextureStorage.tpsIcon);
-                if (__tex != null) RenderSystem.setShaderTexture(0, __tex.getGlTextureView());
-            }
-            Render2DEngine.renderGradientTextureNoSetup(context.getMatrices(), pX + 2, getPosY() + 1, 10, 10, 0, 0, 512, 512, 512, 512,
-                    HudEditor.getColor(270), HudEditor.getColor(0), HudEditor.getColor(180), HudEditor.getColor(90));
-            Render2DEngine.endRender();
-        }
-
-        FontRenderers.getModulesRenderer().drawString(context.getMatrices(), str, pX + 18, getPosY() + 5, HudEditor.getColor(1).getRGB());
-        setBounds(pX, getPosY(), FontRenderers.getModulesRenderer().getStringWidth(str) + 21, 13f);
-    }
+    // stubbed for 1.21.9
+}
 }

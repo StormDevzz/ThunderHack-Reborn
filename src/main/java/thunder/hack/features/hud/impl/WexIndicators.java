@@ -79,98 +79,11 @@ public class WexIndicators extends HudElement {
 
     @Override
     public void onRender2D(DrawContext context) {
-        super.onRender2D(context);
-
-        List<Indicator> activeIndicators = new ArrayList<>();
-        for (Indicator ind : indicators) {
-            if (ind.enabled.getValue()) {
-                activeIndicators.add(ind);
-            }
-        }
-
-        int count = activeIndicators.size();
-        if (count == 0) return;
-
-        float totalWidth = count * rangeBetween.getValue() - 8;
-        float startX = getPosX();
-        float startY = getPosY();
-
-        Render2DEngine.drawRect(
-            context.getMatrices(),
-            startX, startY,
-            totalWidth, 44,
-            rectColor.getValue().getColorObject()
-        );
-
-        for (int i = 0; i < count; i++) {
-            Indicator ind = activeIndicators.get(i);
-            float x = startX + i * rangeBetween.getValue();
-            float y = startY;
-
-            drawIndicator(context, x + 22, y + 22, ind);
-        }
-
-        setBounds(startX, startY, totalWidth, 44);
-    }
+    // stubbed for 1.21.9
+}
 
     private void drawIndicator(DrawContext context, float centerX, float centerY, Indicator indicator) {
-        float radius = 11f;
-
-        // Тёмный фон-окружность
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
-
-        BufferBuilder bgBuffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
-        for (int i = 0; i <= 360; i += 2) {
-            double rad = Math.toRadians(i);
-            float x = (float) (Math.cos(rad) * radius);
-            float y = (float) (Math.sin(rad) * radius);
-            bgBuffer.vertex(centerX, centerY, 0).color(0.1f, 0.1f, 0.1f, 0.5f);
-            bgBuffer.vertex(centerX + x, centerY + y, 0).color(0.1f, 0.1f, 0.1f, 0.5f);
-        }
-        BufferRenderer.drawWithGlobalProgram(bgBuffer.end());
-
-        // Дуга прогресса
-        double progress = indicator.getSmoothProgress();
-        int startAngle = -90;
-        int endAngle = (int) (startAngle + 360.0 * progress);
-
-        BufferBuilder progressBuffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
-        for (int i = startAngle; i <= endAngle; i += 2) {
-            double rad = Math.toRadians(i);
-            float x = (float) (Math.cos(rad) * radius);
-            float y = (float) (Math.sin(rad) * radius);
-
-            Color col = getProgressColor(i, progress);
-            progressBuffer.vertex(centerX, centerY, 0).color(col.getRed() / 255f, col.getGreen() / 255f, col.getBlue() / 255f, 1f);
-            progressBuffer.vertex(centerX + x, centerY + y, 0).color(col.getRed() / 255f, col.getGreen() / 255f, col.getBlue() / 255f, 1f);
-        }
-        BufferRenderer.drawWithGlobalProgram(progressBuffer.end());
-
-
-        // Текст в центре
-        String displayText;
-        if (indicator.getName().equals("TPS")) {
-            displayText = String.valueOf(Math.round(progress * 20.0));
-        } else {
-            displayText = Math.round(progress * 100) + "%";
-        }
-
-        FontRenderers.sf_bold_mini.drawCenteredString(
-            context.getMatrices(),
-            displayText,
-            centerX,
-            centerY + 1,
-            new Color(200, 200, 200).getRGB()
-        );
-        FontRenderers.sf_bold_mini.drawCenteredString(
-            context.getMatrices(),
-            indicator.getName(),
-            centerX,
-            centerY - 14,
-            new Color(200, 200, 200).getRGB()
-        );
+        // stubbed for 1.21.9
     }
 
     private Color getProgressColor(int angle, double progress) {

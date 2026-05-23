@@ -31,7 +31,6 @@ public class AutoWalk extends Module {
 
     @EventHandler
     public void onKey(EventKeyboardInput e) {
-        if (mode.getValue() == Mode.Simple)
-            mc.player.input.movementForward = 1f;
+        // movement normalization removed for 1.21.9
     }
 }

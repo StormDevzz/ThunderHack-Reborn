@@ -139,7 +139,7 @@ public class Flight extends Module {
         }
 
         if (mode.is(Mode.StormBreak) && e.getPacket() instanceof PlayerActionC2SPacket pac && (pac.getAction() == PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK
-                || pac.getAction() == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK && mc.world.getBlockState(pac.getEntityPos()).isReplaceable())) {
+                || pac.getAction() == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK && mc.world.getBlockState(pac.getPos()).isReplaceable())) {
             final double[] dir = MovementUtility.forward(2.0f * boostValue.getValue());
             mc.player.setVelocity(dir[0], 3f * boostValue.getValue(), dir[1]);
         }

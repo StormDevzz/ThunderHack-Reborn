@@ -78,9 +78,9 @@ public class GhostHand extends Module {
 
     private void interact(BlockEntity be) {
         BlockHitResult bhr = new BlockHitResult(
-                be.getEntityPos().toCenterPos(),
+                be.getPos().toCenterPos(),
                 Direction.UP,
-                be.getEntityPos(),
+                be.getPos(),
                 false
         );
         mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, bhr);
@@ -103,16 +103,16 @@ public class GhostHand extends Module {
 
         for (BlockEntity be : getBlockEntities()) {
             if (!isContainer(be)) continue;
-            if (be.getEntityPos().equals(wallPos)) continue;
+            if (be.getPos().equals(wallPos)) continue;
 
-            double dist = be.getEntityPos().getSquaredDistance(wallPos);
+            double dist = be.getPos().getSquaredDistance(wallPos);
             if (dist > range.getValue() * range.getValue()) continue;
 
-            Vec3d to = be.getEntityPos().toCenterPos().subtract(eyePos).normalize();
+            Vec3d to = be.getPos().toCenterPos().subtract(eyePos).normalize();
             double dot = lookVec.dotProduct(to);
             if (dot < 0.9) continue;
 
-            double distToPlayer = eyePos.squaredDistanceTo(be.getEntityPos().toCenterPos());
+            double distToPlayer = eyePos.squaredDistanceTo(be.getPos().toCenterPos());
             if (distToPlayer < closestDist) {
                 closestDist = distToPlayer;
                 closest = be;
@@ -132,11 +132,11 @@ public class GhostHand extends Module {
         for (BlockEntity be : getBlockEntities()) {
             if (!isContainer(be)) continue;
 
-            Vec3d to = be.getEntityPos().toCenterPos().subtract(eyePos).normalize();
+            Vec3d to = be.getPos().toCenterPos().subtract(eyePos).normalize();
             double dot = lookVec.dotProduct(to);
             if (dot < 0.9) continue;
 
-            double dist = eyePos.squaredDistanceTo(be.getEntityPos().toCenterPos());
+            double dist = eyePos.squaredDistanceTo(be.getPos().toCenterPos());
             if (dist > range.getValue() * range.getValue()) continue;
 
             if (dist < closestDist) {

@@ -29,7 +29,7 @@ public final class MaceSwap extends Module {
         if (!(event.getPacket() instanceof PlayerInteractEntityC2SPacket packet)) return;
         if (getInteractType(packet) != InteractType.ATTACK) return;
         if (mc.player == null) return;
-        if (mc.player.getInventory().getMainHandStack().getItem() == Items.MACE) return;
+        if (mc.player.getMainHandStack().getItem() == Items.MACE) return;
 
         int maceSlot = findMaceSlot();
         if (maceSlot == -1 || maceSlot == mc.player.getInventory().getSelectedSlot()) return;

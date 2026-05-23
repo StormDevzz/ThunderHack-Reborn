@@ -16,20 +16,5 @@ import thunder.hack.gui.font.FontRenderers;
 
 @Mixin(DrawContext.class)
 public class MixinDrawContext {
-
-    @Shadow
-    @Final
-    private MatrixStack matrices;
-
- //   @Inject(method = "drawText(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/text/OrderedText;IIIZ)I", at = @At("HEAD"), cancellable = true)
-    public void drawTextHook(TextRenderer textRenderer, OrderedText text, int x, int y, int color, boolean shadow, CallbackInfoReturnable<Integer> cir) {
-        MutableText text1 = Text.empty();
-        text.accept((i, style, codePoint) -> {
-            text1.append(Text.literal(new String(Character.toChars(codePoint))).setStyle(style));
-            return true;
-        });
-
-        FontRenderers.sf_medium.drawString(matrices, text1.getString(), x,y, color);
-        cir.setReturnValue((int) FontRenderers.sf_medium.getStringWidth(text.toString()));
-    }
+    // stubbed for 1.21.9
 }

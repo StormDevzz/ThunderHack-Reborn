@@ -960,8 +960,8 @@ public class Aura extends Module {
         }
 
         if (clientLook.getValue() && rotationMode.getValue() != Mode.None) {
-            mc.player.setYaw((float) Render2DEngine.interpolate(mc.player.getYaw(), rotationYaw, Render3DEngine.getTickDelta()));
-            mc.player.setPitch((float) Render2DEngine.interpolate(mc.player.getPitch(), rotationPitch, Render3DEngine.getTickDelta()));
+            mc.player.setYaw((float) Render2DEngine.interpolate(mc.player.lastYaw, rotationYaw, Render3DEngine.getTickDelta()));
+            mc.player.setPitch((float) Render2DEngine.interpolate(mc.player.prevPitch, rotationPitch, Render3DEngine.getTickDelta()));
         }
     }
 
@@ -1094,13 +1094,21 @@ public class Aura extends Module {
             case HighestHealth ->
                     first_stage.stream().max(Comparator.comparing(e -> (e.getHealth() + e.getAbsorptionAmount()))).orElse(null);
             case LowestDurability -> first_stage.stream().min(Comparator.comparing(e -> {
-                        // armor iteration stubbed for 1.21.9
-                        return 0f;
+                        float v = 0;
+                        for (ItemStack armor : e.getArmorItems())
+                            if (armor != null && !armor.getItem().equals(Items.AIR)) {
+                                v += ((armor.getMaxDamage() - armor.getDamage()) / (float) armor.getMaxDamage());
+                            }
+                        return v;
                     }
             )).orElse(null);
             case HighestDurability -> first_stage.stream().max(Comparator.comparing(e -> {
-                        // armor iteration stubbed for 1.21.9
-                        return 0f;
+                        float v = 0;
+                        for (ItemStack armor : e.getArmorItems())
+                            if (armor != null && !armor.getItem().equals(Items.AIR)) {
+                                v += ((armor.getMaxDamage() - armor.getDamage()) / (float) armor.getMaxDamage());
+                            }
+                        return v;
                     }
             )).orElse(null);
         };

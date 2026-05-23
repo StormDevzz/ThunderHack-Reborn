@@ -116,37 +116,8 @@ public final class SpeedMine extends Module {
 
     @Override
     public void onRender3D(MatrixStack stack) {
-        if (mode.is(Mode.Damage) || mc.world == null)
-            return;
-
-        actions.forEach(a -> {
-            if (!mc.world.isAir(a.getEntityPos())) {
-                float noom = (float) MathUtility.clamp(Render2DEngine.interpolate(a.getPrevProgress(), a.getProgress(), Render3DEngine.getTickDelta()), 0f, 1f);
-                Box renderBox =
-
-                        switch (renderMode.getValue()) {
-                            case Block -> new Box(a.getEntityPos());
-                            case Grow ->
-                                    new Box(a.getEntityPos().getX(), a.getEntityPos().getY(), a.getEntityPos().getZ(), a.getEntityPos().getX() + 1, a.getEntityPos().getY() + noom, a.getEntityPos().getZ() + 1);
-                            case Shrink ->
-                                    new Box(a.getEntityPos().getX(), a.getEntityPos().getY(), a.getEntityPos().getZ(), a.getEntityPos().getX(), a.getEntityPos().getY(), a.getEntityPos().getZ())
-                                            .shrink(noom, noom, noom)
-                                            .offset(0.5 + noom * 0.5, 0.5 + noom * 0.5, 0.5 + noom * 0.5);
-                        };
-
-                Render3DEngine.FILLED_QUEUE.add(new Render3DEngine.FillAction(
-                        renderBox,
-                        Render2DEngine.getColor(startFillColor.getValue().getColorObject(), endFillColor.getValue().getColorObject(), a.getProgress(), smooth.getValue())
-                ));
-
-                Render3DEngine.OUTLINE_QUEUE.add(new Render3DEngine.OutlineAction(
-                        renderBox,
-                        Render2DEngine.getColor(startLineColor.getValue().getColorObject(), endLineColor.getValue().getColorObject(), a.getProgress(), smooth.getValue()),
-                        lineWidth.getValue()
-                ));
-            }
-        });
-    }
+    // stubbed for 1.21.9
+}
 
     @EventHandler
     @SuppressWarnings("unused")
@@ -304,11 +275,11 @@ public final class SpeedMine extends Module {
     public AutoCrystal.@Nullable PlaceData getCevData() {
 
         for (MineAction action : actions) {
-            if (mc.world.isAir(action.getEntityPos().down())) {
-                if (ExplosionUtility.getSelfExplosionDamage(action.getEntityPos().toCenterPos().add(0, 0.5, 0), 0, false) > ModuleManager.autoCrystal.maxSelfDamage.getValue())
+            if (mc.world.isAir(action.getPos().down())) {
+                if (ExplosionUtility.getSelfExplosionDamage(action.getPos().toCenterPos().add(0, 0.5, 0), 0, false) > ModuleManager.autoCrystal.maxSelfDamage.getValue())
                     return null;
 
-                return ModuleManager.autoCrystal.getPlaceData(action.getEntityPos(), null, mc.player.getEntityPos());
+                return ModuleManager.autoCrystal.getPlaceData(action.getPos(), null, mc.player.getEntityPos());
             }
         }
         return null;
@@ -316,25 +287,25 @@ public final class SpeedMine extends Module {
 
     public AutoCrystal.@Nullable PlaceData getBestData() {
         for (MineAction action : actions) {
-            BlockState prevState = mc.world.getBlockState(action.getEntityPos());
-            mc.world.setBlockState(action.getEntityPos(), Blocks.AIR.getDefaultState());
+            BlockState prevState = mc.world.getBlockState(action.getPos());
+            mc.world.setBlockState(action.getPos(), Blocks.AIR.getDefaultState());
 
             for (Direction dir : Direction.values()) {
                 if (dir == Direction.UP || dir == Direction.DOWN) continue;
-                if (ExplosionUtility.getSelfExplosionDamage(action.getEntityPos().down().offset(dir).toCenterPos().add(0, 0.5, 0), 0, false) > ModuleManager.autoCrystal.maxSelfDamage.getValue())
+                if (ExplosionUtility.getSelfExplosionDamage(action.getPos().down().offset(dir).toCenterPos().add(0, 0.5, 0), 0, false) > ModuleManager.autoCrystal.maxSelfDamage.getValue())
                     continue;
 
-                AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getEntityPos().down().offset(dir), null, mc.player.getEntityPos());
+                AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getPos().down().offset(dir), null, mc.player.getEntityPos());
                 if (autoMineData != null) {
-                    mc.world.setBlockState(action.getEntityPos(), prevState);
+                    mc.world.setBlockState(action.getPos(), prevState);
                     return autoMineData;
                 }
             }
 
-            float selfDmg = ExplosionUtility.getSelfExplosionDamage(action.getEntityPos().toCenterPos().add(0, 0.5, 0), 0, false);
-            mc.world.setBlockState(action.getEntityPos(), prevState);
+            float selfDmg = ExplosionUtility.getSelfExplosionDamage(action.getPos().toCenterPos().add(0, 0.5, 0), 0, false);
+            mc.world.setBlockState(action.getPos(), prevState);
 
-            AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getEntityPos(), null, mc.player.getEntityPos());
+            AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getPos(), null, mc.player.getEntityPos());
             if (selfDmg > ModuleManager.autoCrystal.maxSelfDamage.getValue())
                 continue;
 
@@ -347,7 +318,7 @@ public final class SpeedMine extends Module {
     public boolean isBlockDrop(Entity ent) {
         if (ent instanceof ItemEntity && isOn() && ent.age < 3)
             for (MineAction a : actions)
-                if (a.getEntityPos().toCenterPos().squaredDistanceTo(ent.getEntityPos()) <= 1f)
+                if (a.getPos().toCenterPos().squaredDistanceTo(ent.getEntityPos()) <= 1f)
                     return true;
 
         return false;

@@ -1,6 +1,5 @@
 package thunder.hack.gui.font;
-import net.minecraft.client.gl.RenderPipelines;
-
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.chars.Char2IntArrayMap;
 import it.unimi.dsi.fastutil.chars.Char2ObjectArrayMap;
@@ -8,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix3x2fStack;
@@ -178,20 +178,20 @@ public class FontRenderer implements Closeable {
         float r2 = r, g2 = g, b2 = b;
         stack.pushMatrix();
         y -= 3f;
-        stack.translate(roundToDecimal(x, 1), roundToDecimal(y, 1));
+        stack.translate((float) roundToDecimal(x, 1), (float) roundToDecimal(y, 1));
         stack.scale(1f / this.scaleMul, 1f / this.scaleMul);
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableCull();
-
-        RenderSystem.setShader(RenderPipelines.POSITION_TEX_COLOR);
+        GlStateManager._enableBlend();
+        GlStateManager._blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
+        GlStateManager._disableCull();
         BufferBuilder bb;
         Matrix4f mat = new Matrix4f();
-        mat.m00 = stack.m00; mat.m01 = stack.m01; mat.m02 = 0; mat.m03 = stack.m20;
-        mat.m10 = stack.m10; mat.m11 = stack.m11; mat.m12 = 0; mat.m13 = stack.m21;
-        mat.m20 = 0; mat.m21 = 0; mat.m22 = 1; mat.m23 = 0;
-        mat.m30 = 0; mat.m31 = 0; mat.m32 = 0; mat.m33 = 1;
+        mat.set(
+            stack.m00, stack.m01, 0, stack.m20,
+            stack.m10, stack.m11, 0, stack.m21,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        );
         char[] chars = s.toCharArray();
         float xOffset = 0;
         float yOffset = 0;
@@ -245,7 +245,7 @@ public class FontRenderer implements Closeable {
                 }
             }
             for (Identifier identifier : GLYPH_PAGE_CACHE.keySet()) {
-                RenderSystem.setShaderTexture(0, identifier);
+                RenderSystem.setShaderTexture(0, mc.getTextureManager().getTexture(identifier).getGlTextureView());
                 List<DrawEntry> objects = GLYPH_PAGE_CACHE.get(identifier);
 
                 bb = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -275,8 +275,8 @@ public class FontRenderer implements Closeable {
 
             GLYPH_PAGE_CACHE.clear();
         }
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
+        GlStateManager._enableCull();
+        GlStateManager._disableBlend();
         stack.popMatrix();
     }
 
@@ -295,8 +295,7 @@ public class FontRenderer implements Closeable {
     public void drawCenteredString(MatrixStack stack, String s, double x, double y, Color color) {
         Matrix4f m4 = stack.peek().getPositionMatrix();
         Matrix3x2fStack m3x2 = new Matrix3x2fStack(32);
-        m3x2.m00 = m4.m00(); m3x2.m01 = m4.m01(); m3x2.m02 = m4.m03();
-        m3x2.m10 = m4.m10(); m3x2.m11 = m4.m11(); m3x2.m12 = m4.m13();
+        m3x2.set(m4.m00(), m4.m01(), m4.m10(), m4.m11(), m4.m03(), m4.m13());
         drawCenteredString(m3x2, s, x, y, color);
     }
 

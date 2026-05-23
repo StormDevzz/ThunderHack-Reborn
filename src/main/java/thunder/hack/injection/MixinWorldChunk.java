@@ -21,6 +21,7 @@ public class MixinWorldChunk {
     @Inject(method = "setBlockState", at = @At("RETURN"))
     private void setBlockStateHook(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir) {
         if (world.isClient) {
+            // field accessed via access widener
             ThunderHack.EVENT_BUS.post(new EventSetBlockState(pos, cir.getReturnValue(), state));
         }
     }

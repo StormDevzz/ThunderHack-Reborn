@@ -34,7 +34,7 @@ public class Render2DEngine {
     public static HashMap<Integer, BlurredShadow> shadowCache = new HashMap<>();
     public static HashMap<Integer, BlurredShadow> shadowCache1 = new HashMap<>();
 
-    private static Matrix4f toMatrix4f(Matrix3x2fStack m3) {
+    public static Matrix4f toMatrix4f(Matrix3x2fStack m3) {
         Matrix4f out = new Matrix4f();
         out.m00(m3.m00); out.m01(m3.m01); out.m02(0); out.m03(m3.m20);
         out.m10(m3.m10); out.m11(m3.m11); out.m12(0); out.m13(m3.m21);
@@ -208,6 +208,10 @@ public class Render2DEngine {
         // TODO: fix for MC 1.21.9 rendering
     }
 
+    public static void drawRectWithOutline(Matrix3x2fStack matrices, float x, float y, float width, float height, Color c, Color c2) {
+        drawRectWithOutline(toMatrixStack(matrices), x, y, width, height, c, c2);
+    }
+
     public static void drawRectDumbWay(MatrixStack matrices, float x, float y, float x1, float y1, Color c1) {
         // TODO: fix for MC 1.21.9 rendering
     }
@@ -220,6 +224,10 @@ public class Render2DEngine {
 
     public static void renderTexture(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
         // TODO: fix for MC 1.21.9 rendering
+    }
+
+    public static void renderTexture(Matrix3x2fStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
+        renderTexture(toMatrixStack(matrices), x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
     }
 
     public static void renderTextureNoSetup(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
@@ -240,6 +248,10 @@ public class Render2DEngine {
 
     public static void renderGradientTextureInternal(BufferBuilder buff, MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
         // TODO: fix for MC 1.21.9 rendering
+    }
+
+    public static void renderGradientTextureInternal(BufferBuilder buff, Matrix3x2fStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
+        renderGradientTextureInternal(buff, toMatrixStack(matrices), x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, c1, c2, c3, c4);
     }
 
     public static boolean isHovered(double mouseX, double mouseY, double x, double y, double width, double height) {

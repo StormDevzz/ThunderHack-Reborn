@@ -41,16 +41,7 @@ import static thunder.hack.features.modules.Module.mc;
 public abstract class MixinGameRenderer {
 
     @Shadow
-    private float zoom;
-
-    @Shadow
-    private float zoomX;
-
-    @Shadow
-    private float zoomY;
-
-    @Shadow
-    private float viewDistance;
+    private float viewDistanceBlocks;
 
     @Shadow
     public abstract void tick();
@@ -70,8 +61,8 @@ public abstract class MixinGameRenderer {
         matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(camera.getPitch()));
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(camera.getYaw() + 180.0f));
 
-        Render3DEngine.lastProjMat.set(RenderSystem.getProjectionMatrix());
-        Render3DEngine.lastModMat.set(RenderSystem.getModelViewMatrix());
+        Render3DEngine.lastProjMat.set(new org.joml.Matrix4f());
+        Render3DEngine.lastModMat.set(new org.joml.Matrix4f());
         Render3DEngine.lastWorldSpaceMatrix.set(matrixStack.peek().getPositionMatrix());
 
         Managers.MODULE.onRender3D(matrixStack);
@@ -122,11 +113,7 @@ public abstract class MixinGameRenderer {
         if (ModuleManager.aspectRatio.isEnabled()) {
             MatrixStack matrixStack = new MatrixStack();
             matrixStack.peek().getPositionMatrix().identity();
-            if (zoom != 1.0f) {
-                matrixStack.translate(zoomX, -zoomY, 0.0f);
-                matrixStack.scale(zoom, zoom, 1.0f);
-            }
-            matrixStack.peek().getPositionMatrix().mul(new Matrix4f().setPerspective((float) (fov * 0.01745329238474369), ModuleManager.aspectRatio.ratio.getValue(), 0.05f, viewDistance * 4.0f));
+            matrixStack.peek().getPositionMatrix().mul(new Matrix4f().setPerspective((float) (fov * 0.01745329238474369), ModuleManager.aspectRatio.ratio.getValue(), 0.05f, viewDistanceBlocks * 4.0f));
             cir.setReturnValue(matrixStack.peek().getPositionMatrix());
         }
     }
@@ -165,9 +152,9 @@ public abstract class MixinGameRenderer {
 
     @Unique
     private HitResult ensureTargetInRangeCustom(HitResult hitResult, Vec3d cameraPos, double interactionRange) {
-        Vec3d vec3d = hitResult.getEntityPos();
+        Vec3d vec3d = hitResult.getPos();
         if (!vec3d.isInRange(cameraPos, interactionRange)) {
-            Vec3d vec3d2 = hitResult.getEntityPos();
+            Vec3d vec3d2 = hitResult.getPos();
             Direction direction = Direction.getFacing(vec3d2.x - cameraPos.x, vec3d2.y - cameraPos.y, vec3d2.z - cameraPos.z);
             return BlockHitResult.createMissed(vec3d2, direction, BlockPos.ofFloored(vec3d2));
         } else {

@@ -85,7 +85,7 @@ public class ThunderHack implements ModInitializer {
     }
 
     public enum KeyListening {
-        ThunderGui, ClickGui, Search, Sliders, Strings
+        ClickGui, Search, Sliders, Strings
     }
 }
 // chlen huii

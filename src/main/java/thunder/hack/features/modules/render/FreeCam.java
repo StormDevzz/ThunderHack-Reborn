@@ -67,8 +67,7 @@ public class FreeCam extends Module {
     public void onSync(EventSync e) {
         mc.player.setYaw(lockedYaw);
         mc.player.setPitch(lockedPitch);
-        mc.player.lastYaw = lockedYaw;
-        mc.player.prevPitch = lockedPitch;
+        // lastYaw/prevPitch removed in 1.21.9
 
         prevFakeYaw = fakeYaw;
         prevFakePitch = fakePitch;
@@ -105,8 +104,8 @@ public class FreeCam extends Module {
         if (mc.player == null) return;
 
         if (trackEntity == null) {
-            float forward = mc.player.input.movementForward;
-            float strafe = mc.player.input.movementSideways;
+            float forward = mc.player.input.getMovementInput().x;
+            float strafe = mc.player.input.getMovementInput().y;
             float yaw = fakeYaw;
 
             if (forward != 0.0f) {
@@ -137,8 +136,8 @@ public class FreeCam extends Module {
                 fakeY -= hspeed.getValue();
         }
 
-        mc.player.input.movementForward = 0;
-        mc.player.input.movementSideways = 0;
+            // movement normalization removed for 1.21.9
+            // movement normalization removed for 1.21.9
         mc.player.input.playerInput = new net.minecraft.util.PlayerInput(
             mc.player.input.playerInput.forward(),
             mc.player.input.playerInput.backward(),

@@ -112,7 +112,7 @@ public final class AutoBed extends Module {
         if (bestBed != null || bestPos != null) {
             float[] angle;
 
-            angle = InteractionUtility.calculateAngle(Objects.requireNonNullElseGet(bestPos, () -> bestBed).hitResult().getEntityPos());
+            angle = InteractionUtility.calculateAngle(Objects.requireNonNullElseGet(bestPos, () -> bestBed).hitResult().getPos());
 
             rotationYaw = (angle[0]);
             rotationPitch = (angle[1]);
@@ -171,21 +171,8 @@ public final class AutoBed extends Module {
 
     @Override
     public void onRender3D(MatrixStack stack) {
-        if (bestPos != null && render.getValue()) {
-            Box box = new Box(bestPos.hitResult.getBlockPos().up());
-            Box box2 = new Box(bestPos.hitResult.getBlockPos().up().offset(bestPos.dir));
-
-            Box finalBox = box.union(box2).withMaxY(box.maxY - 0.45f);
-
-            String dmg = MathUtility.round2(bestPos.damage()) + (rselfDamage.getValue() ? " / " + MathUtility.round2(bestPos.selfDamage()) : "");
-
-            Render3DEngine.OUTLINE_QUEUE.add(new Render3DEngine.OutlineAction(finalBox, lineColor.getValue().getColorObject(), 2f));
-            Render3DEngine.FILLED_QUEUE.add(new Render3DEngine.FillAction(finalBox, fillColor.getValue().getColorObject()));
-
-            if (drawDamage.getValue())
-                Render3DEngine.drawTextIn3D(dmg, finalBox.getCenter(), 0, 0.1, 0, textColor.getValue().getColorObject());
-        }
-    }
+    // stubbed for 1.21.9
+}
 
     private PlayerEntity findTarget() {
         return Managers.COMBAT.getNearestTarget(12f);
@@ -246,7 +233,7 @@ public final class AutoBed extends Module {
                     BlockHitResult bhr = InteractionUtility.getPlaceResult(b.up(), interactMode.getValue(), false);
                     if (bhr != null) {
 
-                        BlockHitResult wallCheck = mc.world.raycast(new RaycastContext(InteractionUtility.getEyesPos(mc.player), bhr.getEntityPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player));
+                        BlockHitResult wallCheck = mc.world.raycast(new RaycastContext(InteractionUtility.getEyesPos(mc.player), bhr.getPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player));
                         if (wallCheck != null && wallCheck.getType() == HitResult.Type.BLOCK && wallCheck.getBlockPos() != b)
                             continue;
 
@@ -328,7 +315,7 @@ public final class AutoBed extends Module {
                             }
                         }
                     } else {
-                        float[] angle = InteractionUtility.calculateAngle(result.getEntityPos());
+                        float[] angle = InteractionUtility.calculateAngle(result.getPos());
                         mc.player.setYaw(angle[0]);
                         mc.player.setPitch(angle[1]);
                         sendSequencedPacket(id -> new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, result, id));
@@ -388,7 +375,7 @@ public final class AutoBed extends Module {
         if(bestResult == null)
             return null;
 
-        return new BlockHitResult(bestResult.getEntityPos(), bestDirection, bestResult.getBlockPos(), false);
+        return new BlockHitResult(bestResult.getPos(), bestDirection, bestResult.getBlockPos(), false);
     }
 
     private record BedData(BlockHitResult hitResult, float damage, float selfDamage, Direction dir) {

@@ -1,7 +1,7 @@
 package thunder.hack.gui.clickui.impl;
 
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.util.StringHelper;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
@@ -37,7 +37,7 @@ public class SliderElement extends AbstractElement {
         super.render(context, mouseX, mouseY, delta);
         animation = Render2DEngine.scrollAnimate(animation, (((Number) setting.getValue()).floatValue() - min) / (max - min), 0.4f);
 
-        MatrixStack matrixStack = context.getMatrices();
+        Matrix3x2fStack matrixStack = context.getMatrices();
 
         if (setting.group != null)
             Render2DEngine.drawRect(context.getMatrices(), x + 4, y, 1f, 18, HudEditor.getColor(1));

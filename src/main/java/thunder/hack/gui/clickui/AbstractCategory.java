@@ -11,6 +11,7 @@ public class AbstractCategory {
 
     protected float x, y, width, height, sx, sy;
     private float prevX, prevY;
+    private float lastX, lastY;
     protected boolean hovered;
     public boolean dragging;
     public float moduleOffset;

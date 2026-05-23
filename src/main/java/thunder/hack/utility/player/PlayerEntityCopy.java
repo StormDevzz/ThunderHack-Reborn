@@ -12,8 +12,6 @@ public class PlayerEntityCopy extends OtherClientPlayerEntity {
         super(Objects.requireNonNull(mc.world), Objects.requireNonNull(mc.player).getGameProfile());
 
         copyFrom(mc.player);
-        getPlayerListEntry();
-        dataTracker.set(PLAYER_MODEL_PARTS, mc.player.getDataTracker().get(PLAYER_MODEL_PARTS));
         setUuid(UUID.randomUUID());
     }
 

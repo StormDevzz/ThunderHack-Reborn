@@ -5,6 +5,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.DamageUtil;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
@@ -212,9 +213,9 @@ public final class InventoryUtility {
 
 
     public static int getElytra() {
-        for (ItemStack stack : mc.player.getInventory().armor)
-            if (stack.getItem() == Items.ELYTRA && stack.getDamage() < 430)
-                return -2;
+        if (mc.player.getEquippedStack(EquipmentSlot.CHEST).getItem() == Items.ELYTRA
+                && mc.player.getEquippedStack(EquipmentSlot.CHEST).getDamage() < 430)
+            return -2;
 
         int slot = -1;
         for (int i = 0; i < 36; i++) {

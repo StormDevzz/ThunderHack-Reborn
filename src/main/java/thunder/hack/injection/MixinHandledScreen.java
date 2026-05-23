@@ -1,23 +1,16 @@
 package thunder.hack.injection;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.ScreenHandlerProvider;
-import net.minecraft.client.render.DiffuseLighting;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.MapRenderState;
-import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.*;
-import net.minecraft.item.map.MapState;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ShulkerBoxScreenHandler;
 import net.minecraft.screen.slot.Slot;
@@ -26,7 +19,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -84,7 +76,7 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
     }
 
     private boolean shit() {
-        return InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), 340) || InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), 344);
+        return InputUtil.isKeyPressed(mc.getWindow(), 340) || InputUtil.isKeyPressed(mc.getWindow(), 344);
     }
 
     private boolean attack() {
@@ -223,16 +215,11 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
 
     @Unique
     private void draw(DrawContext context, List<ItemStack> itemStacks, int offsetX, int offsetY, int mouseX, int mouseY, float[] colors) {
-        RenderSystem.disableDepthTest();
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-
         offsetX += 8;
         offsetY -= 82;
 
         drawBackground(context, offsetX, offsetY, colors);
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        DiffuseLighting.enableGuiDepthLighting();
         int row = 0;
         int i = 0;
         for (ItemStack itemStack : itemStacks) {
@@ -248,17 +235,10 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
                 row++;
             }
         }
-        DiffuseLighting.disableGuiDepthLighting();
-        RenderSystem.enableDepthTest();
     }
 
     private void drawBackground(DrawContext context, int x, int y, float[] colors) {
-        RenderSystem.disableBlend();
-        RenderSystem.setShaderColor(colors[0], colors[1], colors[2], 1F);
-        RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
-        context.drawTexture(RenderLayer::getGuiTextured, TextureStorage.container, x, y, 0, 0, 176, 67, 176, 67);
-        RenderSystem.enableBlend();
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, TextureStorage.container, x, y, 0f, 0f, 176, 67, 176, 67);
     }
 
     @Unique
@@ -278,31 +258,6 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
     }
 
     private void drawMapPreview(DrawContext context, ItemStack stack, int x, int y) {
-        RenderSystem.enableBlend();
-        context.getMatrices().push();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
-        int y1 = y - 12;
-        int x1 = x + 8;
-        int z = 300;
-
-        MapState mapState = FilledMapItem.getMapState(stack, client.world);
-
-        if (mapState != null) {
-            mapState.getPlayerSyncData(client.player);
-
-            x1 += 8;
-            y1 += 8;
-            z = 310;
-            double scale = (double) (100 - 16) / 128.0D;
-            context.getMatrices().translate(x1, y1, z);
-            context.getMatrices().scale((float) scale, (float) scale, 0);
-            VertexConsumerProvider.Immediate consumer = client.getBufferBuilders().getEntityVertexConsumers();
-            MapRenderState mapRenderState = new MapRenderState();
-            client.getMapRenderer().update(stack.get(DataComponentTypes.MAP_ID), mapState, mapRenderState);
-            client.getMapRenderer().draw(mapRenderState, context.getMatrices(), consumer, false, 0xF000F0);
-        }
-        context.getMatrices().pop();
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)

@@ -37,45 +37,10 @@ public class InventoryPreview extends HudElement {
         super.onRender2D(context);
         if (mc.player == null) return;
 
-        float s = scale.getValue();
-        float slot = SLOT_SIZE * s;
-        float gap = SLOT_GAP * s;
-        float totalW = COLS * slot + (COLS - 1) * gap;
-        float totalH = ROWS * slot + (ROWS - 1) * gap + HOTBAR_OFFSET * s;
-        float bx = getPosX();
-        float by = getPosY();
-
-        if (background.getValue())
-            Render2DEngine.drawRound(context.getMatrices(), bx - 4, by - 4, totalW + 8, totalH + 8, bgRound.getValue(), bgColor.getValue().getColorObject());
-
-        context.getMatrices().push();
-        context.getMatrices().translate(bx, by, 0);
-
-        for (int row = 0; row < 3; row++)
-            for (int col = 0; col < COLS; col++)
-                drawSlot(context, row * COLS + col, col * (slot + gap), row * (slot + gap), s);
-
-        float hy = 3 * (slot + gap) + HOTBAR_OFFSET * s;
-        for (int col = 0; col < COLS; col++)
-            drawSlot(context, col + 27, col * (slot + gap), hy, s);
-
-        context.getMatrices().pop();
-        setBounds(bx, by, totalW, totalH);
+        // stubbed for 1.21.9
     }
 
     private void drawSlot(DrawContext context, int index, float x, float y, float s) {
-        ItemStack stack = mc.player.getInventory().main.get(index);
-
-        if (slotBgr.getValue())
-            Render2DEngine.drawRound(context.getMatrices(), x, y, SLOT_SIZE * s, SLOT_SIZE * s, slotRound.getValue(), slotColor.getValue().getColorObject());
-
-        if (!stack.isEmpty()) {
-            context.getMatrices().push();
-            context.getMatrices().translate(x + 1 * s, y + 1 * s, 0);
-            context.getMatrices().scale(s, s, 1f);
-            context.drawItemWithoutEntity(stack, 0, 0);
-            context.drawStackOverlay(mc.textRenderer, stack, 0, 0);
-            context.getMatrices().pop();
-        }
+        // stubbed for 1.21.9
     }
 }

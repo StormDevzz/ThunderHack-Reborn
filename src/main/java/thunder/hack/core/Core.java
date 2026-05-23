@@ -29,7 +29,6 @@ import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.*;
 import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.gui.notification.Notification;
-import thunder.hack.gui.thundergui.ThunderGui;
 import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.features.modules.client.ClientSettings;
 import thunder.hack.utility.Timer;
@@ -63,8 +62,6 @@ public final class Core {
 
         Managers.NOTIFICATION.onUpdate();
         Managers.MODULE.onUpdate();
-        ThunderGui.getInstance().onTick();
-
         if (ModuleManager.clickGui.getBind().getKey() == -1) {
             Command.sendMessage(Formatting.RED + (isRu() ? "Привязка клавиш Clickgui по умолчанию -> P" : "Default clickgui keybind --> P"));
             Command.sendMessage(Formatting.RED + (isRu() ? "Вы можете получить готовую конфигурацию, выполнив следующую команду -> @cfg cloudlist." : "You can obtain a pre-built configuration by executing the following command -> @cfg cloudlist."));
@@ -158,35 +155,11 @@ public final class Core {
     }*/
 
     public void drawSkull(DrawContext e) {
-        if (showSkull && !skullTimer.passedMs(3000) && ClientSettings.skullEmoji.getValue()) {
-            int xPos = (int) (mc.getWindow().getScaledWidth() / 2f - 150);
-            int yPos = (int) (mc.getWindow().getScaledHeight() / 2f - 150);
-            float alpha = (1f - (skullTimer.getPassedTimeMs() / 3000f));
-            RenderSystem.setShaderColor(1f, 1f, 1f, alpha);
-            e.drawTexture(RenderLayer::getGuiTextured, TextureStorage.skull, xPos, yPos, 0, 0, 300, 300, 300, 300);
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        } else showSkull = false;
+        // stubbed for 1.21.9
     }
 
     public void drawGps(DrawContext e) {
-        if (ThunderHack.gps_position != null) {
-            float dst = getDistance(ThunderHack.gps_position);
-            float xOffset = mc.getWindow().getScaledWidth() / 2f;
-            float yOffset = mc.getWindow().getScaledHeight() / 2f;
-            float yaw = getRotations(new Vec2f(ThunderHack.gps_position.getX(), ThunderHack.gps_position.getZ())) - mc.player.getYaw();
-            e.getMatrices().translate(xOffset, yOffset, 0.0F);
-            e.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotationDegrees(yaw));
-            e.getMatrices().translate(-xOffset, -yOffset, 0.0F);
-            Render2DEngine.drawTracerPointer(e.getMatrices(), xOffset, yOffset - 50, 12.5f, 0.5f, 3.63f, true, true, HudEditor.getColor(1).getRGB());
-            e.getMatrices().translate(xOffset, yOffset, 0.0F);
-            e.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-yaw));
-            e.getMatrices().translate(-xOffset, -yOffset, 0.0F);
-            RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-            FontRenderers.modules.drawCenteredString(e.getMatrices(), "gps (" + dst + "m)", (float) (Math.sin(Math.toRadians(yaw)) * 50f) + xOffset, (float) (yOffset - (Math.cos(Math.toRadians(yaw)) * 50f)) - 23, -1);
-
-            if (dst < 10)
-                ThunderHack.gps_position = null;
-        }
+        // stubbed for 1.21.9
     }
 
     @EventHandler
@@ -221,14 +194,6 @@ public final class Core {
     }
 
     public void bobView(MatrixStack matrices, float tickDelta) {
-        if (!(mc.getCameraEntity() instanceof PlayerEntity playerEntity)) {
-            return;
-        }
-
-        float g = -playerEntity.distanceTraveled;
-        float h = MathHelper.lerp(tickDelta, playerEntity.prevStrideDistance, playerEntity.strideDistance);
-        matrices.translate(MathHelper.sin(g * (float) Math.PI) * h * 0.1f, -Math.abs(MathHelper.cos(g * (float) Math.PI) * h) * 0.3, 0.0f);
-        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(MathHelper.sin(g * (float) Math.PI) * h * 3.0f));
-        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(Math.abs(MathHelper.cos(g * (float) Math.PI - 0.2f) * h) * 0.3f));
+        // stubbed for 1.21.9 (prevStrideDistance/strideDistance removed)
     }
 }

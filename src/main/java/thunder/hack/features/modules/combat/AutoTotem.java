@@ -125,7 +125,7 @@ public final class AutoTotem extends Module {
 
         if (e.getPacket() instanceof BlockUpdateS2CPacket blockUpdate)
             if (blockUpdate.getState().getBlock() == Blocks.OBSIDIAN && onObsidianPlace.getValue())
-                if (getPlayerPos().squaredDistanceTo(blockUpdate.getEntityPos().toCenterPos()) < 36 && delay <= 0)
+                if (getPlayerPos().squaredDistanceTo(blockUpdate.getPos().toCenterPos()) < 36 && delay <= 0)
                     runInstant();
     }
 

@@ -2,8 +2,11 @@ package thunder.hack.gui.clickui;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.CharInput;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -149,7 +152,7 @@ public class ClickGUI extends Screen {
         ClickGui.Image image = ModuleManager.clickGui.image.getValue();
 
         if (image != ClickGui.Image.None) {
-            RenderSystem.setShaderTexture(0, image.file);
+            RenderSystem.setShaderTexture(0, mc.getTextureManager().getTexture(image.file).getGlTextureView());
 
             Render2DEngine.renderTexture(context.getMatrices(),
                     mc.getWindow().getScaledWidth() - image.fileWidth * imageAnimation.getAnimationd(),
@@ -174,13 +177,13 @@ public class ClickGUI extends Screen {
 
         if (ModuleManager.clickGui.scrollMode.getValue() == ClickGui.scrollModeEn.Old) {
             for (AbstractCategory window : windows) {
-                if (InputUtil.isKeyPressed(mc.getWindow().getHandle(), 264))
+                if (InputUtil.isKeyPressed(mc.getWindow(), 264))
                     window.setY(window.getY() + 2);
-                if (InputUtil.isKeyPressed(mc.getWindow().getHandle(), 265))
+                if (InputUtil.isKeyPressed(mc.getWindow(), 265))
                     window.setY(window.getY() - 2);
-                if (InputUtil.isKeyPressed(mc.getWindow().getHandle(), 262))
+                if (InputUtil.isKeyPressed(mc.getWindow(), 262))
                     window.setX(window.getX() + 2);
-                if (InputUtil.isKeyPressed(mc.getWindow().getHandle(), 263))
+                if (InputUtil.isKeyPressed(mc.getWindow(), 263))
                     window.setX(window.getX() - 2);
                 if (scrollY != 0)
                     window.setY(window.getY() + scrollY);
@@ -240,38 +243,38 @@ public class ClickGUI extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean something) {
         windows.forEach(w -> {
-            w.mouseClicked((int) mouseX, (int) mouseY, button);
+            w.mouseClicked((int) click.x(), (int) click.y(), click.button());
             windows.forEach(w1 -> {
                 if (w.dragging && w != w1) w1.dragging = false;
             });
         });
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, something);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
         //   if (!setup && ConfigManager.firstLaunch) return false;
-        windows.forEach(w -> w.mouseReleased((int) mouseX, (int) mouseY, button));
-        return super.mouseReleased(mouseX, mouseY, button);
+        windows.forEach(w -> w.mouseReleased((int) click.x(), (int) click.y(), click.button()));
+        return super.mouseReleased(click);
     }
 
     @Override
-    public boolean charTyped(char key, int modifier) {
-        windows.forEach(w -> w.charTyped(key, modifier));
+    public boolean charTyped(CharInput charInput) {
+        windows.forEach(w -> w.charTyped((char) charInput.codepoint(), charInput.modifiers()));
         return true;
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        windows.forEach(w -> w.keyTyped(keyCode));
+    public boolean keyPressed(KeyInput key) {
+        windows.forEach(w -> w.keyTyped(key.key()));
 
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+        if (key.key() == GLFW.GLFW_KEY_ESCAPE) {
             if (mc.player == null || !ModuleManager.clickGui.closeAnimation.getValue()) {
                 imageDirection = false;
                 imageAnimation.reset();
-                super.keyPressed(keyCode, scanCode, modifiers);
+                super.keyPressed(key);
                 return true;
             }
 

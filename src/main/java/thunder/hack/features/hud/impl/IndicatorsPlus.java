@@ -102,29 +102,24 @@ public class IndicatorsPlus extends HudElement {
         double progress = ind.getSmoothProgress();
         float radius = 11f;
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
-
-        BufferBuilder bgBuf = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        for (int i = 0; i <= 360; i++) {
-            double rad = Math.toRadians(i);
-            bgBuf.vertex((float) (cx + Math.cos(rad) * radius), (float) (cy + Math.sin(rad) * radius), 0).color(0.1f, 0.1f, 0.1f, 0.5f);
-        }
-        BufferRenderer.drawWithGlobalProgram(bgBuf.end());
+        // Background circle
+        Render2DEngine.drawRect(context.getMatrices(), cx - radius, cy - radius, radius * 2, radius * 2, new Color(0x1A1A1A80, true));
 
         if (progress > 0) {
             int start = -90;
             int end = (int) (start + 360.0 * progress);
-            BufferBuilder progBuf = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-            for (int i = start; i <= end; i++) {
-                double rad = Math.toRadians(i);
+            for (int i = start; i <= end; i += 5) {
+                double rad1 = Math.toRadians(i);
+                double rad2 = Math.toRadians(Math.min(i + 5, end));
                 float r2 = radius - 0.5f;
                 Color col = getColor(i, progress);
-                progBuf.vertex((float) (cx + Math.cos(rad) * r2), (float) (cy + Math.sin(rad) * r2), 0)
-                        .color(col.getRed() / 255f, col.getGreen() / 255f, col.getBlue() / 255f, 1f);
+                float x1 = (float) (cx + Math.cos(rad1) * r2);
+                float y1 = (float) (cy + Math.sin(rad1) * r2);
+                float x2 = (float) (cx + Math.cos(rad2) * r2);
+                float y2 = (float) (cy + Math.sin(rad2) * r2);
+                Render2DEngine.drawRect(context.getMatrices(), Math.min(x1, x2), Math.min(y1, y2),
+                        Math.abs(x2 - x1) + 1, Math.abs(y2 - y1) + 1, col);
             }
-            BufferRenderer.drawWithGlobalProgram(progBuf.end());
         }
 
         FontRenderers.sf_bold_mini.drawCenteredString(context.getMatrices(), ind.getDisplayText(),

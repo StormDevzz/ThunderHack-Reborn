@@ -27,7 +27,7 @@ public class ExtraTab extends Module {
     public final Setting<ColorSetting> pingColor = new Setting<>("PingColor", new ColorSetting(new Color(0xFFFF00).getRGB()), v -> ping.getValue());
 
     public static Text getPlayerName(PlayerListEntry entry) {
-        String name = entry.getDisplayName() != null ? entry.getDisplayName().getString() : Team.decorateName(entry.getScoreboardTeam(), Text.literal(entry.getProfile().getName())).getString();
+        String name = entry.getDisplayName() != null ? entry.getDisplayName().getString() : Team.decorateName(entry.getScoreboardTeam(), Text.literal(entry.getProfile().name())).getString();
         MutableText text = Text.literal(name);
 
         if (ModuleManager.extraTab.friends.getValue() && Managers.FRIEND.isFriend(name)) {
