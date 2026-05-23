@@ -52,13 +52,8 @@ jobs:
           cp ./build/libs/*.jar ./build/bundle/
 
           FABRIC_VERSION="0.133.11+1.21.9"
-          SATIN_VERSION="3.0.0-alpha.1"
-
           curl -sL -o ./build/bundle/fabric-api-$FABRIC_VERSION.jar \
             "https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/$FABRIC_VERSION/fabric-api-$FABRIC_VERSION.jar"
-
-          curl -sL -o ./build/bundle/satin-$SATIN_VERSION.jar \
-            "https://maven.ladysnake.org/releases/org/ladysnake/satin/$SATIN_VERSION/satin-$SATIN_VERSION.jar"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
