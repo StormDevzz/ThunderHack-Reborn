@@ -52,8 +52,8 @@ public class FreeLook extends Module {
         // Player rotation is now handled by MixinEntity and handleMouse methods
         mc.player.setYaw(lockedYaw);
         mc.player.setPitch(lockedPitch);
-        mc.player.prevYaw = lockedYaw;
-        mc.player.prevPitch = lockedPitch;
+        //mc.player.lastYaw = lockedYaw;
+        //mc.player.prevPitch = lockedPitch;
     }
 
     public void handleMouseYaw(double deltaYaw) {

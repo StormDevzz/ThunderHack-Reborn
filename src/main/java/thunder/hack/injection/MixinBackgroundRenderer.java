@@ -1,39 +1,54 @@
 package thunder.hack.injection;
 
-import net.minecraft.client.render.BackgroundRenderer;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.Fog;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.render.fog.FogRenderer;
+import net.minecraft.client.world.ClientWorld;
 import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.modules.misc.Weather;
 import thunder.hack.features.modules.render.WorldTweaks;
 import thunder.hack.setting.impl.ColorSetting;
 
-@Mixin(BackgroundRenderer.class)
+@Mixin(FogRenderer.class)
 public class MixinBackgroundRenderer {
 
-    @Inject(method = "applyFog", at = @At("RETURN"), cancellable = true)
-    private static void onApplyFog(Camera camera, BackgroundRenderer.FogType fogType, Vector4f fogColor, float viewDistance, boolean thickFog, float tickDelta, CallbackInfoReturnable<Fog> cir) {
+    @Inject(method = "applyFog(Lnet/minecraft/client/render/Camera;IZLnet/minecraft/client/render/RenderTickCounter;FLnet/minecraft/client/world/ClientWorld;)Lorg/joml/Vector4f;", at = @At("RETURN"), cancellable = true)
+    private void onApplyFog(Camera camera, int viewDistance, boolean thick, RenderTickCounter tickCounter, float skyDarkness, ClientWorld world, CallbackInfoReturnable<Vector4f> cir) {
         if (ModuleManager.worldTweaks.isEnabled() && WorldTweaks.fogModify.getValue().isEnabled()) {
-            Fog original = cir.getReturnValue();
-            float start = WorldTweaks.fogStart.getValue();
-            float end = WorldTweaks.fogEnd.getValue();
             ColorSetting c = WorldTweaks.fogColor.getValue();
-            cir.setReturnValue(new Fog(start, end, original.shape(), c.getGlRed(), c.getGlGreen(), c.getGlBlue(), 1.0f));
+            cir.setReturnValue(new Vector4f(c.getGlRed(), c.getGlGreen(), c.getGlBlue(), 1.0f));
         }
         if (ModuleManager.weather.isEnabled() && ModuleManager.weather.weatherMode.is(Weather.WeatherMode.Fog)) {
-            Fog original = cir.getReturnValue();
-            cir.setReturnValue(new Fog(ModuleManager.weather.fogStart.getValue(), ModuleManager.weather.fogEnd.getValue(), original.shape(), original.red(), original.green(), original.blue(), 1.0f));
+            Vector4f original = cir.getReturnValue();
+            cir.setReturnValue(new Vector4f(original.x(), original.y(), original.z(), 1.0f));
         }
     }
 
-    @Inject(method = "getFogModifier(Lnet/minecraft/entity/Entity;F)Lnet/minecraft/client/render/BackgroundRenderer$StatusEffectFogModifier;", at = @At("HEAD"), cancellable = true)
-    private static void onGetFogModifier(Entity entity, float tickDelta, CallbackInfoReturnable<Object> cir) {
-        if (ModuleManager.noRender.isEnabled() && ModuleManager.noRender.blindness.getValue()) cir.setReturnValue(null);
+    @ModifyVariable(method = "applyFog(Ljava/nio/ByteBuffer;ILorg/joml/Vector4f;FFFFFF)V", at = @At("HEAD"), index = 3, argsOnly = true)
+    private float modifyFogEnvironmentalStart(float environmentalStart) {
+        if (ModuleManager.worldTweaks.isEnabled() && WorldTweaks.fogModify.getValue().isEnabled()) {
+            return WorldTweaks.fogStart.getValue();
+        }
+        if (ModuleManager.weather.isEnabled() && ModuleManager.weather.weatherMode.is(Weather.WeatherMode.Fog)) {
+            return ModuleManager.weather.fogStart.getValue();
+        }
+        return environmentalStart;
+    }
+
+    @ModifyVariable(method = "applyFog(Ljava/nio/ByteBuffer;ILorg/joml/Vector4f;FFFFFF)V", at = @At("HEAD"), index = 4, argsOnly = true)
+    private float modifyFogEnvironmentalEnd(float environmentalEnd) {
+        if (ModuleManager.worldTweaks.isEnabled() && WorldTweaks.fogModify.getValue().isEnabled()) {
+            return WorldTweaks.fogEnd.getValue();
+        }
+        if (ModuleManager.weather.isEnabled() && ModuleManager.weather.weatherMode.is(Weather.WeatherMode.Fog)) {
+            return ModuleManager.weather.fogEnd.getValue();
+        }
+        return environmentalEnd;
     }
 }

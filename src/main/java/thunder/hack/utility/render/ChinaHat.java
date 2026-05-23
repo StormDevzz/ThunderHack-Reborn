@@ -16,9 +16,9 @@ public final class ChinaHat {
         Vec3d tip = base.add(0, yOff + height, 0);
 
         stack.push();
-        double dx = base.x - mc.getEntityRenderDispatcher().camera.getPos().getX();
-        double dy = base.y - mc.getEntityRenderDispatcher().camera.getPos().getY();
-        double dz = base.z - mc.getEntityRenderDispatcher().camera.getPos().getZ();
+        double dx = base.x - mc.getEntityRenderDispatcher().camera.getEntityPos().getX();
+        double dy = base.y - mc.getEntityRenderDispatcher().camera.getEntityPos().getY();
+        double dz = base.z - mc.getEntityRenderDispatcher().camera.getEntityPos().getZ();
         stack.translate(dx, dy, dz);
 
         Matrix4f mat = stack.peek().getPositionMatrix();
@@ -50,9 +50,9 @@ public final class ChinaHat {
     }
 
     private static Vec3d getInterpolatedPos(PlayerEntity player) {
-        double x = player.prevX + (player.getX() - player.prevX) * mc.getRenderTickCounter().getTickDelta(true);
-        double y = player.prevY + (player.getY() - player.prevY) * mc.getRenderTickCounter().getTickDelta(true);
-        double z = player.prevZ + (player.getZ() - player.prevZ) * mc.getRenderTickCounter().getTickDelta(true);
+        double x = player.lastX + (player.getX() - player.lastX) * mc.getRenderTickCounter().getTickDelta(true);
+        double y = player.lastY + (player.getY() - player.lastY) * mc.getRenderTickCounter().getTickDelta(true);
+        double z = player.lastZ + (player.getZ() - player.lastZ) * mc.getRenderTickCounter().getTickDelta(true);
         return new Vec3d(x, y, z);
     }
 }

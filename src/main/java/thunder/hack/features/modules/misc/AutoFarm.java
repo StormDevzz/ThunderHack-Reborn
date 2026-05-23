@@ -79,7 +79,7 @@ public class AutoFarm extends Module {
     private void harvest(BlockPos target) {
         rotateToBlock(target);
 
-        int prevSlot = mc.player.getInventory().selectedSlot;
+        int prevSlot = mc.player.getInventory().getSelectedSlot();
         boolean swapped = false;
 
         // Используем мотыгу для мгновенного сбора
@@ -141,7 +141,7 @@ public class AutoFarm extends Module {
         }
 
         return cropList.stream()
-                .min(Comparator.comparingDouble(p -> p.getSquaredDistance(mc.player.getPos())))
+                .min(Comparator.comparingDouble(p -> p.getSquaredDistance(mc.player.getEntityPos())))
                 .orElse(null);
     }
 
@@ -163,7 +163,7 @@ public class AutoFarm extends Module {
         if (swapMode.getValue() == SwapMode.Silent) {
             mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(slot));
         } else if (swapMode.getValue() == SwapMode.Normal) {
-            mc.player.getInventory().selectedSlot = slot;
+            mc.player.getInventory().setSelectedSlot(slot);
             mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(slot));
         }
     }
@@ -173,7 +173,7 @@ public class AutoFarm extends Module {
             if (swapMode.getValue() == SwapMode.Silent) {
                 mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(slot));
             } else {
-                mc.player.getInventory().selectedSlot = slot;
+                mc.player.getInventory().setSelectedSlot(slot);
                 mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(slot));
             }
         }

@@ -147,7 +147,7 @@ public class DickAura extends Module {
             if (mc.world.getBlockState(peePos).isReplaceable()) {
                 SearchInvResult yellowBlock = findYellowBlock();
                 if (yellowBlock.found()) {
-                    int prevSlot = mc.player.getInventory().selectedSlot;
+                    int prevSlot = mc.player.getInventory().getSelectedSlot();
                     yellowBlock.switchTo();
                     InteractionUtility.placeBlock(peePos,
                         InteractionUtility.Rotate.None,
@@ -159,7 +159,7 @@ public class DickAura extends Module {
             }
         }
 
-        int prevSlot = mc.player.getInventory().selectedSlot;
+        int prevSlot = mc.player.getInventory().getSelectedSlot();
         blockResult.switchTo();
 
         boolean placed = InteractionUtility.placeBlock(pos,
@@ -248,8 +248,8 @@ public class DickAura extends Module {
 
     private void generateDick(PlayerEntity target) {
         BlockPos targetPos = target.getBlockPos();
-        Vec3d playerPos = mc.player.getPos();
-        Vec3d targetVec = target.getPos();
+        Vec3d playerPos = mc.player.getEntityPos();
+        Vec3d targetVec = target.getEntityPos();
 
         double dx = targetVec.x - playerPos.x;
         double dz = targetVec.z - playerPos.z;

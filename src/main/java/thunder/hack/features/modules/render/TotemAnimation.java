@@ -1,9 +1,10 @@
 package thunder.hack.features.modules.render;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.item.ModelTransformationMode;
+import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
@@ -48,10 +49,10 @@ public class TotemAnimation extends Module {
             float progressCubed = animationProgress * progressSquared;
             float oscillationFactor = 10.25F * progressCubed * progressSquared - 24.95F * progressSquared * progressSquared + 25.5F * progressCubed - 13.8F * progressSquared + 4.0F * animationProgress;
             float oscillationRadians = oscillationFactor * 3.1415927F;
-            RenderSystem.enableDepthTest();
-            RenderSystem.disableCull();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
+            //RenderSystem.enableDepthTest();
+            //RenderSystem.disableCull();
+            //RenderSystem.enableBlend();
+            //RenderSystem.defaultBlendFunc();
             MatrixStack matrixStack = new MatrixStack();
             matrixStack.push();
             float adjustedProgress = ((float) elapsedTime + tickDelta);
@@ -106,15 +107,15 @@ public class TotemAnimation extends Module {
             }
 
             VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f - animationProgress);
-            mc.getItemRenderer().renderItem(floatingItem, ModelTransformationMode.FIXED, 15728880, OverlayTexture.DEFAULT_UV, matrixStack, immediate, mc.world, 0);
+            //RenderSystem.setShaderColor(1f, 1f, 1f, 1f - animationProgress);
+            mc.getItemRenderer().renderItem(mc.player, floatingItem, ItemDisplayContext.FIXED, false, matrixStack, immediate, mc.world, 15728880, OverlayTexture.DEFAULT_UV, 0);
             matrixStack.pop();
             immediate.draw();
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+            //RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
-            RenderSystem.disableBlend();
-            RenderSystem.enableCull();
-            RenderSystem.disableDepthTest();
+            GlStateManager._disableBlend();
+            GlStateManager._enableCull();
+            GlStateManager._disableDepthTest();
         }
     }
 

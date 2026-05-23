@@ -1,7 +1,7 @@
 package thunder.hack.features.hud.impl;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import thunder.hack.ThunderHack;
@@ -104,7 +104,7 @@ public class IndicatorsPlus extends HudElement {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
 
         BufferBuilder bgBuf = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
         for (int i = 0; i <= 360; i++) {

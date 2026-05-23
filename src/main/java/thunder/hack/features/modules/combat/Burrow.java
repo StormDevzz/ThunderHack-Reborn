@@ -182,7 +182,7 @@ public final class Burrow extends Module {
     }
 
     public void handleDefault(BlockPos pos) {
-        if ((mc.world.getBlockState(BlockPos.ofFloored(mc.player.getPos().offset(Direction.UP, 0.2))).blocksMovement() || !mc.player.verticalCollision)) {
+        if ((mc.world.getBlockState(BlockPos.ofFloored(mc.player.getEntityPos().offset(Direction.UP, 0.2))).blocksMovement() || !mc.player.verticalCollision)) {
             return;
         }
 
@@ -227,7 +227,7 @@ public final class Burrow extends Module {
         if (timer.passedMs(1000)) {
             if (rotate.getValue()) {
                 if (r != null) {
-                    if (rEntity.getPos().equals(new Vec3d(last_x, last_y, last_z))) sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(r[0], r[1], onGround.getValue(), false));
+                    if (rEntity.getEntityPos().equals(new Vec3d(last_x, last_y, last_z))) sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(r[0], r[1], onGround.getValue(), false));
                     else sendPacket(new PlayerMoveC2SPacket.Full(rEntity.getX(), rEntity.getY(), rEntity.getZ(), r[0], r[1], onGround.getValue(), false));
                 }
             }
@@ -344,7 +344,7 @@ public final class Burrow extends Module {
     }
 
     public static BlockPos getPlayerPos() {
-        return Math.abs(mc.player.getVelocity().getY()) > 0.1 ? BlockPos.ofFloored(mc.player.getPos()) : getPosition(mc.player);
+        return Math.abs(mc.player.getVelocity().getY()) > 0.1 ? BlockPos.ofFloored(mc.player.getEntityPos()) : getPosition(mc.player);
     }
 
     public enum OffsetMode {

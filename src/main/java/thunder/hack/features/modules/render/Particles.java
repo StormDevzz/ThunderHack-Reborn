@@ -1,8 +1,9 @@
 package thunder.hack.features.modules.render;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
@@ -74,35 +75,29 @@ public class Particles extends Module {
     public void onRender3D(MatrixStack stack) {
         if (FireFlies.getValue().isEnabled()) {
             stack.push();
-            RenderSystem.setShaderTexture(0, TextureStorage.firefly);
-            RenderSystem.enableBlend();
-            RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-            RenderSystem.enableDepthTest();
-            RenderSystem.depthMask(false);
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+            GlStateManager._enableBlend();
+            GlStateManager._enableDepthTest();
+            GlStateManager._depthMask(false);
             BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             fireFlies.forEach(p -> p.render(bufferBuilder));
             Render2DEngine.endBuilding(bufferBuilder);
-            RenderSystem.depthMask(true);
-            RenderSystem.disableDepthTest();
-            RenderSystem.disableBlend();
+            GlStateManager._depthMask(true);
+            GlStateManager._disableDepthTest();
+            GlStateManager._disableBlend();
             stack.pop();
         }
 
         if (mode.getValue() != Mode.Off) {
             stack.push();
-            RenderSystem.enableBlend();
-            RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-            RenderSystem.enableDepthTest();
-            RenderSystem.depthMask(false);
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+            GlStateManager._enableBlend();
+            GlStateManager._enableDepthTest();
+            GlStateManager._depthMask(false);
             BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             particles.forEach(p -> p.render(bufferBuilder));
             Render2DEngine.endBuilding(bufferBuilder);
-            RenderSystem.depthMask(true);
-            RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-            RenderSystem.disableDepthTest();
-            RenderSystem.disableBlend();
+            GlStateManager._depthMask(true);
+            GlStateManager._disableDepthTest();
+            GlStateManager._disableBlend();
             stack.pop();
         }
     }

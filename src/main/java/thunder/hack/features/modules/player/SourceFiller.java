@@ -87,7 +87,7 @@ public class SourceFiller extends Module {
     }
 
     private BlockPos findWaterSource() {
-        BlockPos playerPos = BlockPos.ofFloored(mc.player.getPos());
+        BlockPos playerPos = BlockPos.ofFloored(mc.player.getEntityPos());
         int r = (int) Math.ceil(range.getValue());
         BlockPos nearest = null;
         double nearestDist = Double.MAX_VALUE;

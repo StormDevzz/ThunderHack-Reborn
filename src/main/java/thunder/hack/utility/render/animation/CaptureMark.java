@@ -1,7 +1,7 @@
 package thunder.hack.utility.render.animation;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -23,9 +23,9 @@ public class CaptureMark {
     public static void render(Entity target) {
         Camera camera = mc.gameRenderer.getCamera();
 
-        double tPosX = Render2DEngine.interpolate(target.prevX, target.getX(), Render3DEngine.getTickDelta()) - camera.getPos().x;
-        double tPosY = Render2DEngine.interpolate(target.prevY, target.getY(), Render3DEngine.getTickDelta()) - camera.getPos().y;
-        double tPosZ = Render2DEngine.interpolate(target.prevZ, target.getZ(), Render3DEngine.getTickDelta()) - camera.getPos().z;
+        double tPosX = Render2DEngine.interpolate(target.lastX, target.getX(), Render3DEngine.getTickDelta()) - camera.getEntityPos().x;
+        double tPosY = Render2DEngine.interpolate(target.lastY, target.getY(), Render3DEngine.getTickDelta()) - camera.getEntityPos().y;
+        double tPosZ = Render2DEngine.interpolate(target.lastZ, target.getZ(), Render3DEngine.getTickDelta()) - camera.getEntityPos().z;
 
         MatrixStack matrices = new MatrixStack();
         RenderSystem.disableDepthTest();
@@ -41,7 +41,7 @@ public class CaptureMark {
         RenderSystem.setShaderTexture(0, TextureStorage.capture);
         matrices.translate(-0.75, -0.75, -0.01);
         Matrix4f matrix = matrices.peek().getPositionMatrix();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+        RenderSystem.setShader(RenderPipelines.POSITION_TEX_COLOR);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         buffer.vertex(matrix, 0, 1.5f, 0).texture(0f, 1f).color(HudEditor.getColor(90).getRGB());
         buffer.vertex(matrix, 1.5f, 1.5f, 0).texture(1f, 1f).color(HudEditor.getColor(0).getRGB());

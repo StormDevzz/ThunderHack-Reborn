@@ -10,8 +10,8 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.PickaxeItem;
-import net.minecraft.item.SwordItem;
+import net.minecraft.registry.tag.ItemTags;
+
 import net.minecraft.resource.ResourceFactory;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -108,8 +108,8 @@ public abstract class MixinGameRenderer {
 
     @Inject(method = "findCrosshairTarget", at = @At("HEAD"), cancellable = true)
     private void findCrosshairTargetHook(Entity camera, double blockInteractionRange, double entityInteractionRange, float tickDelta, CallbackInfoReturnable<HitResult> cir) {
-        if (ModuleManager.noEntityTrace.isEnabled() && (mc.player.getMainHandStack().getItem() instanceof PickaxeItem || !NoEntityTrace.ponly.getValue())) {
-            if (mc.player.getMainHandStack().getItem() instanceof SwordItem && NoEntityTrace.noSword.getValue()) return;
+        if (ModuleManager.noEntityTrace.isEnabled() && (mc.player.getMainHandStack().isIn(ItemTags.PICKAXES) || !NoEntityTrace.ponly.getValue())) {
+            if (mc.player.getMainHandStack().isIn(ItemTags.SWORDS) && NoEntityTrace.noSword.getValue()) return;
             double d = Math.max(blockInteractionRange, entityInteractionRange);
             Vec3d vec3d = camera.getCameraPosVec(tickDelta);
             HitResult hitResult = camera.raycast(d, tickDelta, false);
@@ -165,9 +165,9 @@ public abstract class MixinGameRenderer {
 
     @Unique
     private HitResult ensureTargetInRangeCustom(HitResult hitResult, Vec3d cameraPos, double interactionRange) {
-        Vec3d vec3d = hitResult.getPos();
+        Vec3d vec3d = hitResult.getEntityPos();
         if (!vec3d.isInRange(cameraPos, interactionRange)) {
-            Vec3d vec3d2 = hitResult.getPos();
+            Vec3d vec3d2 = hitResult.getEntityPos();
             Direction direction = Direction.getFacing(vec3d2.x - cameraPos.x, vec3d2.y - cameraPos.y, vec3d2.z - cameraPos.z);
             return BlockHitResult.createMissed(vec3d2, direction, BlockPos.ofFloored(vec3d2));
         } else {

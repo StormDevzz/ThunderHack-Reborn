@@ -44,7 +44,7 @@ public final class InteractionUtility {
 
     public static boolean canSee(Entity entity) {
         Vec3d entityEyes = getEyesPos(entity);
-        Vec3d entityPos = entity.getPos();
+        Vec3d entityPos = entity.getEntityPos();
         return canSee(entityEyes, entityPos);
     }
 
@@ -61,7 +61,7 @@ public final class InteractionUtility {
     }
 
     public static Vec3d getEyesPos(@NotNull Entity entity) {
-        return entity.getPos().add(0, entity.getEyeHeight(entity.getPose()), 0);
+        return entity.getEntityPos().add(0, entity.getEyeHeight(entity.getPose()), 0);
     }
 
     public static float @NotNull [] calculateAngle(Vec3d to) {
@@ -81,7 +81,7 @@ public final class InteractionUtility {
     }
 
     public static boolean placeBlock(BlockPos bp, Rotate rotate, Interact interact, PlaceMode mode, int slot, boolean returnSlot, boolean ignoreEntities) {
-        int prevItem = mc.player.getInventory().selectedSlot;
+        int prevItem = mc.player.getInventory().getSelectedSlot();
         if (slot != -1) InventoryUtility.switchTo(slot);
         else return false;
 
@@ -92,7 +92,7 @@ public final class InteractionUtility {
     }
 
     public static boolean placeBlock(BlockPos bp, Rotate rotate, Interact interact, PlaceMode mode, @NotNull SearchInvResult invResult, boolean returnSlot, boolean ignoreEntities) {
-        int prevItem = mc.player.getInventory().selectedSlot;
+        int prevItem = mc.player.getInventory().getSelectedSlot();
         invResult.switchTo();
         boolean result = placeBlock(bp, rotate, interact, mode, ignoreEntities);
         if (returnSlot) InventoryUtility.switchTo(prevItem);
@@ -112,7 +112,7 @@ public final class InteractionUtility {
         if (sneak)
             mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
 
-        float[] angle = calculateAngle(result.getPos());
+        float[] angle = calculateAngle(result.getEntityPos());
 
         switch (rotate) {
             case None -> {
@@ -150,7 +150,7 @@ public final class InteractionUtility {
 
     public static float @Nullable [] getPlaceAngle(@NotNull BlockPos bp, Interact interact, boolean ignoreEntities) {
         BlockHitResult result = getPlaceResult(bp, interact, ignoreEntities);
-        if (result != null) return calculateAngle(result.getPos());
+        if (result != null) return calculateAngle(result.getEntityPos());
         return null;
     }
 
@@ -367,7 +367,7 @@ public final class InteractionUtility {
 
                         if (squaredDistanceFromEyes(point) < bestDistance)
                             if (result != null && result.getType() == HitResult.Type.BLOCK)
-                                bestData = new BreakData(result.getSide(), result.getPos());
+                                bestData = new BreakData(result.getSide(), result.getEntityPos());
                     }
                 }
             }

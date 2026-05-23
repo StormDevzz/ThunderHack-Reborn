@@ -1,8 +1,11 @@
 package thunder.hack.features.modules.render;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.texture.AbstractTexture;
+import org.lwjgl.opengl.GL11;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
@@ -75,18 +78,26 @@ public class JumpCircle extends Module {
 
     public void onRender3D(MatrixStack stack) {
         Collections.reverse(circles);
-        RenderSystem.disableDepthTest();
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
+        GlStateManager._disableDepthTest();
+        GlStateManager._enableBlend();
+        GlStateManager._blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE, GL11.GL_SRC_ALPHA, GL11.GL_ONE);
 
         switch (mode.getValue()) {
-            case Portal -> RenderSystem.setShaderTexture(0, TextureStorage.bubble);
-            case Default -> RenderSystem.setShaderTexture(0, TextureStorage.default_circle);
-            case Custom ->
-                    RenderSystem.setShaderTexture(0, Objects.requireNonNullElse(custom, TextureStorage.default_circle));
+            case Portal -> {
+                AbstractTexture __tex = mc.getTextureManager().getTexture(TextureStorage.bubble);
+                if (__tex != null) RenderSystem.setShaderTexture(0, __tex.getGlTextureView());
+            }
+            case Default -> {
+                AbstractTexture __tex = mc.getTextureManager().getTexture(TextureStorage.default_circle);
+                if (__tex != null) RenderSystem.setShaderTexture(0, __tex.getGlTextureView());
+            }
+            case Custom -> {
+                AbstractTexture __tex = mc.getTextureManager().getTexture(Objects.requireNonNullElse(custom, TextureStorage.default_circle));
+                if (__tex != null) RenderSystem.setShaderTexture(0, __tex.getGlTextureView());
+            }
         }
 
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+        //RenderSystem.setShader(RenderPipelines.POSITION_TEX_COLOR);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
         for (Circle c : circles) {
@@ -94,7 +105,7 @@ public class JumpCircle extends Module {
             float sizeAnim = circleScale.getValue() - (float) Math.pow(1 - ((c.timer.getPassedTimeMs() * (easeOut.getValue() ? 2f : 1f)) / 5000f), 4);
 
             stack.push();
-            stack.translate(c.pos().x - mc.getEntityRenderDispatcher().camera.getPos().getX(), c.pos().y - mc.getEntityRenderDispatcher().camera.getPos().getY(), c.pos().z - mc.getEntityRenderDispatcher().camera.getPos().getZ());
+            stack.translate(c.pos().x - mc.gameRenderer.getCamera().getPos().getX(), c.pos().y - mc.gameRenderer.getCamera().getPos().getY(), c.pos().z - mc.gameRenderer.getCamera().getPos().getZ());
             stack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
             stack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(sizeAnim * rotateSpeed.getValue() * 1000f));
             float scale = sizeAnim * 2f;
@@ -109,9 +120,9 @@ public class JumpCircle extends Module {
         }
 
         Render2DEngine.endBuilding(buffer);
-        RenderSystem.disableBlend();
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        RenderSystem.enableDepthTest();
+        GlStateManager._disableBlend();
+        //RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        GlStateManager._enableDepthTest();
         Collections.reverse(circles);
     }
 

@@ -1,14 +1,13 @@
 package thunder.hack.gui.clickui;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
-import net.minecraft.client.render.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.BufferBuilder;
 import org.joml.Matrix4f;
 import net.minecraft.client.render.GameRenderer;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.resource.language.I18n;
@@ -124,7 +123,7 @@ public class ModuleButton extends AbstractButton {
                 context.getMatrices().translate(-px, -py, 0.0F);
                 RenderSystem.setShaderTexture(0, TextureStorage.Gear);
                 RenderSystem.enableBlend();
-                RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+                RenderSystem.setShader(RenderPipelines.POSITION_TEX_COLOR);
                 RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
                 Color c1 = Render2DEngine.injectAlpha(HudEditor.getColor(270).darker(), 110);
                 Color c2 = Render2DEngine.injectAlpha(HudEditor.getColor(0).darker(), 110);
@@ -139,7 +138,7 @@ public class ModuleButton extends AbstractButton {
                 buffer.vertex(matrix, px - gScale / 2f, py - gScale / 2f, 0).texture(0, 0).color(c4.getRed() / 255f, c4.getGreen() / 255f, c4.getBlue() / 255f, c4.getAlpha() / 255f);
                 BufferRenderer.drawWithGlobalProgram(buffer.end());
 
-                RenderSystem.disableBlend();
+                // TODO: 1.21.9 - RenderSystem.disableBlend removed
                 context.getMatrices().pop();
                 Render2DEngine.popWindow(context);
             }

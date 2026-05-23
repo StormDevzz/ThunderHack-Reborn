@@ -38,7 +38,7 @@ public class AutoSign extends Module {
     public void onScreen(EventScreen e) {
         if (e.getScreen() instanceof SignEditScreen ses) {
             e.cancel();
-            sendPacketSilent(new UpdateSignC2SPacket(((ISignEditScreen) ses).getBlockEntity().getPos(), ((ISignEditScreen) ses).isFront(), format(line1.getValue()), format(line2.getValue()), format(line3.getValue()), format(line4.getValue())));
+            sendPacketSilent(new UpdateSignC2SPacket(((ISignEditScreen) ses).getBlockEntity().getEntityPos(), ((ISignEditScreen) ses).isFront(), format(line1.getValue()), format(line2.getValue()), format(line3.getValue()), format(line4.getValue())));
 
             if (glow.getValue()) {
                 SearchInvResult result = InventoryUtility.findItemInHotBar(Items.GLOW_INK_SAC);
@@ -47,7 +47,7 @@ public class AutoSign extends Module {
                     InventoryUtility.saveSlot();
                     result.switchTo();
                     mc.interactionManager.interactBlock(mc.player, offhand ? Hand.OFF_HAND : Hand.MAIN_HAND,
-                            new BlockHitResult(((ISignEditScreen) ses).getBlockEntity().getPos().toCenterPos().add(0, 0.5, 0), Direction.UP, ((ISignEditScreen) ses).getBlockEntity().getPos(), false));
+                            new BlockHitResult(((ISignEditScreen) ses).getBlockEntity().getEntityPos().toCenterPos().add(0, 0.5, 0), Direction.UP, ((ISignEditScreen) ses).getBlockEntity().getEntityPos(), false));
                     sendPacket(new HandSwingC2SPacket(offhand ? Hand.OFF_HAND : Hand.MAIN_HAND));
                     InventoryUtility.returnSlot();
                 }

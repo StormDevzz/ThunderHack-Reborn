@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.9-SNAPSHOT'
+	id 'fabric-loom' version '1.11-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -47,7 +47,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	libImpl("meteordevelopment:orbit:${project.orbit_version}")
 
-	modCompileOnly "meteordevelopment:baritone:1.21.4-SNAPSHOT"
+	modCompileOnly "meteordevelopment:baritone:1.21.5-SNAPSHOT"
 
 	libImpl("io.netty:netty-handler-proxy:${project.netty_version}") { transitive = false }
 	libImpl("io.netty:netty-codec-socks:${project.netty_version}") { transitive = false }

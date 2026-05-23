@@ -1,7 +1,7 @@
 package thunder.hack.features.modules.render;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.*;
@@ -59,10 +59,10 @@ public class Chams extends Module {
             } else {
                 RenderSystem.setShaderTexture(0, TextureStorage.crystalTexture2);
             }
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+            RenderSystem.setShader(RenderPipelines.POSITION_TEX);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
         } else {
-            RenderSystem.setShader(ShaderProgramKeys.POSITION);
+            RenderSystem.setShader(RenderPipelines.POSITION);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
         }
 
@@ -102,10 +102,10 @@ public class Chams extends Module {
         if (useTexture) {
             AbstractClientPlayerEntity acp = (AbstractClientPlayerEntity) player;
             RenderSystem.setShaderTexture(0, acp.getSkinTextures().texture());
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+            RenderSystem.setShader(RenderPipelines.POSITION_TEX);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
         } else {
-            RenderSystem.setShader(ShaderProgramKeys.POSITION);
+            RenderSystem.setShader(RenderPipelines.POSITION);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
         }
 

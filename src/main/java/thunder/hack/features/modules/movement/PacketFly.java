@@ -9,7 +9,7 @@ import thunder.hack.events.impl.PacketEvent;
 import thunder.hack.accessors.IPlayerPositionLookS2CPacket;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
-import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
+import net.minecraft.client.gui.screen.world.LevelLoadingScreen;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.c2s.play.TeleportConfirmC2SPacket;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
@@ -95,7 +95,7 @@ public class PacketFly extends Module {
     }
 
     public void sendPackets(Vec3d vec3d, boolean confirm) {
-        Vec3d motion = mc.player.getPos().add(vec3d);
+        Vec3d motion = mc.player.getEntityPos().add(vec3d);
         Vec3d rubberBand = getVectorByMode(vec3d, motion);
 
         PlayerMoveC2SPacket motionPacket =  new PlayerMoveC2SPacket.PositionAndOnGround(motion.x, motion.y, motion.z, mc.player.isOnGround(), false);

@@ -32,15 +32,15 @@ public final class MaceSwap extends Module {
         if (mc.player.getInventory().getMainHandStack().getItem() == Items.MACE) return;
 
         int maceSlot = findMaceSlot();
-        if (maceSlot == -1 || maceSlot == mc.player.getInventory().selectedSlot) return;
+        if (maceSlot == -1 || maceSlot == mc.player.getInventory().getSelectedSlot()) return;
 
         if (mode.is(Mode.Normal)) {
-            mc.player.getInventory().selectedSlot = maceSlot;
+            mc.player.getInventory().setSelectedSlot(maceSlot);
             sendPacket(new UpdateSelectedSlotC2SPacket(maceSlot));
         } else if (mode.is(Mode.Silent)) {
             event.cancel();
             guard = true;
-            int prevSlot = mc.player.getInventory().selectedSlot;
+            int prevSlot = mc.player.getInventory().getSelectedSlot();
             sendPacket(new UpdateSelectedSlotC2SPacket(maceSlot));
             sendPacket(packet);
             sendPacket(new UpdateSelectedSlotC2SPacket(prevSlot));

@@ -1,6 +1,6 @@
 package thunder.hack.gui.notification;
 
-import net.minecraft.client.util.math.MatrixStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.util.Formatting;
 import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.gui.font.FontRenderers;
@@ -47,7 +47,7 @@ public class Notification {
         else y = mc.getWindow().getScaledHeight() / 2f + 10;
     }
 
-    public void render(MatrixStack matrix, float getY) {
+    public void render(Matrix3x2fStack matrix, float getY) {
         int animatedAlpha = (int) MathUtility.clamp((1 - animation.getAnimationd()) * 255, 0, 255);
         Color color = new Color(170, 170, 170, animatedAlpha);
 
@@ -88,7 +88,7 @@ public class Notification {
         animation.update(direction);
     }
 
-    public void renderShaders(MatrixStack matrix, float getY) {
+    public void renderShaders(Matrix3x2fStack matrix, float getY) {
         direction = isFinished();
         animationX = (float) (width * animation.getAnimationd());
         y = animate(y, getY);

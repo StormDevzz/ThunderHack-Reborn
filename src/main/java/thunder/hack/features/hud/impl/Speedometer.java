@@ -1,9 +1,11 @@
 package thunder.hack.features.hud.impl;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.util.Formatting;
+import org.lwjgl.opengl.GL11;
 import thunder.hack.ThunderHack;
 import thunder.hack.core.Managers;
 import thunder.hack.features.hud.HudElement;
@@ -42,8 +44,11 @@ public class Speedometer extends HudElement {
             Render2DEngine.drawRect(context.getMatrices(), pX + 14, getPosY() + 2, 0.5f, 8, new Color(0x44FFFFFF, true));
 
             Render2DEngine.setupRender();
-            RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-            RenderSystem.setShaderTexture(0, TextureStorage.speedometerIcon);
+            GlStateManager._blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE, GL11.GL_SRC_ALPHA, GL11.GL_ONE);
+            {
+                AbstractTexture __tex = mc.getTextureManager().getTexture(TextureStorage.speedometerIcon);
+                if (__tex != null) RenderSystem.setShaderTexture(0, __tex.getGlTextureView());
+            }
             Render2DEngine.renderGradientTexture(context.getMatrices(), pX + 2, getPosY() + 1, 10, 10, 0, 0, 512, 512, 512, 512,
                     HudEditor.getColor(270), HudEditor.getColor(0), HudEditor.getColor(180), HudEditor.getColor(90));
             Render2DEngine.endRender();

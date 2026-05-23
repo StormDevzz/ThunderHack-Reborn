@@ -110,7 +110,7 @@ public class AutoDupe extends Module {
 
             // Сохранение данных — команда для синхронизации
             if (donkeySave.getValue()) {
-                mc.player.networkHandler.sendCommand("msg");
+                mc.player.networkHandler.sendChatCommand("msg");
             }
 
             stage++;
@@ -129,7 +129,7 @@ public class AutoDupe extends Module {
     private void handleFrameDupe() {
         // Ищем ближайшие рамки
         List<ItemFrameEntity> frames = mc.world.getEntitiesByClass(ItemFrameEntity.class,
-            new Box(mc.player.getPos().add(-5, -5, -5), mc.player.getPos().add(5, 5, 5)),
+            new Box(mc.player.getEntityPos().add(-5, -5, -5), mc.player.getEntityPos().add(5, 5, 5)),
             frame -> !frame.getHeldItemStack().isEmpty()
         );
 
@@ -171,7 +171,7 @@ public class AutoDupe extends Module {
 
     private void handleChickenDupe() {
         List<ChickenEntity> chickens = mc.world.getEntitiesByClass(ChickenEntity.class,
-            new Box(mc.player.getPos().add(-5, -5, -5), mc.player.getPos().add(5, 5, 5)),
+            new Box(mc.player.getEntityPos().add(-5, -5, -5), mc.player.getEntityPos().add(5, 5, 5)),
             chicken -> true
         );
 
@@ -198,7 +198,7 @@ public class AutoDupe extends Module {
             return;
         }
 
-        int slot = mc.player.getInventory().selectedSlot;
+        int slot = mc.player.getInventory().getSelectedSlot();
 
         if (invDoubleClick.getValue()) {
             // Двойной клик для дюпа через быстрый обмен
@@ -221,14 +221,14 @@ public class AutoDupe extends Module {
         }
 
         // Переключение на книгу
-        int prevSlot = mc.player.getInventory().selectedSlot;
-        mc.player.getInventory().selectedSlot = bookSlot;
+        int prevSlot = mc.player.getInventory().getSelectedSlot();
+        mc.player.getInventory().setSelectedSlot(bookSlot);
         mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(bookSlot));
 
         // Открытие интерфейса книги
         mc.player.networkHandler.sendPacket(new BookUpdateC2SPacket(bookSlot, List.of(""), java.util.Optional.of("Dupe")));
 
-        mc.player.getInventory().selectedSlot = prevSlot;
+        mc.player.getInventory().setSelectedSlot(prevSlot);
         mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(prevSlot));
 
         timer.reset();

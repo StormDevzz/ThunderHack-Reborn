@@ -1,5 +1,5 @@
 package thunder.hack.features.modules.render;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Block;
@@ -17,7 +17,7 @@ import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.item.Items;
-import net.minecraft.particle.EntityEffectParticleEffect;
+import net.minecraft.particle.EffectParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.util.math.*;
 import org.jetbrains.annotations.NotNull;
@@ -91,9 +91,9 @@ public class ESP extends Module {
         if (lingeringPotions.getValue()) {
             for (Entity ent : mc.world.getEntities()) {
                 if (ent instanceof AreaEffectCloudEntity aece) {
-                    double x = aece.getX() - mc.getEntityRenderDispatcher().camera.getPos().getX();
-                    double y = aece.getY() - mc.getEntityRenderDispatcher().camera.getPos().getY();
-                    double z = aece.getZ() - mc.getEntityRenderDispatcher().camera.getPos().getZ();
+                    double x = aece.getX() - mc.getEntityRenderDispatcher().camera.getEntityPos().getX();
+                    double y = aece.getY() - mc.getEntityRenderDispatcher().camera.getEntityPos().getY();
+                    double z = aece.getZ() - mc.getEntityRenderDispatcher().camera.getEntityPos().getZ();
 
                     float middle = aece.getRadius();
 
@@ -102,7 +102,7 @@ public class ESP extends Module {
 
                     Render3DEngine.setupRender();
                     RenderSystem.disableDepthTest();
-                    RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+                    RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
                     BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
 
                     for (int i = 0; i <= 360; i += 6) {
@@ -113,7 +113,7 @@ public class ESP extends Module {
                     }
                     Render2DEngine.endBuilding(bufferBuilder);
 
-                    RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+                    RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
                     bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
                     for (int i = 0; i <= 360; i += 6) {
                         double v = Math.sin(Math.toRadians(i));
@@ -151,9 +151,9 @@ public class ESP extends Module {
             dizorentAnimation = fast(dizorentAnimation, mc.player.getMainHandStack().getItem() == Items.ENDER_EYE ? 10 : 0, 15f);
 
             if (mc.player.getMainHandStack().getItem() == Items.ENDER_EYE) {
-                double x = Render2DEngine.interpolate(mc.player.prevX, mc.player.getX(), Render3DEngine.getTickDelta()) - mc.getEntityRenderDispatcher().camera.getPos().getX();
-                double y = Render2DEngine.interpolate(mc.player.prevY, mc.player.getY(), Render3DEngine.getTickDelta()) - mc.getEntityRenderDispatcher().camera.getPos().getY();
-                double z = Render2DEngine.interpolate(mc.player.prevZ, mc.player.getZ(), Render3DEngine.getTickDelta()) - mc.getEntityRenderDispatcher().camera.getPos().getZ();
+                double x = Render2DEngine.interpolate(mc.player.lastX, mc.player.getX(), Render3DEngine.getTickDelta()) - mc.getEntityRenderDispatcher().camera.getEntityPos().getX();
+                double y = Render2DEngine.interpolate(mc.player.lastY, mc.player.getY(), Render3DEngine.getTickDelta()) - mc.getEntityRenderDispatcher().camera.getEntityPos().getY();
+                double z = Render2DEngine.interpolate(mc.player.lastZ, mc.player.getZ(), Render3DEngine.getTickDelta()) - mc.getEntityRenderDispatcher().camera.getEntityPos().getZ();
 
 
                 stack.push();
@@ -161,7 +161,7 @@ public class ESP extends Module {
 
                 Render3DEngine.setupRender();
                 RenderSystem.disableDepthTest();
-                RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+                RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
                 BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
 
                 for (int i = 0; i <= 360; i += 6) {
@@ -172,7 +172,7 @@ public class ESP extends Module {
                 }
                 Render2DEngine.endBuilding(bufferBuilder);
 
-                RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+                RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
                 bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
                 for (int i = 0; i <= 360; i += 6) {
                     double v = Math.sin(Math.toRadians(i));
@@ -188,7 +188,7 @@ public class ESP extends Module {
                 stack.pop();
 
                 for (PlayerEntity pl : Managers.ASYNC.getAsyncPlayers()) {
-                    if (mc.player.squaredDistanceTo(pl.getPos()) > 100 || pl == mc.player)
+                    if (mc.player.squaredDistanceTo(pl.getEntityPos()) > 100 || pl == mc.player)
                         continue;
                     Render3DEngine.drawTargetEsp(stack, pl);
                 }
@@ -198,11 +198,11 @@ public class ESP extends Module {
         if (beaconRadius.getValue()) {
             for (BlockEntity be : StorageEsp.getBlockEntities()) {
                 if (be instanceof BeaconBlockEntity bbe) {
-                    double x = be.getPos().getX() - mc.getEntityRenderDispatcher().camera.getPos().getX();
-                    double y = be.getPos().getY() - mc.getEntityRenderDispatcher().camera.getPos().getY();
-                    double z = be.getPos().getZ() - mc.getEntityRenderDispatcher().camera.getPos().getZ();
+                    double x = be.getEntityPos().getX() - mc.getEntityRenderDispatcher().camera.getEntityPos().getX();
+                    double y = be.getEntityPos().getY() - mc.getEntityRenderDispatcher().camera.getEntityPos().getY();
+                    double z = be.getEntityPos().getZ() - mc.getEntityRenderDispatcher().camera.getEntityPos().getZ();
 
-                    Render3DEngine.drawBoxOutline(new Box(be.getPos()), beakonColor.getValue().getColorObject(), 2);
+                    Render3DEngine.drawBoxOutline(new Box(be.getEntityPos()), beakonColor.getValue().getColorObject(), 2);
                     float range = ((IBeaconBlockEntity) bbe).getLevel() * 10 + 11;
 
                     boolean ky = keepY.getValue();
@@ -218,12 +218,12 @@ public class ESP extends Module {
 
         if (burrow.getValue()) {
             for (PlayerEntity pl : mc.world.getPlayers()) {
-                BlockPos blockPos = BlockPos.ofFloored(pl.getPos().add(0,0.15f,0));
+                BlockPos blockPos = BlockPos.ofFloored(pl.getEntityPos().add(0,0.15f,0));
                 Block block = mc.world.getBlockState(blockPos).getBlock();
 
-                double x = blockPos.getX() - mc.getEntityRenderDispatcher().camera.getPos().getX();
-                double y = blockPos.getY() - mc.getEntityRenderDispatcher().camera.getPos().getY();
-                double z = blockPos.getZ() - mc.getEntityRenderDispatcher().camera.getPos().getZ();
+                double x = blockPos.getX() - mc.getEntityRenderDispatcher().camera.getEntityPos().getX();
+                double y = blockPos.getY() - mc.getEntityRenderDispatcher().camera.getEntityPos().getY();
+                double z = blockPos.getZ() - mc.getEntityRenderDispatcher().camera.getEntityPos().getZ();
 
                 if (block == Blocks.OBSIDIAN
                         || block == Blocks.CRYING_OBSIDIAN
@@ -254,9 +254,9 @@ public class ESP extends Module {
         if (tntFuse.getValue() || tntRadius.getValue()) {
             for (Entity ent : mc.world.getEntities()) {
                 if (ent instanceof TntEntity tnt) {
-                    double x = tnt.prevX + (tnt.getPos().getX() - tnt.prevX) * Render3DEngine.getTickDelta() - mc.getEntityRenderDispatcher().camera.getPos().getX();
-                    double y = tnt.prevY + (tnt.getPos().getY() - tnt.prevY) * Render3DEngine.getTickDelta() - mc.getEntityRenderDispatcher().camera.getPos().getY();
-                    double z = tnt.prevZ + (tnt.getPos().getZ() - tnt.prevZ) * Render3DEngine.getTickDelta() - mc.getEntityRenderDispatcher().camera.getPos().getZ();
+                    double x = tnt.lastX + (tnt.getEntityPos().getX() - tnt.lastX) * Render3DEngine.getTickDelta() - mc.getEntityRenderDispatcher().camera.getEntityPos().getX();
+                    double y = tnt.lastY + (tnt.getEntityPos().getY() - tnt.lastY) * Render3DEngine.getTickDelta() - mc.getEntityRenderDispatcher().camera.getEntityPos().getY();
+                    double z = tnt.lastZ + (tnt.getEntityPos().getZ() - tnt.lastZ) * Render3DEngine.getTickDelta() - mc.getEntityRenderDispatcher().camera.getEntityPos().getZ();
 
                     if (tntFuse.getValue()) {
                         RenderSystem.disableDepthTest();
@@ -296,8 +296,8 @@ public class ESP extends Module {
                     float xOffset = mc.getWindow().getScaledWidth() / 2f;
                     float yOffset = mc.getWindow().getScaledHeight() / 2f;
 
-                    float xPos = (float) (pearl.prevX + (pearl.getPos().getX() - pearl.prevX) * Render3DEngine.getTickDelta());
-                    float zPos = (float) (pearl.prevZ + (pearl.getPos().getZ() - pearl.prevZ) * Render3DEngine.getTickDelta());
+                    float xPos = (float) (pearl.lastX + (pearl.getEntityPos().getX() - pearl.lastX) * Render3DEngine.getTickDelta());
+                    float zPos = (float) (pearl.lastZ + (pearl.getEntityPos().getZ() - pearl.lastZ) * Render3DEngine.getTickDelta());
 
                     float yaw = getRotations(new Vec2f(xPos, zPos)) - mc.player.getYaw();
                     context.getMatrices().translate(xOffset, yOffset, 0.0F);
@@ -315,7 +315,7 @@ public class ESP extends Module {
 
         Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
         Render2DEngine.setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
         BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
         for (Entity ent : mc.world.getEntities())
@@ -431,9 +431,9 @@ public class ESP extends Module {
 
     @NotNull
     private static Vec3d[] getVectors(@NotNull Entity ent) {
-        double x = ent.prevX + (ent.getX() - ent.prevX) * Render3DEngine.getTickDelta();
-        double y = ent.prevY + (ent.getY() - ent.prevY) * Render3DEngine.getTickDelta();
-        double z = ent.prevZ + (ent.getZ() - ent.prevZ) * Render3DEngine.getTickDelta();
+        double x = ent.lastX + (ent.getX() - ent.lastX) * Render3DEngine.getTickDelta();
+        double y = ent.lastY + (ent.getY() - ent.lastY) * Render3DEngine.getTickDelta();
+        double z = ent.lastZ + (ent.getZ() - ent.lastZ) * Render3DEngine.getTickDelta();
         Box axisAlignedBB2 = ent.getBoundingBox();
         Box axisAlignedBB = new Box(axisAlignedBB2.minX - ent.getX() + x - 0.05, axisAlignedBB2.minY - ent.getY() + y, axisAlignedBB2.minZ - ent.getZ() + z - 0.05, axisAlignedBB2.maxX - ent.getX() + x + 0.05, axisAlignedBB2.maxY - ent.getY() + y + 0.15, axisAlignedBB2.maxZ - ent.getZ() + z + 0.05);
         return new Vec3d[]{new Vec3d(axisAlignedBB.minX, axisAlignedBB.minY, axisAlignedBB.minZ), new Vec3d(axisAlignedBB.minX, axisAlignedBB.maxY, axisAlignedBB.minZ), new Vec3d(axisAlignedBB.maxX, axisAlignedBB.minY, axisAlignedBB.minZ), new Vec3d(axisAlignedBB.maxX, axisAlignedBB.maxY, axisAlignedBB.minZ), new Vec3d(axisAlignedBB.minX, axisAlignedBB.minY, axisAlignedBB.maxZ), new Vec3d(axisAlignedBB.minX, axisAlignedBB.maxY, axisAlignedBB.maxZ), new Vec3d(axisAlignedBB.maxX, axisAlignedBB.minY, axisAlignedBB.maxZ), new Vec3d(axisAlignedBB.maxX, axisAlignedBB.maxY, axisAlignedBB.maxZ)};
@@ -449,8 +449,8 @@ public class ESP extends Module {
 
     public static float getRotations(Vec2f vec) {
         if (mc.player == null) return 0;
-        double x = vec.x - mc.player.getPos().x;
-        double z = vec.y - mc.player.getPos().z;
+        double x = vec.x - mc.player.getEntityPos().x;
+        double z = vec.y - mc.player.getEntityPos().z;
         return (float) -(Math.atan2(x, z) * (180 / Math.PI));
     }
 

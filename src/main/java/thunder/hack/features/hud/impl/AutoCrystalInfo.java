@@ -1,7 +1,8 @@
 package thunder.hack.features.hud.impl;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.util.Formatting;
@@ -39,7 +40,7 @@ public class AutoCrystalInfo extends HudElement {
 
         FontRenderers.sf_bold.drawGradientString(context.getMatrices(), "AutoCrystal Info", getPosX() + 2, getPosY() + 4, 10);
 
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        //RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
 
         BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
 

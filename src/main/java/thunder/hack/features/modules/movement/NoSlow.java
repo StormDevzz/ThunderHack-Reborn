@@ -44,7 +44,7 @@ public class NoSlow extends Module {
 
         if (mc.player.isUsingItem() && !mc.player.isRiding() && !mc.player.isGliding()) {
             switch (mode.getValue()) {
-                case StrictNCP -> sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().selectedSlot));
+                case StrictNCP -> sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().getSelectedSlot()));
                 case MusteryGrief -> {
                     if (mc.player.isOnGround() && mc.options.jumpKey.isPressed()) {
                         mc.options.sneakKey.setPressed(true);
@@ -53,9 +53,9 @@ public class NoSlow extends Module {
                 }
                 case Grim -> {
                     if (mc.player.getActiveHand() == Hand.OFF_HAND) {
-                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().selectedSlot % 8 + 1));
-                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().selectedSlot % 7 + 2));
-                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().selectedSlot));
+                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().getSelectedSlot() % 8 + 1));
+                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().getSelectedSlot() % 7 + 2));
+                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().getSelectedSlot()));
                     } else if (mainHand.getValue()) {
                         // TODO rotations
                         sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.OFF_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
@@ -69,9 +69,9 @@ public class NoSlow extends Module {
                 }
                 case GrimNew -> {
                     if (mc.player.getActiveHand() == Hand.OFF_HAND) {
-                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().selectedSlot % 8 + 1));
-                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().selectedSlot % 7 + 2));
-                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().selectedSlot));
+                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().getSelectedSlot() % 8 + 1));
+                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().getSelectedSlot() % 7 + 2));
+                        sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().getSelectedSlot()));
                     } else if (mainHand.getValue() && (mc.player.getItemUseTime() <= 3 || mc.player.age % 2 == 0)) {
                         sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.OFF_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
                     }

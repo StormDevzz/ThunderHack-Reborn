@@ -152,7 +152,7 @@ public final class Core {
     @SuppressWarnings("unused")
     public void onEntitySpawn(EventEntitySpawn e) {
         new ArrayList<>(InteractionUtility.awaiting.keySet()).forEach(bp -> {
-            if (e.getEntity() != null && bp.getSquaredDistance(e.getEntity().getPos()) < 4.)
+            if (e.getEntity() != null && bp.getSquaredDistance(new Vec3d(e.getEntity().getX(), e.getEntity().getY(), e.getEntity().getZ())) < 4.)
                 InteractionUtility.awaiting.remove(bp);
         });
     }*/
@@ -215,8 +215,8 @@ public final class Core {
 
     public static float getRotations(Vec2f vec) {
         if (mc.player == null) return 0;
-        double x = vec.x - mc.player.getPos().x;
-        double z = vec.y - mc.player.getPos().z;
+        double x = vec.x - mc.player.getX();
+        double z = vec.y - mc.player.getZ();
         return (float) -(Math.atan2(x, z) * (180 / Math.PI));
     }
 

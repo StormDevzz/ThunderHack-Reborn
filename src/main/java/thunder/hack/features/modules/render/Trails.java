@@ -1,7 +1,7 @@
 package thunder.hack.features.modules.render;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -85,7 +85,7 @@ public class Trails extends Module {
                     RenderSystem.enableDepthTest();
                     RenderSystem.depthFunc(GL11.GL_LEQUAL);
 
-                    RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+                    RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
                     BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
 
                     for (int i = 0; i < ((IEntity) entity).getTrails().size(); i++) {
@@ -115,7 +115,7 @@ public class Trails extends Module {
                 RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
                 RenderSystem.enableDepthTest();
                 RenderSystem.depthMask(false);
-                RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+                RenderSystem.setShader(RenderPipelines.POSITION_TEX_COLOR);
                 BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
                 int size = ((IEntity) entity).getTrails().size();
@@ -170,7 +170,7 @@ public class Trails extends Module {
 
                     float step = (float) (mc.player.getBoundingBox().getLengthY() / 5f);
 
-                    RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+                    RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
                     BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
 
 
@@ -182,7 +182,7 @@ public class Trails extends Module {
                     }
                     Render2DEngine.endBuilding(bufferBuilder);
 
-                    RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+                    RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
                     bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
                     for (int i = 0; i < ((IEntity) entity).getTrails().size(); i++) {
                         Trail ctx = ((IEntity) entity).getTrails().get(i);
@@ -192,7 +192,7 @@ public class Trails extends Module {
                     }
                     Render2DEngine.endBuilding(bufferBuilder);
 
-                    RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+                    RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
                     bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
                     for (int i = 0; i < ((IEntity) entity).getTrails().size(); i++) {
                         Trail ctx = ((IEntity) entity).getTrails().get(i);
@@ -202,7 +202,7 @@ public class Trails extends Module {
                     }
                     Render2DEngine.endBuilding(bufferBuilder);
 
-                    RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+                    RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
                     bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
                     for (int i = 0; i < ((IEntity) entity).getTrails().size(); i++) {
                         Trail ctx = ((IEntity) entity).getTrails().get(i);
@@ -212,7 +212,7 @@ public class Trails extends Module {
                     }
                     Render2DEngine.endBuilding(bufferBuilder);
 
-                    RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+                    RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
                     bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
                     for (int i = 0; i < ((IEntity) entity).getTrails().size(); i++) {
                         Trail ctx = ((IEntity) entity).getTrails().get(i);
@@ -246,7 +246,7 @@ public class Trails extends Module {
                 }
             }
 
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+            RenderSystem.setShader(RenderPipelines.POSITION_TEX_COLOR);
             BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
             if (mc.player != null && mc.world != null)
@@ -265,8 +265,8 @@ public class Trails extends Module {
         Color c = lmode.getValue() == Mode.Sync ? HudEditor.getColor(mc.player.age % 360) : lcolor.getValue().getColorObject();
 
         for (PlayerEntity player : mc.world.getPlayers()) {
-            if (player.getPos().getZ() != player.prevZ || player.getPos().getX() != player.prevX && (!onlySelf.getValue())) {
-                ((IEntity) player).getTrails().add(new Trail(new Vec3d(player.prevX, player.prevY, player.prevZ), player.getPos(), c));
+            if (player.getEntityPos().getZ() != player.lastZ || player.getEntityPos().getX() != player.lastX && (!onlySelf.getValue())) {
+                ((IEntity) player).getTrails().add(new Trail(new Vec3d(player.lastX, player.lastY, player.lastZ), player.getEntityPos(), c));
                 if (players.is(Players.Particles)) {
                     for (int i = 0; i < amount.getValue(); i++) {
                         particles.add(new Particle(player.getX(), MathUtility.random((float) (player.getY() + player.getHeight()), (float) player.getY()), player.getZ(), c));
@@ -278,7 +278,7 @@ public class Trails extends Module {
         }
 
         for (Entity en : Managers.ASYNC.getAsyncEntities()) {
-            if (en instanceof ArrowEntity ae && (ae.prevY != ae.getY()) && arrows.is(Particles.Particles))
+            if (en instanceof ArrowEntity ae && (ae.lastY != ae.getY()) && arrows.is(Particles.Particles))
                 for (int i = 0; i < 5; i++)
                     particles.add(new Particle(en.getX(), en.getY(), en.getZ(), HudEditor.getColor(mc.player.age)));
 
@@ -288,7 +288,7 @@ public class Trails extends Module {
         }
 
         if (Managers.PLAYER.currentPlayerSpeed != 0) {
-            ((IEntity) mc.player).getTrails().add(new Trail(new Vec3d(mc.player.prevX, mc.player.prevY, mc.player.prevZ), mc.player.getPos(), c));
+            ((IEntity) mc.player).getTrails().add(new Trail(new Vec3d(mc.player.lastX, mc.player.lastY, mc.player.lastZ), mc.player.getEntityPos(), c));
             if (players.is(Players.Particles)) {
                 for (int i = 0; i < amount.getValue(); i++) {
                     particles.add(new Particle(mc.player.getX(), MathUtility.random((float) (mc.player.getY() + mc.player.getHeight()), (float) mc.player.getY()), mc.player.getZ(), c));
@@ -312,9 +312,9 @@ public class Trails extends Module {
         }
 
         public Vec3d interpolate(float pt) {
-            double x = from.x + ((to.x - from.x) * pt) - mc.getEntityRenderDispatcher().camera.getPos().getX();
-            double y = from.y + ((to.y - from.y) * pt) - mc.getEntityRenderDispatcher().camera.getPos().getY();
-            double z = from.z + ((to.z - from.z) * pt) - mc.getEntityRenderDispatcher().camera.getPos().getZ();
+            double x = from.x + ((to.x - from.x) * pt) - mc.getEntityRenderDispatcher().camera.getEntityPos().getX();
+            double y = from.y + ((to.y - from.y) * pt) - mc.getEntityRenderDispatcher().camera.getEntityPos().getY();
+            double z = from.z + ((to.z - from.z) * pt) - mc.getEntityRenderDispatcher().camera.getEntityPos().getZ();
             return new Vec3d(x, y, z);
         }
 
@@ -431,9 +431,9 @@ public class Trails extends Module {
         public void render(MatrixStack matrixStack, BufferBuilder bufferBuilder) {
             update();
             float scale = starsScale.getValue() / 10f;
-            final double posX = x - mc.getEntityRenderDispatcher().camera.getPos().getX();
-            final double posY = y - mc.getEntityRenderDispatcher().camera.getPos().getY();
-            final double posZ = z - mc.getEntityRenderDispatcher().camera.getPos().getZ();
+            final double posX = x - mc.getEntityRenderDispatcher().camera.getEntityPos().getX();
+            final double posY = y - mc.getEntityRenderDispatcher().camera.getEntityPos().getY();
+            final double posZ = z - mc.getEntityRenderDispatcher().camera.getEntityPos().getZ();
 
             Camera camera = mc.gameRenderer.getCamera();
 

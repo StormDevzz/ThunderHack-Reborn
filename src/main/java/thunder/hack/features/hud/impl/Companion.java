@@ -2,7 +2,7 @@ package thunder.hack.features.hud.impl;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.entity.player.PlayerEntity;
@@ -118,7 +118,7 @@ public class Companion extends HudElement {
 
     private void drawTextureImmediate(Matrix4f matrix, Identifier tex, int x, int y, float u, float v, int width, int height, int texWidth, int texHeight) {
         RenderSystem.setShaderTexture(0, tex);
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+        RenderSystem.setShader(RenderPipelines.POSITION_TEX);
         BufferBuilder buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
         int x1 = x + width;
         int y1 = y + height;

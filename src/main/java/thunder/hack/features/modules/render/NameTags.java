@@ -1,7 +1,7 @@
 package thunder.hack.features.modules.render;
 
 import com.google.common.collect.Ordering;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.block.entity.BlockEntity;
@@ -108,9 +108,9 @@ public class NameTags extends Module {
             if (ent == mc.player && (mc.options.getPerspective().isFirstPerson() || !self.getValue())) continue;
             if (getEntityPing(ent) <= 0 && ignoreBots.getValue()) continue;
 
-            double x = ent.prevX + (ent.getX() - ent.prevX) * Render3DEngine.getTickDelta();
-            double y = ent.prevY + (ent.getY() - ent.prevY) * Render3DEngine.getTickDelta();
-            double z = ent.prevZ + (ent.getZ() - ent.prevZ) * Render3DEngine.getTickDelta();
+            double x = ent.lastX + (ent.getX() - ent.lastX) * Render3DEngine.getTickDelta();
+            double y = ent.lastY + (ent.getY() - ent.lastY) * Render3DEngine.getTickDelta();
+            double z = ent.lastZ + (ent.getZ() - ent.lastZ) * Render3DEngine.getTickDelta();
             float scale = resize.getValue() ? this.scale.getValue() / mc.player.distanceTo(ent) : this.scale.getValue();
             Vec3d vector = new Vec3d(x, y + height.getValue(), z);
 
@@ -315,7 +315,7 @@ public class NameTags extends Module {
     private void drawSpawnerNameTag(DrawContext context) {
         for (BlockEntity blockEntity : StorageEsp.getBlockEntities()) {
             if (blockEntity instanceof MobSpawnerBlockEntity spawner) {
-                Vec3d vector = new Vec3d(spawner.getPos().getX() + 0.5, spawner.getPos().getY() + 1.5, spawner.getPos().getZ() + 0.5);
+                Vec3d vector = new Vec3d(spawner.getEntityPos().getX() + 0.5, spawner.getEntityPos().getY() + 1.5, spawner.getEntityPos().getZ() + 0.5);
                 Vector4d position = null;
                 vector = Render3DEngine.worldSpaceToScreenSpace(new Vec3d(vector.x, vector.y, vector.z));
                 if (vector.z > 0 && vector.z < 1) {
@@ -324,12 +324,12 @@ public class NameTags extends Module {
                     position.y = Math.min(vector.y, position.y);
                     position.z = Math.max(vector.x, position.z);
                 }
-                if (spawner.getLogic() == null || spawner.getLogic().getRenderedEntity(mc.world, spawner.getPos()) == null)
+                if (spawner.getLogic() == null || spawner.getLogic().getRenderedEntity(mc.world, spawner.getEntityPos()) == null)
                     continue;
-                String final_string = spawner.getLogic().getRenderedEntity(mc.world, spawner.getPos()).getName().getString() + " " + String.format("%.1f", ((float) spawner.getLogic().spawnDelay / 20f)) + "s";
+                String final_string = spawner.getLogic().getRenderedEntity(mc.world, spawner.getEntityPos()).getName().getString() + " " + String.format("%.1f", ((float) spawner.getLogic().spawnDelay / 20f)) + "s";
 
                 if (spawner.getLogic().getRotation() == spawner.getLogic().getLastRotation() && spawner.getLogic().getRotation() == 0f && (float) spawner.getLogic().spawnDelay / 20f == 1f)
-                    final_string = spawner.getLogic().getRenderedEntity(mc.world, spawner.getPos()).getName().getString() + " loot!";
+                    final_string = spawner.getLogic().getRenderedEntity(mc.world, spawner.getEntityPos()).getName().getString() + " loot!";
 
 
                 if (position != null) {
@@ -380,9 +380,9 @@ public class NameTags extends Module {
             } else continue;
 
             String final_string = "Owned by " + ownerName;
-            double x = ent.prevX + (ent.getX() - ent.prevX) * Render3DEngine.getTickDelta();
-            double y = ent.prevY + (ent.getY() - ent.prevY) * Render3DEngine.getTickDelta();
-            double z = ent.prevZ + (ent.getZ() - ent.prevZ) * Render3DEngine.getTickDelta();
+            double x = ent.lastX + (ent.getX() - ent.lastX) * Render3DEngine.getTickDelta();
+            double y = ent.lastY + (ent.getY() - ent.lastY) * Render3DEngine.getTickDelta();
+            double z = ent.lastZ + (ent.getZ() - ent.lastZ) * Render3DEngine.getTickDelta();
             Vec3d vector = new Vec3d(x, y + 2, z);
             Vector4d position = null;
             vector = Render3DEngine.worldSpaceToScreenSpace(new Vec3d(vector.x, vector.y, vector.z));

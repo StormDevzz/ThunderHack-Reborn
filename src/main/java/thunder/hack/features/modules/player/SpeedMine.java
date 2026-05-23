@@ -120,16 +120,16 @@ public final class SpeedMine extends Module {
             return;
 
         actions.forEach(a -> {
-            if (!mc.world.isAir(a.getPos())) {
+            if (!mc.world.isAir(a.getEntityPos())) {
                 float noom = (float) MathUtility.clamp(Render2DEngine.interpolate(a.getPrevProgress(), a.getProgress(), Render3DEngine.getTickDelta()), 0f, 1f);
                 Box renderBox =
 
                         switch (renderMode.getValue()) {
-                            case Block -> new Box(a.getPos());
+                            case Block -> new Box(a.getEntityPos());
                             case Grow ->
-                                    new Box(a.getPos().getX(), a.getPos().getY(), a.getPos().getZ(), a.getPos().getX() + 1, a.getPos().getY() + noom, a.getPos().getZ() + 1);
+                                    new Box(a.getEntityPos().getX(), a.getEntityPos().getY(), a.getEntityPos().getZ(), a.getEntityPos().getX() + 1, a.getEntityPos().getY() + noom, a.getEntityPos().getZ() + 1);
                             case Shrink ->
-                                    new Box(a.getPos().getX(), a.getPos().getY(), a.getPos().getZ(), a.getPos().getX(), a.getPos().getY(), a.getPos().getZ())
+                                    new Box(a.getEntityPos().getX(), a.getEntityPos().getY(), a.getEntityPos().getZ(), a.getEntityPos().getX(), a.getEntityPos().getY(), a.getEntityPos().getZ())
                                             .shrink(noom, noom, noom)
                                             .offset(0.5 + noom * 0.5, 0.5 + noom * 0.5, 0.5 + noom * 0.5);
                         };
@@ -304,11 +304,11 @@ public final class SpeedMine extends Module {
     public AutoCrystal.@Nullable PlaceData getCevData() {
 
         for (MineAction action : actions) {
-            if (mc.world.isAir(action.getPos().down())) {
-                if (ExplosionUtility.getSelfExplosionDamage(action.getPos().toCenterPos().add(0, 0.5, 0), 0, false) > ModuleManager.autoCrystal.maxSelfDamage.getValue())
+            if (mc.world.isAir(action.getEntityPos().down())) {
+                if (ExplosionUtility.getSelfExplosionDamage(action.getEntityPos().toCenterPos().add(0, 0.5, 0), 0, false) > ModuleManager.autoCrystal.maxSelfDamage.getValue())
                     return null;
 
-                return ModuleManager.autoCrystal.getPlaceData(action.getPos(), null, mc.player.getPos());
+                return ModuleManager.autoCrystal.getPlaceData(action.getEntityPos(), null, mc.player.getEntityPos());
             }
         }
         return null;
@@ -316,25 +316,25 @@ public final class SpeedMine extends Module {
 
     public AutoCrystal.@Nullable PlaceData getBestData() {
         for (MineAction action : actions) {
-            BlockState prevState = mc.world.getBlockState(action.getPos());
-            mc.world.setBlockState(action.getPos(), Blocks.AIR.getDefaultState());
+            BlockState prevState = mc.world.getBlockState(action.getEntityPos());
+            mc.world.setBlockState(action.getEntityPos(), Blocks.AIR.getDefaultState());
 
             for (Direction dir : Direction.values()) {
                 if (dir == Direction.UP || dir == Direction.DOWN) continue;
-                if (ExplosionUtility.getSelfExplosionDamage(action.getPos().down().offset(dir).toCenterPos().add(0, 0.5, 0), 0, false) > ModuleManager.autoCrystal.maxSelfDamage.getValue())
+                if (ExplosionUtility.getSelfExplosionDamage(action.getEntityPos().down().offset(dir).toCenterPos().add(0, 0.5, 0), 0, false) > ModuleManager.autoCrystal.maxSelfDamage.getValue())
                     continue;
 
-                AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getPos().down().offset(dir), null, mc.player.getPos());
+                AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getEntityPos().down().offset(dir), null, mc.player.getEntityPos());
                 if (autoMineData != null) {
-                    mc.world.setBlockState(action.getPos(), prevState);
+                    mc.world.setBlockState(action.getEntityPos(), prevState);
                     return autoMineData;
                 }
             }
 
-            float selfDmg = ExplosionUtility.getSelfExplosionDamage(action.getPos().toCenterPos().add(0, 0.5, 0), 0, false);
-            mc.world.setBlockState(action.getPos(), prevState);
+            float selfDmg = ExplosionUtility.getSelfExplosionDamage(action.getEntityPos().toCenterPos().add(0, 0.5, 0), 0, false);
+            mc.world.setBlockState(action.getEntityPos(), prevState);
 
-            AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getPos(), null, mc.player.getPos());
+            AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getEntityPos(), null, mc.player.getEntityPos());
             if (selfDmg > ModuleManager.autoCrystal.maxSelfDamage.getValue())
                 continue;
 
@@ -347,7 +347,7 @@ public final class SpeedMine extends Module {
     public boolean isBlockDrop(Entity ent) {
         if (ent instanceof ItemEntity && isOn() && ent.age < 3)
             for (MineAction a : actions)
-                if (a.getPos().toCenterPos().squaredDistanceTo(ent.getPos()) <= 1f)
+                if (a.getEntityPos().toCenterPos().squaredDistanceTo(ent.getEntityPos()) <= 1f)
                     return true;
 
         return false;
@@ -406,7 +406,7 @@ public final class SpeedMine extends Module {
             }
 
             int pickSlot = getTool(pos);
-            int prevSlot = mc.player.getInventory().selectedSlot;
+            int prevSlot = mc.player.getInventory().getSelectedSlot();
 
             if (pickSlot == -1)
                 return false;
@@ -461,9 +461,9 @@ public final class SpeedMine extends Module {
         private void switchTo(int slot, int from) {
             if (switchMode.getValue() == SwitchMode.Alternative || slot >= 9) {
                 if (from == -1)
-                    clickSlot(slot < 9 ? slot + 36 : slot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+                    clickSlot(slot < 9 ? slot + 36 : slot, mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
                 else
-                    clickSlot(from < 9 ? from + 36 : from, mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+                    clickSlot(from < 9 ? from + 36 : from, mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
                 closeScreen();
             } else if (switchMode.is(SwitchMode.Silent)) InventoryUtility.switchToSilent(slot);
             else InventoryUtility.switchTo(slot);

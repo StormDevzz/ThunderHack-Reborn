@@ -3,7 +3,6 @@ package thunder.hack.features.hud.impl;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
 import thunder.hack.features.hud.HudElement;
 import thunder.hack.setting.Setting;

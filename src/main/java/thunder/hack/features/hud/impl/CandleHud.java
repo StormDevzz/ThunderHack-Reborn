@@ -1,7 +1,7 @@
 package thunder.hack.features.hud.impl;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
@@ -47,7 +47,7 @@ public class CandleHud extends HudElement {
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+        RenderSystem.setShader(RenderPipelines.POSITION_TEX);
         RenderSystem.setShaderTexture(0, TextureStorage.candle);
 
         Tessellator tessellator = Tessellator.getInstance();
@@ -79,7 +79,7 @@ public class CandleHud extends HudElement {
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+        RenderSystem.setShader(RenderPipelines.POSITION_TEX);
         RenderSystem.setShaderTexture(0, TextureStorage.firefly);
 
         Tessellator tessellator = Tessellator.getInstance();

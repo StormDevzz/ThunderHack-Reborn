@@ -48,7 +48,7 @@ public class CrystalManager implements IManager {
     public void addAttack(EndCrystalEntity entity) {
         attackedCrystals.compute(entity.getId(), (pos, attempt) -> {
             if (attempt == null) {
-                return new Attempt(System.currentTimeMillis(), 1, entity.getPos());
+                return new Attempt(System.currentTimeMillis(), 1, new Vec3d(entity.getX(), entity.getY(), entity.getZ()));
             } else {
                 if (ModuleManager.autoCrystal.breakFailsafe.getValue())
                     attempt.addAttempt();

@@ -185,7 +185,7 @@ public class EChestFarmer extends Module {
 
         updateRotation();
 
-        int prevSlot = mc.player.getInventory().selectedSlot;
+        int prevSlot = mc.player.getInventory().getSelectedSlot();
         if (autoSwitch.getValue()) chest.switchTo();
 
         boolean placed = InteractionUtility.placeBlock(target,
@@ -227,7 +227,7 @@ public class EChestFarmer extends Module {
 
         updateRotation();
 
-        int prevSlot = mc.player.getInventory().selectedSlot;
+        int prevSlot = mc.player.getInventory().getSelectedSlot();
         if (autoSwitch.getValue()) {
             SearchInvResult pick = InventoryUtility.findItemInHotBar(
                     Items.NETHERITE_PICKAXE, Items.DIAMOND_PICKAXE, Items.IRON_PICKAXE,

@@ -1,5 +1,5 @@
 package thunder.hack.features.hud.impl;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
@@ -119,7 +119,7 @@ public class WexIndicators extends HudElement {
         // Тёмный фон-окружность
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
 
         BufferBuilder bgBuffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
         for (int i = 0; i <= 360; i += 2) {

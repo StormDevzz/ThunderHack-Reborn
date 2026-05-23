@@ -5,9 +5,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.PickaxeItem;
+
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -88,8 +89,8 @@ public class XRay extends Module {
     @EventHandler
     public void onReceivePacket(PacketEvent.Receive e) {
         if (e.getPacket() instanceof BlockUpdateS2CPacket pac) {
-            debug(((BlockUpdateS2CPacket) e.getPacket()).getState().getBlock().getName().getString() + " " + pac.getPos().toString());
-            if (isCheckableOre(pac.getState().getBlock()) && !ores.contains(pac.getPos())) ores.add(pac.getPos());
+            debug(((BlockUpdateS2CPacket) e.getPacket()).getState().getBlock().getName().getString() + " " + pac.getEntityPos().toString());
+            if (isCheckableOre(pac.getState().getBlock()) && !ores.contains(pac.getEntityPos())) ores.add(pac.getEntityPos());
         }
     }
 
@@ -173,7 +174,7 @@ public class XRay extends Module {
             return;
         }
 
-        if (mc.player.getMainHandStack().getItem() instanceof PickaxeItem) {
+        if (mc.player.getMainHandStack().isIn(ItemTags.PICKAXES)) {
             if (mc.player.age % 8 == 0) disable(isRu() ? "Убери кирку из руки!" : "Remove pickaxe from ur hand!");
             return;
         }

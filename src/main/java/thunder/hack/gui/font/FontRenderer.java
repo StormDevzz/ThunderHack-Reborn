@@ -1,5 +1,5 @@
 package thunder.hack.gui.font;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.chars.Char2IntArrayMap;
@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -149,7 +150,7 @@ public class FontRenderer implements Closeable {
         return allGlyphs.computeIfAbsent(glyph, this::locateGlyph0);
     }
 
-    public void drawString(MatrixStack stack, String s, double x, double y, int color) {
+    public void drawString(Matrix3x2fStack stack, String s, double x, double y, int color) {
         float r = ((color >> 16) & 0xff) / 255f;
         float g = ((color >> 8) & 0xff) / 255f;
         float b = ((color) & 0xff) / 255f;
@@ -157,15 +158,15 @@ public class FontRenderer implements Closeable {
         drawString(stack, s, (float) x, (float) y, r, g, b, a);
     }
 
-    public void drawString(MatrixStack stack, String s, double x, double y, Color color) {
+    public void drawString(Matrix3x2fStack stack, String s, double x, double y, Color color) {
         drawString(stack, s, (float) x, (float) y, color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha());
     }
 
-    public void drawString(MatrixStack stack, String s, float x, float y, float r, float g, float b, float a) {
+    public void drawString(Matrix3x2fStack stack, String s, float x, float y, float r, float g, float b, float a) {
         drawString(stack, s, x, y, r, g, b, a, false, 0);
     }
 
-    public void drawString(MatrixStack stack, String s, float x, float y, float r, float g, float b, float a, boolean gradient, int offset) {
+    public void drawString(Matrix3x2fStack stack, String s, float x, float y, float r, float g, float b, float a, boolean gradient, int offset) {
         if (prebakeGlyphsFuture != null && !prebakeGlyphsFuture.isDone()) {
             try {
                 prebakeGlyphsFuture.get();
@@ -175,18 +176,22 @@ public class FontRenderer implements Closeable {
 
         sizeCheck();
         float r2 = r, g2 = g, b2 = b;
-        stack.push();
+        stack.pushMatrix();
         y -= 3f;
-        stack.translate(roundToDecimal(x, 1), roundToDecimal(y, 1), 0);
-        stack.scale(1f / this.scaleMul, 1f / this.scaleMul, 1f);
+        stack.translate(roundToDecimal(x, 1), roundToDecimal(y, 1));
+        stack.scale(1f / this.scaleMul, 1f / this.scaleMul);
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
 
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+        RenderSystem.setShader(RenderPipelines.POSITION_TEX_COLOR);
         BufferBuilder bb;
-        Matrix4f mat = stack.peek().getPositionMatrix();
+        Matrix4f mat = new Matrix4f();
+        mat.m00 = stack.m00; mat.m01 = stack.m01; mat.m02 = 0; mat.m03 = stack.m20;
+        mat.m10 = stack.m10; mat.m11 = stack.m11; mat.m12 = 0; mat.m13 = stack.m21;
+        mat.m20 = 0; mat.m21 = 0; mat.m22 = 1; mat.m23 = 0;
+        mat.m30 = 0; mat.m31 = 0; mat.m32 = 0; mat.m33 = 1;
         char[] chars = s.toCharArray();
         float xOffset = 0;
         float yOffset = 0;
@@ -272,10 +277,10 @@ public class FontRenderer implements Closeable {
         }
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
-        stack.pop();
+        stack.popMatrix();
     }
 
-    public void drawCenteredString(MatrixStack stack, String s, double x, double y, int color) {
+    public void drawCenteredString(Matrix3x2fStack stack, String s, double x, double y, int color) {
         float r = ((color >> 16) & 0xff) / 255f;
         float g = ((color >> 8) & 0xff) / 255f;
         float b = ((color) & 0xff) / 255f;
@@ -283,11 +288,19 @@ public class FontRenderer implements Closeable {
         drawString(stack, s, (float) (x - getStringWidth(s) / 2f), (float) y, r, g, b, a);
     }
 
-    public void drawCenteredString(MatrixStack stack, String s, double x, double y, Color color) {
+    public void drawCenteredString(Matrix3x2fStack stack, String s, double x, double y, Color color) {
         drawString(stack, s, (float) (x - getStringWidth(s) / 2f), (float) y, color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
     }
 
-    public void drawCenteredString(MatrixStack stack, String s, float x, float y, float r, float g, float b, float a) {
+    public void drawCenteredString(MatrixStack stack, String s, double x, double y, Color color) {
+        Matrix4f m4 = stack.peek().getPositionMatrix();
+        Matrix3x2fStack m3x2 = new Matrix3x2fStack(32);
+        m3x2.m00 = m4.m00(); m3x2.m01 = m4.m01(); m3x2.m02 = m4.m03();
+        m3x2.m10 = m4.m10(); m3x2.m11 = m4.m11(); m3x2.m12 = m4.m13();
+        drawCenteredString(m3x2, s, x, y, color);
+    }
+
+    public void drawCenteredString(Matrix3x2fStack stack, String s, float x, float y, float r, float g, float b, float a) {
         drawString(stack, s, x - getStringWidth(s) / 2f, y, r, g, b, a);
     }
 
@@ -390,11 +403,11 @@ public class FontRenderer implements Closeable {
         return getStringHeight(str);
     }
 
-    public void drawGradientString(MatrixStack stack, String s, float x, float y, int offset) {
+    public void drawGradientString(Matrix3x2fStack stack, String s, float x, float y, int offset) {
         drawString(stack, s, x, y, 255, 255, 255, 255, true, offset);
     }
 
-    public void drawGradientCenteredString(MatrixStack matrices, String s, float x, float y, int i) {
+    public void drawGradientCenteredString(Matrix3x2fStack matrices, String s, float x, float y, int i) {
         drawGradientString(matrices, s, x - getStringWidth(s) / 2f, y, i);
     }
 

@@ -20,7 +20,7 @@ public class NoServerSlot extends Module {
             switch (mode.getValue()) {
                 case Default -> {
                     event.cancel();
-                    sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().selectedSlot));
+                    sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().getSelectedSlot()));
                 }
                 case Alternative -> {
                     event.cancel();

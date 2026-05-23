@@ -135,7 +135,7 @@ public class Speed extends Module {
             if (mc.world.isAir(pos) || !result.found() || !mc.options.jumpKey.isPressed())
                 return;
 
-            prevSlot = mc.player.getInventory().selectedSlot;
+            prevSlot = mc.player.getInventory().getSelectedSlot();
             result.switchTo();
             sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYaw(), 90, mc.player.isOnGround(), false));
 
@@ -153,7 +153,7 @@ public class Speed extends Module {
     @EventHandler
     public void onPostTick(EventPostTick e) {
         if ((mode.is(Mode.GrimIce) || mode.is(Mode.GrimCombo)) && prevSlot != -1) {
-            mc.player.getInventory().selectedSlot = prevSlot;
+            mc.player.getInventory().setSelectedSlot(prevSlot);
             ((IInteractionManager) mc.interactionManager).syncSlot();
             prevSlot = -1;
         }
@@ -183,7 +183,7 @@ public class Speed extends Module {
                         mc.interactionManager.clickSlot(0, 6, 1, SlotActionType.PICKUP, mc.player);
                     }
                     mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
-                    int prevSlot = mc.player.getInventory().selectedSlot;
+                    int prevSlot = mc.player.getInventory().getSelectedSlot();
                     if (prevSlot != fireSlot && !inOffHand)
                         sendPacket(new UpdateSelectedSlotC2SPacket(fireSlot));
                     mc.interactionManager.interactItem(mc.player, inOffHand ? Hand.OFF_HAND : Hand.MAIN_HAND);

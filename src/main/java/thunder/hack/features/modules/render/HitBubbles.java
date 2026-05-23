@@ -1,7 +1,7 @@
 package thunder.hack.features.modules.render;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.RotationAxis;
@@ -29,15 +29,14 @@ public class HitBubbles extends Module {
 
     @EventHandler
     public void onHit(EventAttack e) {
-        Vec3d point = Managers.PLAYER.getRtxPoint(((IClientPlayerEntity) mc.player).getLastYaw(), ((IClientPlayerEntity) mc.player).getLastPitch(), ModuleManager.aura.attackRange.getValue());
+        Vec3d point = Managers.PLAYER.getRtxPoint(mc.player.lastYaw, mc.player.lastPitch, ModuleManager.aura.attackRange.getValue());
         if (point != null && !e.isPre())
-            bubbles.add(new HitBubble((float) point.x, (float) point.y, (float) point.z, -((IClientPlayerEntity) mc.player).getLastYaw(), ((IClientPlayerEntity) mc.player).getLastPitch(), new Timer()));
+            bubbles.add(new HitBubble((float) point.x, (float) point.y, (float) point.z, -mc.player.lastYaw, mc.player.lastPitch, new Timer()));
     }
 
     public void onRender3D(MatrixStack matrixStack) {
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SrcFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DstFactor.ONE);
-        RenderSystem.disableDepthTest();
+        GlStateManager._enableBlend();
+        GlStateManager._disableDepthTest();
         ArrayList<HitBubble> bubblesCopy = Lists.newArrayList(bubbles);
         bubblesCopy.forEach(b -> {
             matrixStack.push();
@@ -47,7 +46,7 @@ public class HitBubbles extends Module {
             drawBubble(matrixStack, -b.life.getPassedTimeMs() / 4f, b.life.getPassedTimeMs() / 1500f);
             matrixStack.pop();
         });
-        RenderSystem.enableDepthTest();
+        GlStateManager._enableDepthTest();
         bubbles.removeIf(b -> b.life.passedMs(lifeTime.getValue() * 50));
     }
 

@@ -179,18 +179,18 @@ public class ServerHelper extends Module {
             }
             sendMessage(String.valueOf(log));
 
-            mc.player.networkHandler.sendCommand("back");
+            mc.player.networkHandler.sendChatMessage("/back");
             flag = false;
         }
 
         if (inviteTimer.passedS(clanInviteDelay.getValue()) && clanInvite.getValue()) {
             ArrayList<String> playersNames = new ArrayList<>();
             for (PlayerListEntry player : mc.player.networkHandler.getPlayerList()) {
-                playersNames.add(player.getProfile().getName());
+                playersNames.add(player.getProfile().name());
             }
             if (playersNames.size() > 1) {
                 int randomName = (int) Math.floor(Math.random() * playersNames.size());
-                mc.player.networkHandler.sendCommand("c invite " + playersNames.get(randomName));
+                mc.player.networkHandler.sendChatMessage("/c invite " + playersNames.get(randomName));
                 playersNames.clear();
                 inviteTimer.reset();
             }
@@ -279,9 +279,9 @@ public class ServerHelper extends Module {
                     sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
                     InventoryUtility.returnSlot();
                 } else if (gappleInv.found()) {
-                    clickSlot(gappleInv.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+                    clickSlot(gappleInv.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
                     sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-                    clickSlot(gappleInv.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+                    clickSlot(gappleInv.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
                     sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
                 }
             }
@@ -289,17 +289,7 @@ public class ServerHelper extends Module {
         }
 
         if (askSafeMove.getValue() && antiSpawnKill.getValue() && !spawnTimer.passedS(askSafeTime.getValue())) {
-            mc.player.input.movementForward = 0;
-            mc.player.input.movementSideways = 0;
-            mc.player.input.playerInput = new net.minecraft.util.PlayerInput(
-                mc.player.input.playerInput.forward(),
-                mc.player.input.playerInput.backward(),
-                mc.player.input.playerInput.left(),
-                mc.player.input.playerInput.right(),
-                false,
-                false,
-                mc.player.input.playerInput.sprint()
-            );
+            mc.player.input.playerInput = new net.minecraft.util.PlayerInput(false, false, false, false, false, false, false);
         }
 
         if (autoMessage.getValue() && !hasSentMessage) {
@@ -328,9 +318,9 @@ public class ServerHelper extends Module {
             } else if (!rocketOnlyRockets.getValue()) {
                 SearchInvResult rocketInv = InventoryUtility.findItemInInventory(Items.FIREWORK_ROCKET);
                 if (rocketInv.found()) {
-                    clickSlot(rocketInv.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+                    clickSlot(rocketInv.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
                     sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-                    clickSlot(rocketInv.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+                    clickSlot(rocketInv.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
                     sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
                 }
             }
@@ -421,9 +411,9 @@ public class ServerHelper extends Module {
             sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
             InventoryUtility.returnSlot();
         } else if (invResult.found()) {
-            clickSlot(invResult.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+            clickSlot(invResult.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
             sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-            clickSlot(invResult.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+            clickSlot(invResult.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
             sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
         }
         disorientTimer.reset();

@@ -48,16 +48,16 @@ public class KillEffect extends Module {
                 if (System.currentTimeMillis() - time > 3000) {
                     renderEntities.remove(entity);
                 } else {
-                    Render3DEngine.drawLine(entity.getPos().add(0, calculateSpeed(), 0), entity.getPos().add(0, 3 + calculateSpeed(), 0), color.getValue().getColorObject());
-                    Render3DEngine.drawLine(entity.getPos().add(1, 2.3 + calculateSpeed(), 0), entity.getPos().add(-1, 2.3 + calculateSpeed(), 0), color.getValue().getColorObject());
-                    Render3DEngine.drawLine(entity.getPos().add(0.5, 1.2 + calculateSpeed(), 0), entity.getPos().add(-0.5, 0.8 + calculateSpeed(), 0), color.getValue().getColorObject());
+                    Render3DEngine.drawLine(entity.getEntityPos().add(0, calculateSpeed(), 0), entity.getEntityPos().add(0, 3 + calculateSpeed(), 0), color.getValue().getColorObject());
+                    Render3DEngine.drawLine(entity.getEntityPos().add(1, 2.3 + calculateSpeed(), 0), entity.getEntityPos().add(-1, 2.3 + calculateSpeed(), 0), color.getValue().getColorObject());
+                    Render3DEngine.drawLine(entity.getEntityPos().add(0.5, 1.2 + calculateSpeed(), 0), entity.getEntityPos().add(-0.5, 0.8 + calculateSpeed(), 0), color.getValue().getColorObject());
                 }
             });
             case FallingLava -> renderEntities.keySet().forEach(entity -> {
                 for (int i = 0; i < entity.getHeight() * 10; i++) {
                     for (int j = 0; j < entity.getWidth() * 10; j++) {
                         for (int k = 0; k < entity.getWidth() * 10; k++) {
-                            mc.world.addParticle(ParticleTypes.FALLING_LAVA, entity.getX() + j * 0.1, entity.getY() + i * 0.1, entity.getZ() + k * 0.1, 0, 0, 0);
+                            mc.world.addParticleClient(ParticleTypes.FALLING_LAVA, entity.getX() + j * 0.1, entity.getY() + i * 0.1, entity.getZ() + k * 0.1, 0.0, 0.0, 0.0);
                         }
                     }
                 }

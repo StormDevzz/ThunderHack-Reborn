@@ -1,7 +1,7 @@
 package thunder.hack.gui.clickui;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
@@ -108,7 +108,7 @@ public class Category extends AbstractCategory {
             RenderSystem.enableBlend();
             RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
             Render2DEngine.addWindow(context, getX() + 2, getY() - 4, getX() + 2 + width - 4, getY() - 5 + height, 1);
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+            RenderSystem.setShader(RenderPipelines.POSITION_TEX_COLOR);
             BufferBuilder b = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 85, (getY() + (height - 24) / 2), 12, 12, 0, 0, 12, 12, 12, 12, m1.darker(), m2.darker(), m3.darker(), m4.darker());
             Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 75, (getY() + (height - 34) / 2), 16, 16, 0, 0, 16, 16, 16, 16, m1, m2, m3, m4);
@@ -120,7 +120,7 @@ public class Category extends AbstractCategory {
             Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 15, (getY() + (height - 22) / 2), 12, 12, 0, 0, 12, 12, 12, 12, m1.darker().darker().darker(), m2.darker().darker().darker(), m3.darker().darker().darker(), m4.darker().darker().darker());
             Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 5, (getY() + (height - 28) / 2), 20, 20, 0, 0, 20, 20, 20, 20, m1, m2, m3, m4);
             BufferRenderer.drawWithGlobalProgram(b.end());
-            RenderSystem.defaultBlendFunc();
+            // TODO: 1.21.9 - RenderSystem.defaultBlendFunc removed
             Render2DEngine.popWindow(context);
         }
 

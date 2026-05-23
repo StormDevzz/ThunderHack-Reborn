@@ -1,7 +1,7 @@
 package thunder.hack.features.hud.impl;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
@@ -99,7 +99,7 @@ public class Crosshair extends Module {
                 context.getMatrices().translate(xAnim + 4, yAnim + 4, 0);
                 RenderSystem.enableBlend();
                 RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-                RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+                RenderSystem.setShader(RenderPipelines.POSITION_TEX_COLOR);
                 BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
                 RenderSystem.setShaderTexture(0, TextureStorage.firefly);

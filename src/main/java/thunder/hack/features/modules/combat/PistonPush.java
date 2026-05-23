@@ -147,10 +147,10 @@ public final class PistonPush extends Module {
         }
 
         placeRunnable = () -> {
-            int prevSlot = mc.player.getInventory().selectedSlot;
+            int prevSlot = mc.player.getInventory().getSelectedSlot();
             InteractionUtility.placeBlock(chargePos, InteractionUtility.Rotate.None, interact.getValue(), placeMode.getValue(), getChargeSlot(), true, false);
             sendPacket(new UpdateSelectedSlotC2SPacket(prevSlot));
-            mc.player.getInventory().selectedSlot = prevSlot;
+            mc.player.getInventory().setSelectedSlot(prevSlot);
             firstPlace = true;
             if (swing.getValue())
                 mc.player.swingHand(Hand.MAIN_HAND);
@@ -182,12 +182,12 @@ public final class PistonPush extends Module {
             sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(angle, 0, mc.player.isOnGround(), false));
             float prevYaw = mc.player.getYaw();
             mc.player.setYaw(angle);
-            mc.player.prevYaw = angle;
-            ((IClientPlayerEntity) mc.player).setLastYaw(angle);
-            int prevSlot = mc.player.getInventory().selectedSlot;
+            mc.player.lastYaw = angle;
+             mc.player.lastYaw =(angle);
+            int prevSlot = mc.player.getInventory().getSelectedSlot();
             InteractionUtility.placeBlock(pistonPos, InteractionUtility.Rotate.None, interact.getValue(), placeMode.getValue(), getPistonSlot(), true, false);
             sendPacket(new UpdateSelectedSlotC2SPacket(prevSlot));
-            mc.player.getInventory().selectedSlot = prevSlot;
+            mc.player.getInventory().setSelectedSlot(prevSlot);
             mc.player.setYaw(prevYaw);
             firstPlace = false;
             if (swing.getValue())
@@ -225,7 +225,7 @@ public final class PistonPush extends Module {
     }
 
     private void findPlacePoses() {
-        BlockPos targetBP = BlockPos.ofFloored(target.getPos());
+        BlockPos targetBP = BlockPos.ofFloored(target.getEntityPos());
 
         BlockPos[] surroundPoses = {
                 targetBP.add(1, 1, 0),

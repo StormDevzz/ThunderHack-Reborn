@@ -1,8 +1,8 @@
 package thunder.hack.features.modules.render;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -81,7 +81,7 @@ public final class PopChams extends Module {
         entity.handSwingTicks = e.getEntity().handSwingTicks;
         entity.setSneaking(e.getEntity().isSneaking());
         entity.limbAnimator.setSpeed(e.getEntity().limbAnimator.getSpeed());
-        entity.limbAnimator.pos = e.getEntity().limbAnimator.getPos();
+        entity.limbAnimator.pos = e.getEntity().limbAnimator.getEntityPos();
         popList.add(new Person(entity, ((AbstractClientPlayerEntity) e.getEntity()).getSkinTextures().texture()));
     }
 
@@ -93,10 +93,10 @@ public final class PopChams extends Module {
         modelBase.jacket.visible = secondLayer.getValue();
         modelBase.hat.visible = secondLayer.getValue();
 
-        double x = entity.getX() - mc.getEntityRenderDispatcher().camera.getPos().getX();
-        double y = entity.getY() - mc.getEntityRenderDispatcher().camera.getPos().getY();
-        double z = entity.getZ() - mc.getEntityRenderDispatcher().camera.getPos().getZ();
-        ((IEntity) entity).setPos(entity.getPos().add(0, (double) ySpeed.getValue() / 50., 0));
+        double x = entity.getX() - mc.getEntityRenderDispatcher().camera.getEntityPos().getX();
+        double y = entity.getY() - mc.getEntityRenderDispatcher().camera.getEntityPos().getY();
+        double z = entity.getZ() - mc.getEntityRenderDispatcher().camera.getEntityPos().getZ();
+        ((IEntity) entity).setPos(entity.getEntityPos().add(0, (double) ySpeed.getValue() / 50., 0));
 
         matrices.push();
         matrices.translate((float) x, (float) y, (float) z);
@@ -122,10 +122,10 @@ public final class PopChams extends Module {
         BufferBuilder buffer;
         if (mode.is(Mode.Textured)) {
             RenderSystem.setShaderTexture(0, texture);
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+            RenderSystem.setShader(RenderPipelines.POSITION_TEX);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
         } else {
-            RenderSystem.setShader(ShaderProgramKeys.POSITION);
+            RenderSystem.setShader(RenderPipelines.POSITION);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
         }
 

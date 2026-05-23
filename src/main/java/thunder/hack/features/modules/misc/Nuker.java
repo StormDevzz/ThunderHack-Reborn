@@ -99,7 +99,7 @@ public class Nuker extends Module {
 
     @EventHandler
     public void onBlockDestruct(EventSetBlockState e) {
-        if (blockData != null && e.getPos() == blockData.bp && e.getState().isAir()) {
+        if (blockData != null && e.getEntityPos() == blockData.bp && e.getState().isAir()) {
             blockData = null;
             new Thread(() -> {
                 if ((targetBlockType != null || blocks.getValue().equals(BlockSelection.All)) && !mc.options.attackKey.isPressed() && blockData == null) {
@@ -141,7 +141,7 @@ public class Nuker extends Module {
 
         if (mode.getValue() == Mode.FastAF) {
             int intRange = (int) (Math.floor(range.getValue()) + 1);
-            Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getPos()).up()), intRange, intRange, intRange);
+            Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getEntityPos()).up()), intRange, intRange, intRange);
 
             for (BlockPos b : blocks_) {
                 if (flatten.getValue() && b.getY() < mc.player.getY())
@@ -202,7 +202,7 @@ public class Nuker extends Module {
 
     public BlockData getNukerBlockPos() {
         int intRange = (int) (Math.floor(range.getValue()) + 1);
-        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getPos()).up()), intRange, intRange, intRange);
+        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getEntityPos()).up()), intRange, intRange, intRange);
 
         for (BlockPos b : blocks_) {
             BlockState state = mc.world.getBlockState(b);
@@ -215,7 +215,7 @@ public class Nuker extends Module {
                     if (ignoreWalls.getValue()) {
                         BlockHitResult result = ExplosionUtility.rayCastBlock(new RaycastContext(InteractionUtility.getEyesPos(mc.player), b.toCenterPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player), b);
                         if(result != null)
-                            return new BlockData(b, result.getPos(), result.getSide());
+                            return new BlockData(b, result.getEntityPos(), result.getSide());
                     } else {
                         for (float x1 = 0f; x1 <= 1f; x1 += 0.2f) {
                             for (float y1 = 0f; y1 <= 1; y1 += 0.2f) {

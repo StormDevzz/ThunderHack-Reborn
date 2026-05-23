@@ -1,5 +1,5 @@
 package thunder.hack.features.modules.movement;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import meteordevelopment.orbit.EventHandler;
@@ -419,16 +419,16 @@ public class ElytraPlus extends Module {
             Render3DEngine.setupRender();
             RenderSystem.disableCull();
             Tessellator tessellator = Tessellator.getInstance();
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+            RenderSystem.setShader(RenderPipelines.POSITION_COLOR);
             BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
 
             float cos;
             float sin;
             for (int i = 0; i <= 30; i++) {
-                cos = (float) ((flightZonePos.getX() - mc.getEntityRenderDispatcher().camera.getPos().getX()) + Math.cos(i * (Math.PI * 2f) / 30f) * 95);
-                sin = (float) ((flightZonePos.getZ() - mc.getEntityRenderDispatcher().camera.getPos().getZ()) + Math.sin(i * (Math.PI * 2f) / 30f) * 95);
-                bufferBuilder.vertex(stack.peek().getPositionMatrix(), cos, (float) -mc.getEntityRenderDispatcher().camera.getPos().getY(), sin).color(Render2DEngine.injectAlpha(HudEditor.getColor(i), 255).getRGB());
-                bufferBuilder.vertex(stack.peek().getPositionMatrix(), cos, (float) ((float) 128 - mc.getEntityRenderDispatcher().camera.getPos().getY()), sin).color(Render2DEngine.injectAlpha(HudEditor.getColor(i), 0).getRGB());
+                cos = (float) ((flightZonePos.getX() - mc.getEntityRenderDispatcher().camera.getEntityPos().getX()) + Math.cos(i * (Math.PI * 2f) / 30f) * 95);
+                sin = (float) ((flightZonePos.getZ() - mc.getEntityRenderDispatcher().camera.getEntityPos().getZ()) + Math.sin(i * (Math.PI * 2f) / 30f) * 95);
+                bufferBuilder.vertex(stack.peek().getPositionMatrix(), cos, (float) -mc.getEntityRenderDispatcher().camera.getEntityPos().getY(), sin).color(Render2DEngine.injectAlpha(HudEditor.getColor(i), 255).getRGB());
+                bufferBuilder.vertex(stack.peek().getPositionMatrix(), cos, (float) ((float) 128 - mc.getEntityRenderDispatcher().camera.getEntityPos().getY()), sin).color(Render2DEngine.injectAlpha(HudEditor.getColor(i), 0).getRGB());
             }
             Render2DEngine.endBuilding(bufferBuilder);
             RenderSystem.enableCull();
@@ -718,20 +718,20 @@ public class ElytraPlus extends Module {
 
         boolean inOffhand = mc.player.getOffHandStack().getItem() == Items.FIREWORK_ROCKET;
 
-        int prevSlot = mc.player.getInventory().selectedSlot;
+        int prevSlot = mc.player.getInventory().getSelectedSlot();
 
         if (!inOffhand && prevSlot != slot)
             sendPacket(new UpdateSelectedSlotC2SPacket(slot));
 
         sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(inOffhand ? Hand.OFF_HAND : Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
 
-        if (!inOffhand && prevSlot != mc.player.getInventory().selectedSlot)
+        if (!inOffhand && prevSlot != mc.player.getInventory().getSelectedSlot())
             sendPacket(new UpdateSelectedSlotC2SPacket(prevSlot));
 
         flying = true;
         lastFireworkTime = System.currentTimeMillis();
         pingTimer.reset();
-        flightZonePos = mc.player.getPos();
+        flightZonePos = mc.player.getEntityPos();
     }
 
     private void equipElytra() {
@@ -796,7 +796,7 @@ public class ElytraPlus extends Module {
     }
 
     public void fireWorkOnPlayerUpdate() {
-        boolean inAir = mc.world.isAir(BlockPos.ofFloored(mc.player.getPos()));
+        boolean inAir = mc.world.isAir(BlockPos.ofFloored(mc.player.getEntityPos()));
         boolean aboveLiquid = isAboveLiquid(0.1f) && inAir && mc.player.getVelocity().getY() < 0.0;
         if (mc.player.fallDistance > 0.0f && inAir || aboveLiquid) {
             equipElytra();

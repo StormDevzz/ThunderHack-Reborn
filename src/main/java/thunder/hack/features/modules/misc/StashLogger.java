@@ -57,7 +57,7 @@ public class StashLogger extends Module {
             if (chests >= minChests.getValue() && shulkers >= minShulkers.getValue()) {
                 savedChunks.add(chunk);
 
-                String str = "Stash pos: X:" + chunk.getPos().getCenterX() + " Z:" + chunk.getPos().getCenterZ() + " Chests: " + chests + " Shulkers: " + shulkers;
+                String str = "Stash pos: X:" + (chunk.getPos().getStartX() + 8) + " Z:" + (chunk.getPos().getStartZ() + 8) + " Chests: " + chests + " Shulkers: " + shulkers;
                 Managers.NOTIFICATION.publicity("StashLogger", str, 5, Notification.Type.SUCCESS);
                 sendMessage(str);
 
@@ -71,7 +71,7 @@ public class StashLogger extends Module {
                 if (saveToFile.getValue())
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(ConfigManager.STASHLOGGER_FOLDER, serverIP + ".txt"), true));
-                        writer.append("\nStash pos: X:" + chunk.getPos().getCenterX() + " Z:" + chunk.getPos().getCenterZ() + " Chests: " + chests + " Shulkers: " + shulkers);
+                        writer.append("\nStash pos: X:" + (chunk.getPos().getStartX() + 8) + " Z:" + (chunk.getPos().getStartZ() + 8) + " Chests: " + chests + " Shulkers: " + shulkers);
                         writer.close();
                     } catch (Exception e) {
                     }

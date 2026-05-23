@@ -1,12 +1,11 @@
 package thunder.hack.gui.thundergui.components;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.render.VertexFormat;
+import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.BufferBuilder;
 import org.joml.Matrix4f;
 import net.minecraft.client.util.math.MatrixStack;
@@ -92,7 +91,7 @@ public class ModulePlate {
             
             RenderSystem.setShaderTexture(0, thunder.hack.utility.render.TextureStorage.Gear);
             RenderSystem.enableBlend();
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+            RenderSystem.setShader(RenderPipelines.POSITION_TEX_COLOR);
             RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SrcFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DstFactor.ONE);
             
             float fade = getFadeFactor();

@@ -84,7 +84,7 @@ public class Parkour extends Module {
 
             if (matrixGroundSpoof.getValue()) {
                 mc.player.setOnGround(true);
-                mc.player.prevY -= 2.0E-232;
+                mc.player.lastY -= 2.0E-232;
             }
 
             mc.player.setVelocity(mc.player.getVelocity().x, matrixJumpHeight.getValue(), mc.player.getVelocity().z);

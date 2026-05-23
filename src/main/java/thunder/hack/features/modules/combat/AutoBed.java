@@ -112,7 +112,7 @@ public final class AutoBed extends Module {
         if (bestBed != null || bestPos != null) {
             float[] angle;
 
-            angle = InteractionUtility.calculateAngle(Objects.requireNonNullElseGet(bestPos, () -> bestBed).hitResult().getPos());
+            angle = InteractionUtility.calculateAngle(Objects.requireNonNullElseGet(bestPos, () -> bestBed).hitResult().getEntityPos());
 
             rotationYaw = (angle[0]);
             rotationPitch = (angle[1]);
@@ -140,7 +140,7 @@ public final class AutoBed extends Module {
             } else if (switchToHotbar.getValue()) {
                 SearchInvResult invResult = InventoryUtility.findBed();
                 if (invResult.found() && !(mc.currentScreen instanceof CraftingScreen)) {
-                    mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, invResult.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
+                    mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, invResult.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP, mc.player);
                     sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
                 }
             }
@@ -160,8 +160,8 @@ public final class AutoBed extends Module {
             sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(angle2, 0, mc.player.isOnGround(), false));
             float prevYaw = mc.player.getYaw();
             mc.player.setYaw(angle2);
-            mc.player.prevYaw = angle2;
-            ((IClientPlayerEntity) mc.player).setLastYaw(angle2);
+            mc.player.lastYaw = angle2;
+             mc.player.lastYaw =(angle2);
             sendSequencedPacket(id -> new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, bestPos.hitResult(), id));
             mc.player.swingHand(Hand.MAIN_HAND);
             placeTimer.reset();
@@ -193,7 +193,7 @@ public final class AutoBed extends Module {
 
     private BedData findBedToExplode() {
         int intRange = (int) (Math.floor(range.getValue()) + 1);
-        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getPos()).up()), intRange, intRange, intRange);
+        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getEntityPos()).up()), intRange, intRange, intRange);
 
         BedData bestData = null;
 
@@ -230,7 +230,7 @@ public final class AutoBed extends Module {
 
     private BedData findBlockToPlace() {
         int intRange = (int) (Math.floor(range.getValue()) + 1);
-        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getPos()).up()), intRange, intRange, intRange);
+        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getEntityPos()).up()), intRange, intRange, intRange);
 
         BedData bestData = null;
 
@@ -246,7 +246,7 @@ public final class AutoBed extends Module {
                     BlockHitResult bhr = InteractionUtility.getPlaceResult(b.up(), interactMode.getValue(), false);
                     if (bhr != null) {
 
-                        BlockHitResult wallCheck = mc.world.raycast(new RaycastContext(InteractionUtility.getEyesPos(mc.player), bhr.getPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player));
+                        BlockHitResult wallCheck = mc.world.raycast(new RaycastContext(InteractionUtility.getEyesPos(mc.player), bhr.getEntityPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player));
                         if (wallCheck != null && wallCheck.getType() == HitResult.Type.BLOCK && wallCheck.getBlockPos() != b)
                             continue;
 
@@ -308,7 +308,7 @@ public final class AutoBed extends Module {
 
     public void craftBed() {
         int intRange = (int) (Math.floor(range.getValue()) + 1);
-        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getPos()).up()), intRange, intRange, intRange);
+        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getEntityPos()).up()), intRange, intRange, intRange);
 
         for (BlockPos b : blocks_) {
             BlockState state = mc.world.getBlockState(b);
@@ -328,7 +328,7 @@ public final class AutoBed extends Module {
                             }
                         }
                     } else {
-                        float[] angle = InteractionUtility.calculateAngle(result.getPos());
+                        float[] angle = InteractionUtility.calculateAngle(result.getEntityPos());
                         mc.player.setYaw(angle[0]);
                         mc.player.setPitch(angle[1]);
                         sendSequencedPacket(id -> new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, result, id));
@@ -388,7 +388,7 @@ public final class AutoBed extends Module {
         if(bestResult == null)
             return null;
 
-        return new BlockHitResult(bestResult.getPos(), bestDirection, bestResult.getBlockPos(), false);
+        return new BlockHitResult(bestResult.getEntityPos(), bestDirection, bestResult.getBlockPos(), false);
     }
 
     private record BedData(BlockHitResult hitResult, float damage, float selfDamage, Direction dir) {

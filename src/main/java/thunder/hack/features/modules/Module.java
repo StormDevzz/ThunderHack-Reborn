@@ -339,7 +339,7 @@ public abstract class Module {
         if (button < 10) // check
             return false;
 
-        return InputUtil.isKeyPressed(mc.getWindow().getHandle(), button);
+        return InputUtil.isKeyPressed(mc.getWindow(), button);
     }
 
     public boolean isKeyPressed(Setting<Bind> bind) {

@@ -67,7 +67,7 @@ public class FreeCam extends Module {
     public void onSync(EventSync e) {
         mc.player.setYaw(lockedYaw);
         mc.player.setPitch(lockedPitch);
-        mc.player.prevYaw = lockedYaw;
+        mc.player.lastYaw = lockedYaw;
         mc.player.prevPitch = lockedPitch;
 
         prevFakeYaw = fakeYaw;

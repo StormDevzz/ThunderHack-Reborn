@@ -196,8 +196,8 @@ public final class ExplosionUtility {
             VoxelShape voxelShape2 = VoxelShapes.empty();
             BlockHitResult blockHitResult2 = voxelShape2.raycast(vec3d, vec3d2, blockPos);
 
-            double d = blockHitResult == null ? Double.MAX_VALUE : raycastContext.getStart().squaredDistanceTo(blockHitResult.getPos());
-            double e = blockHitResult2 == null ? Double.MAX_VALUE : raycastContext.getStart().squaredDistanceTo(blockHitResult2.getPos());
+            double d = blockHitResult == null ? Double.MAX_VALUE : raycastContext.getStart().squaredDistanceTo(blockHitResult.getEntityPos());
+            double e = blockHitResult2 == null ? Double.MAX_VALUE : raycastContext.getStart().squaredDistanceTo(blockHitResult2.getEntityPos());
 
             return d <= e ? blockHitResult : blockHitResult2;
         }, (raycastContext) -> {
@@ -358,8 +358,8 @@ public final class ExplosionUtility {
             VoxelShape voxelShape = innerContext.getBlockShape(blockState, mc.world, pos);
             BlockHitResult blockHitResult = mc.world.raycastBlock(vec3d, vec3d2, pos, voxelShape, blockState);
             BlockHitResult blockHitResult2 = VoxelShapes.empty().raycast(vec3d, vec3d2, pos);
-            double d = blockHitResult == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(blockHitResult.getPos());
-            double e = blockHitResult2 == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(blockHitResult2.getPos());
+            double d = blockHitResult == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(blockHitResult.getEntityPos());
+            double e = blockHitResult2 == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(blockHitResult2.getEntityPos());
             return d <= e ? blockHitResult : blockHitResult2;
         }, innerContext -> {
             Vec3d vec3d = innerContext.getStart().subtract(innerContext.getEnd());

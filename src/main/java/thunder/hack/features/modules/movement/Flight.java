@@ -120,8 +120,8 @@ public class Flight extends Module {
 
         if (mode.is(Mode.Damage))
             if (e.getPacket() instanceof EntityVelocityUpdateS2CPacket v)
-                if (v.getVelocityY() / 8000.0 > 0.2) {
-                    velocityMotion = v.getVelocityY() / 8000.0;
+                if (v.getVelocity().y / 8000.0 > 0.2) {
+                    velocityMotion = v.getVelocity().y / 8000.0;
                     flyTicks = boostTicks.getValue();
                 }
     }
@@ -139,7 +139,7 @@ public class Flight extends Module {
         }
 
         if (mode.is(Mode.StormBreak) && e.getPacket() instanceof PlayerActionC2SPacket pac && (pac.getAction() == PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK
-                || pac.getAction() == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK && mc.world.getBlockState(pac.getPos()).isReplaceable())) {
+                || pac.getAction() == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK && mc.world.getBlockState(pac.getEntityPos()).isReplaceable())) {
             final double[] dir = MovementUtility.forward(2.0f * boostValue.getValue());
             mc.player.setVelocity(dir[0], 3f * boostValue.getValue(), dir[1]);
         }

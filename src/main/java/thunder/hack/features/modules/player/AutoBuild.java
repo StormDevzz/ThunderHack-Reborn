@@ -73,7 +73,7 @@ public final class AutoBuild extends Module {
         if (!building) {
             Direction facing = mc.player.getHorizontalFacing();
             Direction right = facing.rotateYClockwise();
-            portalStart = BlockPos.ofFloored(mc.player.getPos())
+            portalStart = BlockPos.ofFloored(mc.player.getEntityPos())
                     .offset(facing, distance.getValue())
                     .offset(right, -1);
             building = true;
@@ -108,10 +108,10 @@ public final class AutoBuild extends Module {
         Direction facing = mc.player.getHorizontalFacing();
         Direction right = facing.rotateYClockwise();
         int half = highwayWidth.getValue() / 2;
-        int groundY = BlockPos.ofFloored(mc.player.getPos()).getY() - 1;
+        int groundY = BlockPos.ofFloored(mc.player.getEntityPos()).getY() - 1;
 
         for (int i = 2; i <= 2; i++) {
-            BlockPos seg = BlockPos.ofFloored(mc.player.getPos())
+            BlockPos seg = BlockPos.ofFloored(mc.player.getEntityPos())
                     .withY(groundY)
                     .offset(facing, i);
 

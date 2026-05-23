@@ -107,7 +107,7 @@ public class FakePlayer extends Module {
                 fakePlayer.setHeadYaw(p.yaw);
 
                 fakePlayer.updateTrackedPosition(p.x, p.y, p.z);
-                fakePlayer.updateTrackedPositionAndAngles(p.x, p.y, p.z, p.yaw, p.pitch, 3);
+                fakePlayer.updateTrackedPositionAndAngles(new Vec3d(p.x, p.y, p.z), p.yaw, p.pitch);
             } else movementTick = 0;
 
             if (autoTotem.getValue() && fakePlayer.getOffHandStack().getItem() != Items.TOTEM_OF_UNDYING)

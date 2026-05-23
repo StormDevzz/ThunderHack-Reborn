@@ -73,7 +73,7 @@ public final class Surround extends PlaceModule {
 
         Box centerBox = new Box(centerVec.getX() - 0.2, centerVec.getY() - 0.1, centerVec.getZ() - 0.2, centerVec.getX() + 0.2, centerVec.getY() + 0.1, centerVec.getZ() + 0.2);
 
-        if (center.getValue() == CenterMode.Motion && !centerBox.contains(mc.player.getPos())) {
+        if (center.getValue() == CenterMode.Motion && !centerBox.contains(mc.player.getEntityPos())) {
             mc.player.move(MovementType.SELF, new Vec3d((centerVec.getX() - mc.player.getX()) / 2, 0, (centerVec.getZ() - mc.player.getZ()) / 2));
             return;
         }
@@ -118,7 +118,7 @@ public final class Surround extends PlaceModule {
                 handlePacket();
         }
 
-        if (event.getPacket() instanceof BlockUpdateS2CPacket pac && mc.player.squaredDistanceTo(pac.getPos().toCenterPos()) < range.getPow2Value() && pac.getState().isReplaceable())
+        if (event.getPacket() instanceof BlockUpdateS2CPacket pac && mc.player.squaredDistanceTo(pac.getEntityPos().toCenterPos()) < range.getPow2Value() && pac.getState().isReplaceable())
             handlePacket();
 
         if (event.getPacket() instanceof PlayerPositionLookS2CPacket && onTp.getValue() == OnTpAction.Disable)
