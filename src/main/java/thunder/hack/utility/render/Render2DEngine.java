@@ -827,6 +827,24 @@ public class Render2DEngine {
         }
     }
 
+    public static BufferedImage removeBlackBackground(BufferedImage image) {
+        BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int rgb = image.getRGB(x, y);
+                int r = (rgb >> 16) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int b = rgb & 0xFF;
+                if (r == 0 && g == 0 && b == 0) {
+                    result.setRGB(x, y, 0);
+                } else {
+                    result.setRGB(x, y, rgb | 0xFF000000);
+                }
+            }
+        }
+        return result;
+    }
+
     public record Rectangle(float x, float y, float x1, float y1) {
         public boolean contains(double x, double y) {
             return x >= this.x && x <= x1 && y >= this.y && y <= y1;

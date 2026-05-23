@@ -1,32 +1,14 @@
 package thunder.hack.gui.font;
+
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
-import org.joml.Matrix3x2fStack;
-
-import it.unimi.dsi.fastutil.chars.Char2IntArrayMap;
-import it.unimi.dsi.fastutil.chars.Char2ObjectArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-
-import java.awt.*;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
-import thunder.hack.features.modules.client.HudEditor;
-import thunder.hack.utility.render.Render2DEngine;
 
 import java.awt.*;
 import java.io.Closeable;
@@ -39,6 +21,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import it.unimi.dsi.fastutil.chars.Char2IntArrayMap;
+import it.unimi.dsi.fastutil.chars.Char2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+
+import thunder.hack.utility.render.Render2DEngine;
 
 import static thunder.hack.core.manager.IManager.mc;
 import static thunder.hack.utility.math.MathUtility.roundToDecimal;
@@ -178,15 +169,46 @@ public class FontRenderer implements Closeable {
         DrawContext context = Render2DEngine.ctx();
         if (context == null) return;
 
-        int color = ((int)(a * 255) << 24) | ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | (int)(b * 255);
-        String text = s.replaceAll("§.", "");
+        int color = ((int) (a * 255) << 24) | ((int) (r * 255) << 16) | ((int) (g * 255) << 8) | (int) (b * 255);
+        String text = stripControlCodes(s);
+        if (text.isEmpty()) return;
+
         if (s.contains("\n")) {
+            float yOff = 0;
             for (String line : text.split("\n")) {
-                context.drawText(mc.textRenderer, line, (int)(x * scaleMul), (int)((y - 3) * scaleMul), color, false);
-                y += getStringHeight(line) * scaleMul;
+                context.drawText(mc.textRenderer, line, (int) x, (int) (y + yOff), color, false);
+                yOff += getStringHeight(line);
             }
-        } else {
-            context.drawText(mc.textRenderer, text, (int)(x * scaleMul), (int)((y - 3) * scaleMul), color, false);
+            return;
+        }
+
+        float currentX = x;
+        float currentY = y;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '\n') {
+                currentY += getStringHeight("\n");
+                currentX = x;
+                continue;
+            }
+
+            Glyph glyph = locateGlyph1(c);
+            if (glyph == null) continue;
+
+            GlyphMap map = glyph.owner();
+
+            int destW = Math.max(1, Math.round(glyph.width() / (float) scaleMul));
+            int destH = Math.max(1, Math.round(glyph.height() / (float) scaleMul));
+
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, map.bindToTexture,
+                    Math.round(currentX), Math.round(currentY),
+                    (float) glyph.u(), (float) glyph.v(),
+                    destW, destH,
+                    glyph.width(), glyph.height(),
+                    map.width, map.height,
+                    color);
+
+            currentX += destW;
         }
     }
 
@@ -226,7 +248,7 @@ public class FontRenderer implements Closeable {
                 continue;
             }
             Glyph glyph = locateGlyph1(c1);
-            currentLine += glyph == null ? 0 : (glyph.width() / (float) this.scaleMul);
+            currentLine += glyph == null ? 0 : Math.max(1, Math.round(glyph.width() / (float) this.scaleMul));
         }
         return Math.max(currentLine, maxPreviousLines);
     }
@@ -241,7 +263,7 @@ public class FontRenderer implements Closeable {
         for (char c1 : c) {
             if (c1 == '\n') {
                 if (currentLine == 0) {
-                    currentLine = (locateGlyph1(' ') == null ? 0 : (Objects.requireNonNull(locateGlyph1(' ')).height() / (float) this.scaleMul));
+                    currentLine = (locateGlyph1(' ') == null ? 0 : (float) Math.max(1, Math.round(Objects.requireNonNull(locateGlyph1(' ')).height() / (float) this.scaleMul)));
                 }
                 previous += currentLine;
                 currentLine = 0;
@@ -249,10 +271,8 @@ public class FontRenderer implements Closeable {
             }
             Glyph glyph = locateGlyph1(c1);
             currentLine = Math.max(
-
-                    glyph == null ? 0 : (glyph.height() / (float) this.scaleMul)
-
-                    , currentLine);
+                    glyph == null ? 0 : (float) Math.max(1, Math.round(glyph.height() / (float) this.scaleMul)),
+                    currentLine);
         }
         return currentLine + previous;
     }

@@ -94,7 +94,8 @@ public class ModuleButton extends AbstractButton {
         prevHovered = hovered;
 
         float ix = x + 5;
-        float iy = y + height / 2f - 3f;
+        float textH = FontRenderers.sf_medium_modules.getFontHeight(module.getName());
+        float iy = y + (height - textH) / 2f;
 
         offsetY = AnimationUtility.fast(offsetY, target_offset, 20f);
 
@@ -114,12 +115,16 @@ public class ModuleButton extends AbstractButton {
                 context.getMatrices().rotate((float) Math.toRadians(gearAnimation.getValue()));
                 context.getMatrices().translate(-px, -py);
                 // TODO: 1.21.9 - manual buffer drawing removed; drawTexture used instead (no per-vertex colors)
-                context.drawTexture(RenderPipelines.GUI_TEXTURED, TextureStorage.Gear, (int)(px - gScale / 2f), (int)(py - gScale / 2f), 0f, 0f, gScale, gScale, gScale, gScale);
+                context.drawTexture(RenderPipelines.GUI_TEXTURED, TextureStorage.Gear,
+                        Math.round(px - gScale / 2f), Math.round(py - gScale / 2f),
+                        0f, 0f, gScale, gScale, gScale, gScale, -1);
 
                 context.getMatrices().popMatrix();
                 Render2DEngine.popWindow(context);
             }
 
+
+            int descOffset = getDescriptionOffset();
 
             for (AbstractElement element : elements) {
                 if (!element.isVisible())
@@ -127,7 +132,7 @@ public class ModuleButton extends AbstractButton {
 
                 element.setOffsetY(offsetY);
                 element.setX(x);
-                element.setY(y + height + 2);
+                element.setY(y + height + 2 + descOffset);
                 element.setWidth(width);
                 element.setHeight(13);
 
@@ -145,9 +150,19 @@ public class ModuleButton extends AbstractButton {
                 }
                 offsetY += element.getHeight();
             }
+            offsetY += descOffset;
 
             context.getMatrices().pushMatrix();
             TargetHud.sizeAnimation(context.getMatrices(), x + width / 2f + 6, y + height / 2f - 12, ticksOpened < 5 ? Math.clamp(category_animation / offsetY, 0f, 1f) : 1f);
+
+            if (ModuleManager.clickGui.descriptions.getValue()) {
+                String desc = I18n.translate(module.getDescription());
+                if (!desc.isEmpty()) {
+                    int descColor = HudEditor.textColor.getValue().getColor();
+                    FontRenderers.sf_medium_mini.drawString(context.getMatrices(), desc, x + 5, y + height + 4, Render2DEngine.applyOpacity(descColor, 0.8f));
+                }
+            }
+
             elements.forEach(e -> {
                 if (e.isVisible())
                     e.render(context, mouseX, mouseY, delta);
@@ -195,21 +210,21 @@ public class ModuleButton extends AbstractButton {
             Render2DEngine.drawRound(context.getMatrices(), x + 4f, y + 1f, width - 8, height - 2, 2, Render2DEngine.applyOpacity(Color.WHITE, 0.25f));
 
         if (!module.getBind().getBind().equalsIgnoreCase("none") && !binding)
-            FontRenderers.sf_medium_modules.drawString(context.getMatrices(), getSbind(), x + width - 11 - FontRenderers.sf_medium_modules.getStringWidth(getSbind()), y + 6, module.isEnabled() ? HudEditor.textColor2.getValue().getColor() : HudEditor.textColor.getValue().getColor());
+            FontRenderers.sf_medium_modules.drawString(context.getMatrices(), getSbind(), x + width - 11 - FontRenderers.sf_medium_modules.getStringWidth(getSbind()), iy, module.isEnabled() ? HudEditor.textColor2.getValue().getColor() : HudEditor.textColor.getValue().getColor());
 
         if (binding)
-            FontRenderers.sf_medium_modules.drawString(context.getMatrices(), holdbind ? (Formatting.GRAY + "Toggle / " + Formatting.RESET + "Hold") : (Formatting.RESET + "Toggle " + Formatting.GRAY + "/ Hold"), x + width - 11 - FontRenderers.sf_medium_modules.getStringWidth("Toggle/Hold"), iy + 2, Render2DEngine.applyOpacity(Color.WHITE.getRGB(), animation2));
+            FontRenderers.sf_medium_modules.drawString(context.getMatrices(), holdbind ? (Formatting.GRAY + "Toggle / " + Formatting.RESET + "Hold") : (Formatting.RESET + "Toggle " + Formatting.GRAY + "/ Hold"), x + width - 11 - FontRenderers.sf_medium_modules.getStringWidth("Toggle/Hold"), iy, Render2DEngine.applyOpacity(Color.WHITE.getRGB(), animation2));
 
         if (hovered && InputUtil.isKeyPressed(mc.getWindow(), InputUtil.GLFW_KEY_LEFT_SHIFT)) {
-            FontRenderers.sf_medium_modules.drawString(context.getMatrices(), "Drawn " + (module.isDrawn() ? Formatting.GREEN + "TRUE" : Formatting.RED + "FALSE"), ix + 1f, iy + 2, module.isEnabled() ? HudEditor.textColor2.getValue().getColor() : HudEditor.textColor.getValue().getColor());
+            FontRenderers.sf_medium_modules.drawString(context.getMatrices(), "Drawn " + (module.isDrawn() ? Formatting.GREEN + "TRUE" : Formatting.RED + "FALSE"), ix + 1f, iy, module.isEnabled() ? HudEditor.textColor2.getValue().getColor() : HudEditor.textColor.getValue().getColor());
         } else {
             if (binding)
-                FontRenderers.sf_medium_modules.drawString(context.getMatrices(), "PressKey", ix, iy + 2, module.isEnabled() ? Render2DEngine.applyOpacity(HudEditor.textColor2.getValue().getColor(), animation2) : Render2DEngine.applyOpacity(HudEditor.textColor.getValue().getColor(), animation2));
+                FontRenderers.sf_medium_modules.drawString(context.getMatrices(), "PressKey", ix, iy, module.isEnabled() ? Render2DEngine.applyOpacity(HudEditor.textColor2.getValue().getColor(), animation2) : Render2DEngine.applyOpacity(HudEditor.textColor.getValue().getColor(), animation2));
             else {
                 if (ModuleManager.clickGui.textSide.getValue() == ClickGui.TextSide.Left)
-                    FontRenderers.sf_medium_modules.drawString(context.getMatrices(), module.getName(), ix + 2, iy + 2, module.isEnabled() ? HudEditor.textColor2.getValue().getColor() : HudEditor.textColor.getValue().getColor());
+                    FontRenderers.sf_medium_modules.drawString(context.getMatrices(), module.getName(), ix + 2, iy, module.isEnabled() ? HudEditor.textColor2.getValue().getColor() : HudEditor.textColor.getValue().getColor());
                 else
-                    FontRenderers.sf_medium_modules.drawCenteredString(context.getMatrices(), module.getName(), ix + getWidth() / 2 - 4, iy + 2, module.isEnabled() ? HudEditor.textColor2.getValue().getColor() : HudEditor.textColor.getValue().getColor());
+                    FontRenderers.sf_medium_modules.drawCenteredString(context.getMatrices(), module.getName(), ix + getWidth() / 2 - 4, iy, module.isEnabled() ? HudEditor.textColor2.getValue().getColor() : HudEditor.textColor.getValue().getColor());
             }
         }
     }
@@ -343,7 +358,15 @@ public class ModuleButton extends AbstractButton {
     }
 
     public double getElementsHeight() {
-        return category_animation;
+        return category_animation + getDescriptionOffset();
+    }
+
+    public int getDescriptionOffset() {
+        if (ModuleManager.clickGui.descriptions.getValue()) {
+            String desc = I18n.translate(module.getDescription());
+            if (!desc.isEmpty()) return 12;
+        }
+        return 0;
     }
 
     public double interp(double d, double d2, float d3) {

@@ -1,6 +1,6 @@
 package thunder.hack.gui.clickui;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
+
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Identifier;
 import thunder.hack.ThunderHack;
@@ -100,14 +100,14 @@ public class Category extends AbstractCategory {
 
         Render2DEngine.drawHudBase(context.getMatrices(), getX() + 2, getY() - 5, width - 4, height, 1, false);
 
-        {
-            RenderSystem.setShaderTexture(0, MinecraftClient.getInstance().getTextureManager().getTexture(ICON).getGlTextureView());
-            Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(getX() + 2, getY() - 4, getX() + 2 + width - 4, getY() - 5 + height));
-            // TODO: 1.21.9 - Manual buffer drawing removed, replace with DrawContext.drawTexture calls
-            Render2DEngine.popWindow(context);
-        }
+        int iconSize = 14;
+        int iconX = (int) getX() + 5;
+        int iconY = (int) getY() - 4;
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, ICON, iconX, iconY, 0f, 0f, iconSize, iconSize, iconSize, iconSize, 256, 256, -1);
 
-        FontRenderers.categories.drawCenteredString(context.getMatrices(), getName(), ((int) getX() + 2 + (width - 4) / 2), (int) getY() + (int) height / 2f - 7, new Color(-1).getRGB());
+        int textX = iconX + iconSize + 3;
+        int textY = (int) getY() + (int) (height / 2f) - 7;
+        FontRenderers.categories.drawString(context.getMatrices(), getName(), textX, textY, new Color(-1).getRGB());
         context.getMatrices().popMatrix();
         updatePosition();
     }
@@ -175,6 +175,7 @@ public class Category extends AbstractCategory {
                         if (element.isVisible())
                             offsetY += element.getHeight();
                     }
+                    offsetY += mbutton.getDescriptionOffset();
                     offsetY += 2f;
                 }
             }

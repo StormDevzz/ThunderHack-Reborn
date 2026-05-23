@@ -1,15 +1,11 @@
 package thunder.hack.features.modules.render;
-import net.minecraft.client.gl.RenderPipelines;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.render.*;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
-import org.joml.Matrix4f;
+import net.minecraft.util.Identifier;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.setting.Setting;
@@ -24,7 +20,9 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-// Фабос, чекнул сурс - сдох отец, спастишь - сдохнет мать
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
+
 public class Particles extends Module {
     public Particles() {
         super("Particles", Category.RENDER);
@@ -72,12 +70,69 @@ public class Particles extends Module {
         }
     }
 
+    @Override
+    public void onRender2D(DrawContext context) {
+        if (mode.getValue() == Mode.Off && !FireFlies.getValue().isEnabled()) return;
+
+        Identifier tex = switch (mode.getValue()) {
+            case Stars -> TextureStorage.star;
+            case Hearts -> TextureStorage.heart;
+            case Dollars -> TextureStorage.dollar;
+            case Bloom -> TextureStorage.firefly;
+            default -> TextureStorage.snowflake;
+        };
+
+        float tickDelta = mc.getRenderTickCounter().getTickProgress(true);
+
+        int sw = mc.getWindow().getScaledWidth();
+        int sh = mc.getWindow().getScaledHeight();
+
+        for (ParticleBase p : particles) {
+            Vec3d worldPos = new Vec3d(p.posX, p.posY, p.posZ);
+            Vec3d ndc = mc.gameRenderer.project(worldPos);
+            if (ndc == null || ndc.z > 1) continue;
+
+            float sx = (float) ((ndc.x * 0.5 + 0.5) * sw);
+            float sy = (float) ((-ndc.y * 0.5 + 0.5) * sh);
+
+            float alpha = Math.max(0, Math.min(1, (float) p.age / p.maxAge));
+            Color c = lmode.getValue() == ColorMode.Sync ? HudEditor.getColor(p.age * 10) : color.getValue().getColorObject();
+
+            float s = size.getValue() * (1 + (1 - alpha) * 0.5f);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, tex,
+                    (int) (sx - s / 2), (int) (sy - s / 2),
+                    0f, 0f,
+                    (int) s, (int) s, 16, 16,
+                    ((int) (alpha * 255) << 24) | (c.getRed() << 16) | (c.getGreen() << 8) | c.getBlue());
+        }
+
+        if (FireFlies.getValue().isEnabled()) {
+            for (ParticleBase p : fireFlies) {
+                Vec3d worldPos = new Vec3d(p.posX, p.posY, p.posZ);
+                Vec3d ndc = mc.gameRenderer.project(worldPos);
+                if (ndc == null || ndc.z > 1) continue;
+
+                float sx = (float) ((ndc.x * 0.5 + 0.5) * sw);
+                float sy = (float) ((-ndc.y * 0.5 + 0.5) * sh);
+
+                float alpha = Math.max(0, Math.min(1, (float) p.age / p.maxAge));
+                Color c = lmode.getValue() == ColorMode.Sync ? HudEditor.getColor(p.age * 10) : color.getValue().getColorObject();
+
+                float s = ffsize.getValue() * 8 * (1 + (1 - alpha) * 0.5f);
+                context.drawTexture(RenderPipelines.GUI_TEXTURED, TextureStorage.firefly,
+                        (int) (sx - s / 2), (int) (sy - s / 2),
+                        0f, 0f,
+                        (int) s, (int) s, 16, 16,
+                        ((int) (alpha * 255) << 24) | (c.getRed() << 16) | (c.getGreen() << 8) | c.getBlue());
+            }
+        }
+    }
+
     public void onRender3D(MatrixStack stack) {
-        // stubbed for 1.21.9
     }
 
     public class FireFly extends ParticleBase {
-        private final List<Trails.Trail> trails = new ArrayList<>();
+        private final List<Trail> trails = new ArrayList<>();
 
         public FireFly(float posX, float posY, float posZ, float motionX, float motionY, float motionZ) {
             super(posX, posY, posZ, motionX, motionY, motionZ);
@@ -85,15 +140,13 @@ public class Particles extends Module {
 
         @Override
         public boolean tick() {
-
             if (mc.player.squaredDistanceTo(posX, posY, posZ) > 100) age -= 4;
             else if (!mc.world.getBlockState(new BlockPos((int) posX, (int) posY, (int) posZ)).isAir()) age -= 8;
             else age--;
 
-            if (age < 0)
-                return true;
+            if (age < 0) return true;
 
-            trails.removeIf(Trails.Trail::update);
+            trails.removeIf(Trail::update);
 
             prevposX = posX;
             prevposY = posY;
@@ -103,7 +156,8 @@ public class Particles extends Module {
             posY += motionY;
             posZ += motionZ;
 
-            trails.add(new Trails.Trail(new Vec3d(prevposX, prevposY, prevposZ), new Vec3d(posX, posY, posZ), lmode.getValue() == ColorMode.Sync ? HudEditor.getColor(age * 10) : color.getValue().getColorObject()));
+            Color trailColor = lmode.getValue() == ColorMode.Sync ? HudEditor.getColor(age * 10) : color.getValue().getColorObject();
+            trails.add(new Trail(new Vec3d(prevposX, prevposY, prevposZ), new Vec3d(posX, posY, posZ), trailColor));
 
             motionX *= 0.99f;
             motionY *= 0.99f;
@@ -111,15 +165,9 @@ public class Particles extends Module {
 
             return false;
         }
-
-        @Override
-        public void render(BufferBuilder bufferBuilder) {
-            // stubbed for 1.21.9
-        }
     }
 
     public class ParticleBase {
-
         protected float prevposX, prevposY, prevposZ, posX, posY, posZ, motionX, motionY, motionZ;
         protected int age, maxAge;
 
@@ -141,8 +189,7 @@ public class Particles extends Module {
             if (mc.player.squaredDistanceTo(posX, posY, posZ) > 4096) age -= 8;
             else age--;
 
-            if (age < 0)
-                return true;
+            if (age < 0) return true;
 
             prevposX = posX;
             prevposY = posY;
@@ -161,21 +208,15 @@ public class Particles extends Module {
 
             return false;
         }
+    }
 
-        public void render(BufferBuilder bufferBuilder) {
-            // stubbed for 1.21.9
+    public record Trail(Vec3d from, Vec3d to, Color color) {
+        public boolean update() {
+            return false;
         }
     }
 
-    public enum ColorMode {
-        Custom, Sync
-    }
-
-    public enum Mode {
-        Off, SnowFlake, Stars, Hearts, Dollars, Bloom;
-    }
-
-    public enum Physics {
-        Drop, Fly
-    }
+    public enum ColorMode { Custom, Sync }
+    public enum Mode { Off, SnowFlake, Stars, Hearts, Dollars, Bloom }
+    public enum Physics { Drop, Fly }
 }
