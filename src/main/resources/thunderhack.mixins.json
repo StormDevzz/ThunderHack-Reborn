@@ -4,7 +4,7 @@
     "package": "thunder.hack.injection",
     "compatibilityLevel": "JAVA_21",
     "client": [
-      "MixinBackgroundRenderer",
+
       "MixinBlockCollisionSpliterator",
       "MixinBossBarHud",
       "MixinBoatEntityRenderer",
@@ -16,7 +16,6 @@
       "MixinClientPlayerInteractionManager",
       "MixinClientPlayNetworkHandler",
       "MixinClientWorld",
-      "MixinDimensionEffects",
       "MixinDrawContext",
       "MixinDynamic",
       "MixinEndCrystalEntityRenderer",
@@ -64,7 +63,6 @@
     "mixins": [
       "MixinAbstractBlock",
       "MixinAbstractBlockState",
-      "MixinAbstractHorseEntity",
       "MixinBlock",
       "MixinBlockItem",
       "MixinBoatEntity",
@@ -77,7 +75,7 @@
       "MixinPlayerEntity",
       "MixinScoreBoard",
       "MixinScoreboardPlayerScore",
-      "MixinShulkerBoxBlock",
+
       "MixinSkinTextures",
       "MixinSlimeBlock",
       "MixinSodiumBlockOcclusionCache",

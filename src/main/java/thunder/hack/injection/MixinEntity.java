@@ -22,7 +22,9 @@ import thunder.hack.events.impl.EventFixVelocity;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.combat.HitBox;
 import thunder.hack.features.modules.render.Trails;
+import thunder.hack.features.modules.combat.Aura;
 import thunder.hack.utility.interfaces.IEntity;
+import thunder.hack.utility.interfaces.IEntityLiving;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +32,7 @@ import java.util.List;
 import static thunder.hack.features.modules.Module.mc;
 
 @Mixin(Entity.class)
-public abstract class MixinEntity implements IEntity {
+public abstract class MixinEntity implements IEntity, IEntityLiving {
 
     @Shadow
     protected abstract BlockPos getVelocityAffectingPos();
@@ -50,6 +52,48 @@ public abstract class MixinEntity implements IEntity {
 
     @Unique
     public List<Trails.Trail> trails = new ArrayList<>();
+
+    @Unique
+    double prevServerX, prevServerY, prevServerZ;
+
+    @Unique
+    double trackedX, trackedY, trackedZ;
+
+    @Unique
+    public List<Aura.Position> positonHistory = new ArrayList<>();
+
+    @Override
+    public List<Aura.Position> getPositionHistory() {
+        return positonHistory;
+    }
+
+    @Override
+    public double getPrevServerX() {
+        return prevServerX;
+    }
+
+    @Override
+    public double getPrevServerY() {
+        return prevServerY;
+    }
+
+    @Override
+    public double getPrevServerZ() {
+        return prevServerZ;
+    }
+
+    @Inject(method = "updateTrackedPositionAndAngles", at = {@At("HEAD")})
+    private void updateTrackedPositionAndAnglesHook(Vec3d pos, float yaw, float pitch, CallbackInfo ci) {
+        if (Module.fullNullCheck()) return;
+        prevServerX = trackedX;
+        prevServerY = trackedY;
+        prevServerZ = trackedZ;
+        positonHistory.add(new Aura.Position(trackedX, trackedY, trackedZ));
+        positonHistory.removeIf(Aura.Position::shouldRemove);
+        trackedX = pos.x;
+        trackedY = pos.y;
+        trackedZ = pos.z;
+    }
 
     @ModifyArgs(method = "pushAwayFrom", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;addVelocity(DDD)V"))
     public void pushAwayFromHook(Args args) {

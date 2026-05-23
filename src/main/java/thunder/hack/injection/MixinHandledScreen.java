@@ -2,6 +2,7 @@ package thunder.hack.injection;
 
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -261,8 +262,11 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    private void mouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+    private void mouseClicked(Click click, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
         if (Module.fullNullCheck()) return;
+        int button = click.button();
+        double mouseX = click.x();
+        double mouseY = click.y();
         if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE && focusedSlot != null && !focusedSlot.getStack().isEmpty() && client.player.playerScreenHandler.getCursorStack().isEmpty()) {
             ItemStack itemStack = focusedSlot.getStack();
 

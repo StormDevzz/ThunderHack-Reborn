@@ -1,7 +1,6 @@
 package thunder.hack.injection;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
 import thunder.hack.core.Managers;
 import net.minecraft.client.option.Perspective;
@@ -51,7 +50,7 @@ public abstract class MixinGameRenderer {
         FrameRateCounter.INSTANCE.recordFrame();
     }
 
-    @Inject(at = @At(value = "FIELD", target = "Lnet/minecraft/client/render/GameRenderer;renderHand:Z", opcode = Opcodes.GETFIELD, ordinal = 0), method = "renderWorld")
+    @Inject(method = "renderWorld", at = @At("HEAD"))
     void render3dHook(RenderTickCounter tickCounter, CallbackInfo ci) {
         if (Module.fullNullCheck()) return;
 
@@ -167,14 +166,6 @@ public abstract class MixinGameRenderer {
         if (ModuleManager.totemAnimation.isEnabled()) {
             ModuleManager.totemAnimation.showFloatingItem(floatingItem);
             info.cancel();
-        }
-    }
-
-    @Inject(method = "renderFloatingItem", at = @At("HEAD"), cancellable = true)
-    private void renderFloatingItemHook(DrawContext context, float tickDelta, CallbackInfo ci) {
-        if (ModuleManager.totemAnimation.isEnabled()) {
-            ModuleManager.totemAnimation.renderFloatingItem(tickDelta);
-            ci.cancel();
         }
     }
 

@@ -1,9 +1,10 @@
 package thunder.hack.injection;
 
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.entity.EndCrystalEntityRenderer;
 import net.minecraft.client.render.entity.model.EndCrystalEntityModel;
 import net.minecraft.client.render.entity.state.EndCrystalEntityRenderState;
+import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,11 +18,11 @@ import thunder.hack.core.manager.client.ModuleManager;
 public class MixinEndCrystalEntityRenderer {
     @Shadow @Final private EndCrystalEntityModel model;
 
-    @Inject(method = "render(Lnet/minecraft/client/render/entity/state/EndCrystalEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = {@At("HEAD")}, cancellable = true)
-    public void render(EndCrystalEntityRenderState endCrystalEntityRenderState, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
+    @Inject(method = "render(Lnet/minecraft/client/render/entity/state/EndCrystalEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V", at = {@At("HEAD")}, cancellable = true)
+    public void render(EndCrystalEntityRenderState endCrystalEntityRenderState, MatrixStack matrixStack, OrderedRenderCommandQueue orderedRenderCommandQueue, CameraRenderState cameraRenderState, CallbackInfo ci) {
         if(ModuleManager.chams.isEnabled() && ModuleManager.chams.crystals.getValue()) {
             ci.cancel();
-            ModuleManager.chams.renderCrystal(endCrystalEntityRenderState, matrixStack, i, model);
+            ModuleManager.chams.renderCrystal(endCrystalEntityRenderState, matrixStack, 0, model);
         }
     }
 }

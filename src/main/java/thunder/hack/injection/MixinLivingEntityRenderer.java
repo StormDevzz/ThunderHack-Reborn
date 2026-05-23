@@ -4,10 +4,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.*;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.model.ParrotEntityModel;
+import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
@@ -60,8 +62,8 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extend
         lastEntity = entity;
     }
 
-    @Inject(method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"), cancellable = true)
-    public void onRenderPre(net.minecraft.client.render.entity.state.LivingEntityRenderState state, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
+    @Inject(method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V", at = @At("HEAD"), cancellable = true)
+    public void onRenderPre(net.minecraft.client.render.entity.state.LivingEntityRenderState state, MatrixStack matrixStack, OrderedRenderCommandQueue commandQueue, CameraRenderState cameraState, CallbackInfo ci) {
         if (Module.fullNullCheck()) return;
 
         matrixPushed = false;
@@ -69,7 +71,7 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extend
         if (ModuleManager.chams.isEnabled() && ModuleManager.chams.players.getValue()
                 && lastEntity instanceof PlayerEntity pl && lastEntity != mc.player) {
             ci.cancel();
-            ModuleManager.chams.renderPlayer(state, matrixStack, i, model, pl);
+            ModuleManager.chams.renderPlayer(state, matrixStack, 0, model, pl);
             return;
         }
 
@@ -87,8 +89,8 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extend
         if (Module.fullNullCheck()) return;
     }
 
-    @Inject(method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("TAIL"))
-    public void onRenderPost(net.minecraft.client.render.entity.state.LivingEntityRenderState state, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
+    @Inject(method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V", at = @At("TAIL"))
+    public void onRenderPost(net.minecraft.client.render.entity.state.LivingEntityRenderState state, MatrixStack matrixStack, OrderedRenderCommandQueue commandQueue, CameraRenderState cameraState, CallbackInfo ci) {
         if (Module.fullNullCheck()) return;
 
         if (matrixPushed) {

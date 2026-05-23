@@ -171,7 +171,7 @@ class GlyphMap {
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
                 generated = true;
             } else {
-                RenderSystem.recordRenderCall(() -> {
+                RenderSystem.queueFencedTask(() -> {
                     MinecraftClient.getInstance().getTextureManager().registerTexture(i, tex);
                     RenderSystem.setShaderTexture(0, tex.getGlTextureView());
                     GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);

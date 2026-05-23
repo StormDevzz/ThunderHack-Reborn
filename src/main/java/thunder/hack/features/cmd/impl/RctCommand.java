@@ -25,7 +25,7 @@ public class RctCommand extends Command {
                 return SINGLE_SUCCESS;
             }
 
-            String an = "an" + ((ScoreboardObjective) mc.world.getScoreboard().getScoreboardObjectives().toArray()[0]).getDisplayName().getString().substring(10);
+            String an = "an" + ((ScoreboardObjective) mc.world.getScoreboard().getObjectives().toArray()[0]).getDisplayName().getString().substring(10);
 
             Managers.ASYNC.run(() -> {
                 mc.player.networkHandler.sendChatCommand("hub");

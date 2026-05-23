@@ -30,7 +30,7 @@ public class MixinBackgroundRenderer {
         }
     }
 
-    @ModifyVariable(method = "applyFog(Ljava/nio/ByteBuffer;ILorg/joml/Vector4f;FFFFFF)V", at = @At("HEAD"), index = 3, argsOnly = true)
+    @ModifyVariable(method = "method_71110", at = @At("HEAD"), index = 3, argsOnly = true, remap = false)
     private float modifyFogEnvironmentalStart(float environmentalStart) {
         if (ModuleManager.worldTweaks.isEnabled() && WorldTweaks.fogModify.getValue().isEnabled()) {
             return WorldTweaks.fogStart.getValue();
@@ -41,7 +41,7 @@ public class MixinBackgroundRenderer {
         return environmentalStart;
     }
 
-    @ModifyVariable(method = "applyFog(Ljava/nio/ByteBuffer;ILorg/joml/Vector4f;FFFFFF)V", at = @At("HEAD"), index = 4, argsOnly = true)
+    @ModifyVariable(method = "method_71110", at = @At("HEAD"), index = 4, argsOnly = true, remap = false)
     private float modifyFogEnvironmentalEnd(float environmentalEnd) {
         if (ModuleManager.worldTweaks.isEnabled() && WorldTweaks.fogModify.getValue().isEnabled()) {
             return WorldTweaks.fogEnd.getValue();

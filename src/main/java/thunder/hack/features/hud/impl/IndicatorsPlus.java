@@ -1,9 +1,6 @@
 package thunder.hack.features.hud.impl;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.*;
 import thunder.hack.ThunderHack;
 import thunder.hack.core.Managers;
 import thunder.hack.features.hud.HudElement;

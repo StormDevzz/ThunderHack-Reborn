@@ -144,6 +144,8 @@ public class ClickGUI extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        Render2DEngine.begin(context);
+        try {
         // if (ModuleManager.clickGui.blur.getValue())
         //    applyBlur(delta);
 
@@ -234,6 +236,9 @@ public class ClickGUI extends Screen {
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
                 GLFW.glfwSetCursor(mc.getWindow().getHandle(), GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR));
             }
+        } finally {
+            Render2DEngine.end();
+        }
     }
 
     @Override

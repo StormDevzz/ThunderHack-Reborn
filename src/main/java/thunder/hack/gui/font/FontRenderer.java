@@ -1,22 +1,11 @@
 package thunder.hack.gui.font;
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import it.unimi.dsi.fastutil.chars.Char2IntArrayMap;
-import it.unimi.dsi.fastutil.chars.Char2ObjectArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.render.*;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix3x2fStack;
 import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11;
 import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.utility.render.Render2DEngine;
 
@@ -167,14 +156,22 @@ public class FontRenderer implements Closeable {
     }
 
     public void drawString(Matrix3x2fStack stack, String s, float x, float y, float r, float g, float b, float a, boolean gradient, int offset) {
-        if (prebakeGlyphsFuture != null && !prebakeGlyphsFuture.isDone()) {
-            try {
-                prebakeGlyphsFuture.get();
-            } catch (InterruptedException | ExecutionException ignored) {
-            }
-        }
+        DrawContext context = Render2DEngine.ctx();
+        if (context == null) return;
 
-        sizeCheck();
+        int color = ((int)(a * 255) << 24) | ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | (int)(b * 255);
+        String text = s.replaceAll("§.", "");
+        if (s.contains("\n")) {
+            for (String line : text.split("\n")) {
+                context.drawText(mc.textRenderer, line, (int)(x * scaleMul), (int)((y - 3) * scaleMul), color, false);
+                y += getStringHeight(line) * scaleMul;
+            }
+        } else {
+            context.drawText(mc.textRenderer, text, (int)(x * scaleMul), (int)((y - 3) * scaleMul), color, false);
+        }
+    }
+
+
         float r2 = r, g2 = g, b2 = b;
         stack.pushMatrix();
         y -= 3f;
