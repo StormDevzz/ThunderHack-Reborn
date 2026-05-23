@@ -120,8 +120,10 @@ jobs:
 
           ## Included in this release
           - ThunderHack-Reborn jar
-          - Fabric API 0.133.11+1.21.9
-          - Satin 3.0.0-alpha.1 (just drop all jars into mods/) 
+          - Fabric API 0.133.11+1.21.9 (drop into mods/)
+
+          ## Required
+          - Fabric Loader 0.17.2+ (install via Fabric Installer) 
           EOF
 
       - name: Publish Release
