@@ -9,6 +9,7 @@ import thunder.hack.core.Managers;
 import thunder.hack.events.impl.EventMouse;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.client.HudEditor;
+import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.gui.hud.HudEditorGui;
 import thunder.hack.setting.Setting;
 import thunder.hack.setting.impl.PositionSetting;
@@ -34,6 +35,16 @@ public class HudElement extends Module {
     public void onRender2D(DrawContext context) {
         y = mc.getWindow().getScaledHeight() * pos.getValue().getY();
         x = mc.getWindow().getScaledWidth() * pos.getValue().getX();
+
+        if (mc.currentScreen instanceof HudEditorGui) {
+            Render2DEngine.drawRect(context.getMatrices(), x - 1, y - 1, width + 2, height + 2, new Color(0x80000000, true));
+            Render2DEngine.drawRect(context.getMatrices(), x - 1, y - 1, width + 2, 1, new Color(0xFFFFFFFF, true));
+            Render2DEngine.drawRect(context.getMatrices(), x - 1, y + height, width + 2, 1, new Color(0xFFFFFFFF, true));
+            Render2DEngine.drawRect(context.getMatrices(), x - 1, y - 1, 1, height + 2, new Color(0xFFFFFFFF, true));
+            Render2DEngine.drawRect(context.getMatrices(), x + width, y - 1, 1, height + 2, new Color(0xFFFFFFFF, true));
+            Render2DEngine.drawRect(context.getMatrices(), x, y, width, 12, new Color(0x90000000, true));
+            FontRenderers.sf_medium_modules.drawString(context.getMatrices(), getName(), x + 3, y + 2, -1);
+        }
 
         if (mc.currentScreen instanceof ChatScreen || mc.currentScreen instanceof HudEditorGui) {
             if (mouseButton && mouseState) {

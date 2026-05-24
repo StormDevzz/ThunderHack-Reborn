@@ -10,7 +10,6 @@ import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
 import thunder.hack.utility.ThunderUtility;
 import thunder.hack.utility.Timer;
-import thunder.hack.utility.discord.DiscordEventHandlers;
 import thunder.hack.utility.discord.DiscordRPC;
 import thunder.hack.utility.discord.DiscordRichPresence;
 
@@ -24,14 +23,12 @@ public final class RPC extends Module {
 
     public static Setting<RPCMode> rpcMode = new Setting<>("RPC Mode", RPCMode.Old);
 
-    // Old Mode Settings
     public static Setting<Mode> mode = new Setting<>("Picture", Mode.Reborn, v -> rpcMode.getValue() == RPCMode.Old);
     public static Setting<Boolean> showIP = new Setting<>("ShowIP", true, v -> rpcMode.getValue() == RPCMode.Old);
     public static Setting<sMode> smode = new Setting<>("StateMode", sMode.Stats, v -> rpcMode.getValue() == RPCMode.Old);
     public static Setting<String> state = new Setting<>("State", "Beta? Reborn? NextGen?", v -> rpcMode.getValue() == RPCMode.Old);
     public static Setting<Boolean> nickname = new Setting<>("Nickname", true, v -> rpcMode.getValue() == RPCMode.Old);
 
-    // New Mode Settings
     public static Setting<Boolean> nServer = new Setting<>("ShowServer", true, v -> rpcMode.getValue() == RPCMode.New);
     public static Setting<Boolean> nNick = new Setting<>("ShowNick", true, v -> rpcMode.getValue() == RPCMode.New);
     public static Setting<Boolean> nBuild = new Setting<>("ShowBuild", true, v -> rpcMode.getValue() == RPCMode.New);
@@ -128,8 +125,7 @@ public final class RPC extends Module {
         if (!started) {
             started = true;
             currentId = targetId;
-            DiscordEventHandlers handlers = new DiscordEventHandlers();
-            rpc.Discord_Initialize(targetId, handlers, true, "");
+            rpc.Discord_Initialize(targetId, true, "");
             presence.startTimestamp = (System.currentTimeMillis() / 1000L);
             presence.largeImageText = "v" + BUILD_VERSION + "  ·  " + ThunderHack.GITHUB_HASH;
             rpc.Discord_UpdatePresence(presence);
@@ -168,7 +164,6 @@ public final class RPC extends Module {
                             }
                         }
                     } else {
-                        // New Mode — clean, structured presence
                         String status;
                         if (nAutoState.getValue()) {
                             if (nTimer.passedMs(60 * 1000) || nSlov == null) {
@@ -280,16 +275,16 @@ public final class RPC extends Module {
     public enum sMode {Custom, Stats, Version}
 
     public enum NewImage {
-        Default("default"), 
-        Kotost("kotost"), 
-        Cuute("cuute"), 
-        Cutefurry("cutefurry"), 
-        Forreal("forreal"), 
-        Furry1("furry1"), 
-        Furry2("furry2"), 
-        Ebat("ebat"), 
-        Oooh("oooh"), 
-        Pivo("pivo"), 
+        Default("default"),
+        Kotost("kotost"),
+        Cuute("cuute"),
+        Cutefurry("cutefurry"),
+        Forreal("forreal"),
+        Furry1("furry1"),
+        Furry2("furry2"),
+        Ebat("ebat"),
+        Oooh("oooh"),
+        Pivo("pivo"),
         Whenmem("whenmem"),
         Ninja("ninja"),
         Navalniylexa("navalniylexa"),

@@ -7,7 +7,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
+import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +24,7 @@ import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.gui.font.FontRenderers;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -808,5 +811,29 @@ public class Render3DEngine {
     }
 
     public record LineAction(Vec3d start, Vec3d end, Color color) {
+    }
+
+    public static Identifier getCleanedTexture(Identifier original) {
+        return Render2DEngine.getCleanedTexture(original);
+    }
+
+    public static Identifier getCleanedTexture(Identifier original, int threshold) {
+        return Render2DEngine.getCleanedTexture(original, threshold);
+    }
+
+    public static BufferedImage removeBlackBackground(BufferedImage image) {
+        return Render2DEngine.removeBlackBackground(image);
+    }
+
+    public static BufferedImage removeBlackBackground(BufferedImage image, int threshold) {
+        return Render2DEngine.removeBlackBackground(image, threshold);
+    }
+
+    public static NativeImage removeBlackBackground(NativeImage image) {
+        return Render2DEngine.removeBlackBackground(image);
+    }
+
+    public static NativeImage removeBlackBackground(NativeImage image, int threshold) {
+        return Render2DEngine.removeBlackBackground(image, threshold);
     }
 }

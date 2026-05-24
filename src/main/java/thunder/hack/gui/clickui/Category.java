@@ -103,7 +103,7 @@ public class Category extends AbstractCategory {
         int iconSize = 14;
         int iconX = (int) getX() + 5;
         int iconY = (int) getY() - 4;
-        context.drawTexture(RenderPipelines.GUI_TEXTURED, ICON, iconX, iconY, 0f, 0f, iconSize, iconSize, iconSize, iconSize, 256, 256, -1);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, Render2DEngine.getCleanedTexture(ICON), iconX, iconY, 0f, 0f, iconSize, iconSize, iconSize, iconSize, 256, 256, -1);
 
         int textX = iconX + iconSize + 3;
         int textY = (int) getY() + (int) (height / 2f) - 7;

@@ -15,12 +15,17 @@ import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.hud.HudElement;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.client.ClickGui;
+import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.gui.clickui.AbstractCategory;
 import thunder.hack.gui.clickui.Category;
 import thunder.hack.gui.clickui.ClickGUI;
+import thunder.hack.gui.font.FontRenderers;
+import thunder.hack.utility.render.Render2DEngine;
 
+import java.awt.*;
 import java.util.List;
 
+import static thunder.hack.features.modules.client.ClientSettings.isRu;
 import static thunder.hack.features.modules.Module.mc;
 
 public class HudEditorGui extends Screen {
@@ -64,27 +69,39 @@ public class HudEditorGui extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         ClickGUI.anyHovered = false;
 
-        if (ModuleManager.clickGui.scrollMode.getValue() == ClickGui.scrollModeEn.Old) {
-            for (AbstractCategory window : windows) {
-                if (InputUtil.isKeyPressed(mc.getWindow(), 264))
-                    window.setY(window.getY() + 2);
-                if (InputUtil.isKeyPressed(mc.getWindow(), 265))
-                    window.setY(window.getY() - 2);
-                if (InputUtil.isKeyPressed(mc.getWindow(), 262))
-                    window.setX(window.getX() + 2);
-                if (InputUtil.isKeyPressed(mc.getWindow(), 263))
-                    window.setX(window.getX() - 2);
+        Render2DEngine.begin(context);
+        try {
+            Render2DEngine.drawRect(context.getMatrices(), 0, 0, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight(), new Color(0x40000000, true));
+
+            if (ModuleManager.clickGui.scrollMode.getValue() == ClickGui.scrollModeEn.Old) {
+                for (AbstractCategory window : windows) {
+                    if (InputUtil.isKeyPressed(mc.getWindow(), 264))
+                        window.setY(window.getY() + 2);
+                    if (InputUtil.isKeyPressed(mc.getWindow(), 265))
+                        window.setY(window.getY() - 2);
+                    if (InputUtil.isKeyPressed(mc.getWindow(), 262))
+                        window.setX(window.getX() + 2);
+                    if (InputUtil.isKeyPressed(mc.getWindow(), 263))
+                        window.setX(window.getX() - 2);
+                    if (dWheel != 0)
+                        window.setY((float) (window.getY() + dWheel));
+                }
+            } else for (AbstractCategory window : windows)
                 if (dWheel != 0)
-                    window.setY((float) (window.getY() + dWheel));
+                    window.setModuleOffset((float) dWheel, mouseX, mouseY);
+
+            dWheel = 0;
+
+            for (AbstractCategory window : windows) {
+                window.render(context, mouseX, mouseY, delta);
             }
-        } else for (AbstractCategory window : windows)
-            if (dWheel != 0)
-                window.setModuleOffset((float) dWheel, mouseX, mouseY);
 
-        dWheel = 0;
-
-        for (AbstractCategory window : windows) {
-            window.render(context, mouseX, mouseY, delta);
+            String title = isRu() ? "Редактор HUD" : "HUD Editor";
+            String hint = isRu() ? "Нажмите Escape чтобы выйти" : "Press Escape to exit";
+            FontRenderers.sf_medium.drawString(context.getMatrices(), title, 10, 8, -1);
+            FontRenderers.sf_medium_mini.drawString(context.getMatrices(), hint, 10, 20, new Color(0x80FFFFFF, true).getRGB());
+        } finally {
+            Render2DEngine.end();
         }
     }
 

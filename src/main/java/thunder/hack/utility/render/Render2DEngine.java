@@ -6,7 +6,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
@@ -21,12 +20,16 @@ import thunder.hack.gui.font.Texture;
 import thunder.hack.utility.math.MathUtility;
 
 
+import net.minecraft.util.Identifier;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+
+import net.minecraft.client.texture.NativeImageBackedTexture;
 
 import static thunder.hack.features.modules.Module.mc;
 
@@ -827,18 +830,87 @@ public class Render2DEngine {
         }
     }
 
+    public static final HashMap<Identifier, Identifier> cleanedTextureCache = new HashMap<>();
+
+    public static Identifier getCleanedTexture(Identifier original) {
+        return getCleanedTexture(original, 0);
+    }
+
+    public static Identifier getCleanedTexture(Identifier original, int threshold) {
+        Identifier cached = cleanedTextureCache.get(original);
+        if (cached != null) return cached;
+        try {
+            var mc = net.minecraft.client.MinecraftClient.getInstance();
+            var resource = mc.getResourceManager().getResource(original).orElse(null);
+            if (resource == null) return original;
+            NativeImage image;
+            try (InputStream in = resource.getInputStream()) {
+                image = NativeImage.read(in);
+            }
+            if (image == null) return original;
+            NativeImage cleaned = removeBlackBackground(image, threshold);
+            image.close();
+            String cleanPath = "cleaned/" + original.getPath().replace('/', '_');
+            Identifier cleanId = Identifier.of(original.getNamespace(), cleanPath);
+            mc.getTextureManager().registerTexture(cleanId, new NativeImageBackedTexture(() -> cleanPath, cleaned));
+            cleanedTextureCache.put(original, cleanId);
+            return cleanId;
+        } catch (Exception e) {
+            return original;
+        }
+    }
+
     public static BufferedImage removeBlackBackground(BufferedImage image) {
+        return removeBlackBackground(image, 0);
+    }
+
+    public static BufferedImage removeBlackBackground(BufferedImage image, int threshold) {
         BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 int rgb = image.getRGB(x, y);
+                int a = (rgb >> 24) & 0xFF;
                 int r = (rgb >> 16) & 0xFF;
                 int g = (rgb >> 8) & 0xFF;
                 int b = rgb & 0xFF;
-                if (r == 0 && g == 0 && b == 0) {
+                int brightness = (r + g + b) / 3;
+                if (brightness <= threshold || (r <= threshold && g <= threshold && b <= threshold)) {
+                    result.setRGB(x, y, 0);
+                } else if (a == 0) {
                     result.setRGB(x, y, 0);
                 } else {
-                    result.setRGB(x, y, rgb | 0xFF000000);
+                    result.setRGB(x, y, rgb);
+                }
+            }
+        }
+        return result;
+    }
+
+    public static NativeImage removeBlackBackground(NativeImage image) {
+        return removeBlackBackground(image, 0);
+    }
+
+    public static NativeImage removeBlackBackground(NativeImage image, int threshold) {
+        NativeImage result = new NativeImage(NativeImage.Format.RGBA, image.getWidth(), image.getHeight(), false);
+        long srcPtr = ((thunder.hack.injection.accesors.INativeImage) (Object) image).getPointer();
+        long dstPtr = ((thunder.hack.injection.accesors.INativeImage) (Object) result).getPointer();
+        java.nio.IntBuffer srcBuffer = org.lwjgl.system.MemoryUtil.memIntBuffer(srcPtr, image.getWidth() * image.getHeight());
+        java.nio.IntBuffer dstBuffer = org.lwjgl.system.MemoryUtil.memIntBuffer(dstPtr, image.getWidth() * image.getHeight());
+        srcBuffer.rewind();
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int abgr = srcBuffer.get();
+                int a = (abgr >> 24) & 0xFF;
+                int b = (abgr >> 16) & 0xFF;
+                int g = (abgr >> 8) & 0xFF;
+                int r = abgr & 0xFF;
+                int brightness = (r + g + b) / 3;
+                if (brightness <= threshold || (r <= threshold && g <= threshold && b <= threshold)) {
+                    dstBuffer.put(0);
+                } else if (a == 0) {
+                    dstBuffer.put(0);
+                } else {
+                    dstBuffer.put(abgr);
                 }
             }
         }

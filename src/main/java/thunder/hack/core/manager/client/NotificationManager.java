@@ -2,7 +2,6 @@ package thunder.hack.core.manager.client;
 
 import com.google.common.collect.Lists;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.util.Formatting;
 import thunder.hack.core.manager.IManager;
 import thunder.hack.features.cmd.Command;
 import thunder.hack.gui.notification.Notification;
@@ -21,8 +20,11 @@ public class NotificationManager implements IManager {
     private TrayIcon trayIcon;
 
     public void publicity(String title, String content, int second, Notification.Type type) {
-        if (ModuleManager.notifications.mode.getValue() == Notifications.Mode.Text)
-            Command.sendMessage(Formatting.GRAY + "[" + Formatting.DARK_PURPLE + title + Formatting.GRAY + "] " + type.getColor() + content);
+        if (ModuleManager.notifications.mode.getValue() == Notifications.Mode.Text) {
+            Color tc = getTypeColor(type);
+            String hex = String.format("#%06x", tc.getRGB() & 0xFFFFFF);
+            Command.sendMessage("§7[" + "§5" + title + "§7] §" + hex + content);
+        }
 
         if (!mc.isWindowFocused())
             nativeNotification(content, title);
@@ -50,6 +52,18 @@ public class NotificationManager implements IManager {
     public void onUpdate() {
         if (!ModuleManager.notifications.isEnabled()) return;
         notifications.forEach(Notification::onUpdate);
+    }
+
+    private Color getTypeColor(Notification.Type type) {
+        var n = ModuleManager.notifications;
+        return switch (type) {
+            case SUCCESS -> n.successColor.getValue().getColorObject();
+            case INFO -> n.infoColor.getValue().getColorObject();
+            case WARNING -> n.warningColor.getValue().getColorObject();
+            case ERROR -> n.errorColor.getValue().getColorObject();
+            case ENABLED -> n.enabledColor.getValue().getColorObject();
+            case DISABLED -> n.disabledColor.getValue().getColorObject();
+        };
     }
 
     public static boolean isDefault() {

@@ -52,6 +52,7 @@ dependencies {
 	libImpl("io.netty:netty-handler-proxy:${project.netty_version}") { transitive = false }
 	libImpl("io.netty:netty-codec-socks:${project.netty_version}") { transitive = false }
 
+
 	configurations.libImpl.dependencies.each {
 		implementation(it)
 	}

@@ -1,5 +1,6 @@
 package thunder.hack.gui.clickui;
 import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.util.Identifier;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
@@ -102,7 +103,8 @@ public class ModuleButton extends AbstractButton {
         float offsetY = 0;
 
         if (isOpen()) {
-            Render2DEngine.drawGuiBase(context.getMatrices(), x + 4, y + 2f, width - 8, height + (float) getElementsHeight(), 1f, 0);
+            Color bg = ClickGui.moduleBgColor.getValue().getColorObject();
+            Render2DEngine.drawRect(context.getMatrices(), x + 4, y + 2f, width - 8, height + (float) getElementsHeight(), bg);
             Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(x + 1, y + height - 2, width + x - 2, (float) (height + y + 1f + getElementsHeight())));
 
             if (mc.player != null && thunder.hack.features.modules.client.ClickGui.gear.getValue().isEnabled()) {
@@ -154,14 +156,6 @@ public class ModuleButton extends AbstractButton {
 
             context.getMatrices().pushMatrix();
             TargetHud.sizeAnimation(context.getMatrices(), x + width / 2f + 6, y + height / 2f - 12, ticksOpened < 5 ? Math.clamp(category_animation / offsetY, 0f, 1f) : 1f);
-
-            if (ModuleManager.clickGui.descriptions.getValue()) {
-                String desc = I18n.translate(module.getDescription());
-                if (!desc.isEmpty()) {
-                    int descColor = HudEditor.textColor.getValue().getColor();
-                    FontRenderers.sf_medium_mini.drawString(context.getMatrices(), desc, x + 5, y + height + 4, Render2DEngine.applyOpacity(descColor, 0.8f));
-                }
-            }
 
             elements.forEach(e -> {
                 if (e.isVisible())
@@ -362,10 +356,6 @@ public class ModuleButton extends AbstractButton {
     }
 
     public int getDescriptionOffset() {
-        if (ModuleManager.clickGui.descriptions.getValue()) {
-            String desc = I18n.translate(module.getDescription());
-            if (!desc.isEmpty()) return 12;
-        }
         return 0;
     }
 

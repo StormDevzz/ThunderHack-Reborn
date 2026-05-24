@@ -3,9 +3,12 @@ package thunder.hack.features.modules.render;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.RaycastContext;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.setting.Setting;
@@ -99,16 +102,20 @@ public class Particles extends Module {
             Color c = lmode.getValue() == ColorMode.Sync ? HudEditor.getColor(p.age * 10) : color.getValue().getColorObject();
 
             float s = size.getValue() * (1 + (1 - alpha) * 0.5f);
+            int ps = Math.max(1, (int) s);
             context.drawTexture(RenderPipelines.GUI_TEXTURED, tex,
                     (int) (sx - s / 2), (int) (sy - s / 2),
                     0f, 0f,
-                    (int) s, (int) s, 16, 16,
-                    ((int) (alpha * 255) << 24) | (c.getRed() << 16) | (c.getGreen() << 8) | c.getBlue());
+                    ps, ps, ps, ps,
+                    ((int) (alpha * 255) << 24) | (c.getBlue() << 16) | (c.getGreen() << 8) | c.getRed());
         }
 
         if (FireFlies.getValue().isEnabled()) {
+            Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
             for (ParticleBase p : fireFlies) {
                 Vec3d worldPos = new Vec3d(p.posX, p.posY, p.posZ);
+                BlockHitResult rayHit = mc.world.raycast(new RaycastContext(cameraPos, worldPos, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player));
+                if (rayHit.getType() != HitResult.Type.MISS) continue;
                 Vec3d ndc = mc.gameRenderer.project(worldPos);
                 if (ndc == null || ndc.z > 1) continue;
 
@@ -119,11 +126,12 @@ public class Particles extends Module {
                 Color c = lmode.getValue() == ColorMode.Sync ? HudEditor.getColor(p.age * 10) : color.getValue().getColorObject();
 
                 float s = ffsize.getValue() * 8 * (1 + (1 - alpha) * 0.5f);
-                context.drawTexture(RenderPipelines.GUI_TEXTURED, TextureStorage.firefly,
+                int fs = Math.max(1, (int) s);
+                context.drawTexture(RenderPipelines.GUI_TEXTURED, Render2DEngine.getCleanedTexture(TextureStorage.firefly),
                         (int) (sx - s / 2), (int) (sy - s / 2),
                         0f, 0f,
-                        (int) s, (int) s, 16, 16,
-                        ((int) (alpha * 255) << 24) | (c.getRed() << 16) | (c.getGreen() << 8) | c.getBlue());
+                        fs, fs, fs, fs,
+                        ((int) (alpha * 255) << 24) | (c.getBlue() << 16) | (c.getGreen() << 8) | c.getRed());
             }
         }
     }
