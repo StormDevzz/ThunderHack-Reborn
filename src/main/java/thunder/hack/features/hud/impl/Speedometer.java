@@ -30,7 +30,7 @@ public class Speedometer extends HudElement {
     public void onRender2D(DrawContext context) {
         super.onRender2D(context);
 
-        String str = "Speed " + Formatting.WHITE;
+        String str = "Speed: " + Formatting.WHITE;
         if (!bps.getValue()) {
             str += MathUtility.round(getSpeedKpH() * ThunderHack.TICK_TIMER) + " km/h";
         } else {
@@ -39,23 +39,8 @@ public class Speedometer extends HudElement {
 
         float pX = getPosX() > mc.getWindow().getScaledWidth() / 2f ? getPosX() - FontRenderers.getModulesRenderer().getStringWidth(str) : getPosX();
 
-        if (HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-            Render2DEngine.drawRoundedBlur(context.getMatrices(), pX, getPosY(), FontRenderers.getModulesRenderer().getStringWidth(str) + 21, 13f, 3, HudEditor.blurColor.getValue().getColorObject());
-            Render2DEngine.drawRect(context.getMatrices(), pX + 14, getPosY() + 2, 0.5f, 8, new Color(0x44FFFFFF, true));
-
-            Render2DEngine.setupRender();
-            GlStateManager._blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE, GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-            {
-                AbstractTexture __tex = mc.getTextureManager().getTexture(TextureStorage.speedometerIcon);
-                if (__tex != null) RenderSystem.setShaderTexture(0, __tex.getGlTextureView());
-            }
-            Render2DEngine.renderGradientTexture(context.getMatrices(), pX + 2, getPosY() + 1, 10, 10, 0, 0, 512, 512, 512, 512,
-                    HudEditor.getColor(270), HudEditor.getColor(0), HudEditor.getColor(180), HudEditor.getColor(90));
-            Render2DEngine.endRender();
-        }
-
-        FontRenderers.getModulesRenderer().drawString(context.getMatrices(), str, pX + 18, getPosY() + 5, HudEditor.getColor(1).getRGB());
-        setBounds(pX, getPosY(), FontRenderers.getModulesRenderer().getStringWidth(str) + 21, 13f);
+        FontRenderers.getModulesRenderer().drawString(context.getMatrices(), str, pX, getPosY(), HudEditor.textColor.getValue().getColor());
+        setBounds(pX, getPosY(), FontRenderers.getModulesRenderer().getStringWidth(str), FontRenderers.getModulesRenderer().getFontHeight(str));
     }
 
     public float getSpeedKpH() {

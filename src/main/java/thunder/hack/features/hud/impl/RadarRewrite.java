@@ -56,6 +56,9 @@ public class RadarRewrite extends HudElement {
         super.onRender2D(context);
         if (fullNullCheck()) return;
 
+        float size = CRadius.getValue() * 2f;
+        Render2DEngine.drawRound(context.getMatrices(), getPosX(), getPosY(), size, size, CRadius.getValue(), new Color(0x600B1424, true));
+
         float middleW = mc.getWindow().getScaledWidth() * getX();
         float middleH = mc.getWindow().getScaledHeight() * getY();
 

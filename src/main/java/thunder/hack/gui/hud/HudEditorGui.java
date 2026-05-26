@@ -96,10 +96,7 @@ public class HudEditorGui extends Screen {
                 window.render(context, mouseX, mouseY, delta);
             }
 
-            String title = isRu() ? "Редактор HUD" : "HUD Editor";
-            String hint = isRu() ? "Нажмите Escape чтобы выйти" : "Press Escape to exit";
-            FontRenderers.sf_medium.drawString(context.getMatrices(), title, 10, 8, -1);
-            FontRenderers.sf_medium_mini.drawString(context.getMatrices(), hint, 10, 20, new Color(0x80FFFFFF, true).getRGB());
+            // Removed title and hint texts as requested
         } finally {
             Render2DEngine.end();
         }

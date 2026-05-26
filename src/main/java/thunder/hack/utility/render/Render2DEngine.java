@@ -602,13 +602,8 @@ public class Render2DEngine {
     }
 
     public static void drawHudBase(DrawContext context, float x, float y, float width, float height, float radius, float alpha) {
-        if (HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-            Color c = HudEditor.blurColor.getValue().getColorObject();
-            context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), new Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(alpha * c.getAlpha())).getRGB());
-        } else {
-            Color c = HudEditor.plateColor.getValue().getColorObject();
-            context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), new Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(alpha * c.getAlpha())).getRGB());
-        }
+        Color c = HudEditor.plateColor.getValue().getColorObject();
+        context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), new Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(alpha * c.getAlpha())).getRGB());
     }
 
     public static void drawGuiBase(DrawContext context, float x, float y, float width, float height, float radius, float opacity) {

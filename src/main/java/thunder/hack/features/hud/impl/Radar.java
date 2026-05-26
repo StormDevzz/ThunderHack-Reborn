@@ -44,27 +44,22 @@ public class Radar extends HudElement {
         if (mode.getValue() == Mode.Rect) {
             Render2DEngine.drawHudBase(context.getMatrices(), getPosX(), getPosY(), size.getValue(), size.getValue(), HudEditor.hudRound.getValue());
 
-            if (HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-                Render2DEngine.drawRectDumbWay(context.getMatrices(), getPosX(), getPosY() + (size.getValue() / 2F + 0.25f), getPosX() + size.getValue(), getPosY() + (size.getValue() / 2F) - 0.25f, new Color(0x54FFFFFF, true));
-                Render2DEngine.drawRectDumbWay(context.getMatrices(),getPosX() + (size.getValue() / 2F - 0.25f), getPosY() - 0.5f, getPosX() + (size.getValue() / 2F) + 0.25f, getPosY() + size.getValue() - 1, new Color(0x54FFFFFF, true));
-            } else {
-                Render2DEngine.draw2DGradientRect(context.getMatrices(),
-                        (float) (getPosX() + (size.getValue() / 2F - 0.5)),
-                        (float) (getPosY() + 3.5),
-                        (float) (getPosX() + (size.getValue() / 2F + 0.2)),
-                        (float) ((getPosY() + size.getValue()) - 3.5),
-                        color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject()
-                );
+            Render2DEngine.draw2DGradientRect(context.getMatrices(),
+                    (float) (getPosX() + (size.getValue() / 2F - 0.5)),
+                    (float) (getPosY() + 3.5),
+                    (float) (getPosX() + (size.getValue() / 2F + 0.2)),
+                    (float) ((getPosY() + size.getValue()) - 3.5),
+                    color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject()
+            );
 
-                Render2DEngine.draw2DGradientRect(
-                        context.getMatrices(),
-                        getPosX() + 3.5f,
-                        getPosY() + (size.getValue() / 2F - 0.2f),
-                        (getPosX() + size.getValue()) - 3.5f,
-                        getPosY() + (size.getValue() / 2F + 0.5f),
-                        color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject()
-                );
-            }
+            Render2DEngine.draw2DGradientRect(
+                    context.getMatrices(),
+                    getPosX() + 3.5f,
+                    getPosY() + (size.getValue() / 2F - 0.2f),
+                    (getPosX() + size.getValue()) - 3.5f,
+                    getPosY() + (size.getValue() / 2F + 0.5f),
+                    color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject()
+            );
 
             for (PlayerEntity entityPlayer : Managers.ASYNC.getAsyncPlayers()) {
                 if (entityPlayer == mc.player)

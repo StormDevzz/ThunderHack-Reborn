@@ -26,6 +26,31 @@ public class Coords extends HudElement {
     }
 
     public void onRender2D(DrawContext context) {
-        // stubbed for 1.21.9
+        super.onRender2D(context);
+        if (mc.player == null || mc.world == null) return;
+
+        double x = mc.player.getX();
+        double y = mc.player.getY();
+        double z = mc.player.getZ();
+
+        String coordsStr = String.format("XYZ: " + Formatting.WHITE + "%.1f, %.1f, %.1f" + Formatting.RESET, x, y, z);
+        String netherCoordsStr = "";
+
+        if (netherCoords.getValue() != NetherCoords.Off) {
+            if (PlayerUtility.isInHell()) {
+                double ox = x * 8.0;
+                double oz = z * 8.0;
+                netherCoordsStr = String.format(" [OW: " + Formatting.WHITE + "%.1f, %.1f" + Formatting.RESET + "]", ox, oz);
+            } else if (PlayerUtility.isInOver()) {
+                double nx = x / 8.0;
+                double nz = z / 8.0;
+                netherCoordsStr = String.format(" [N: " + Formatting.WHITE + "%.1f, %.1f" + Formatting.RESET + "]", nx, nz);
+            }
+        }
+
+        String fullStr = coordsStr + netherCoordsStr;
+
+        FontRenderers.sf_bold.drawString(context.getMatrices(), fullStr, getPosX(), getPosY(), HudEditor.textColor.getValue().getColor());
+        setBounds(getPosX(), getPosY(), FontRenderers.sf_bold.getStringWidth(fullStr), FontRenderers.sf_bold.getFontHeight(fullStr));
     }
 }
