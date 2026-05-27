@@ -1,7 +1,5 @@
 package thunder.hack.features.modules;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -26,10 +24,8 @@ import thunder.hack.features.modules.client.UnHook;
 import thunder.hack.setting.Setting;
 import thunder.hack.setting.impl.Bind;
 
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static thunder.hack.ThunderHack.LOGGER;
 import static thunder.hack.core.Managers.NOTIFICATION;
@@ -184,26 +180,8 @@ public abstract class Module {
         return displayName;
     }
 
-    private static final Map<String, JsonObject> langCache = new ConcurrentHashMap<>();
-
-    private static String translateDescription(String key, String fallback) {
-        String lang = isRu() ? "ru_ru" : "en_us";
-        JsonObject json = langCache.computeIfAbsent(lang, l -> {
-            try (var is = ThunderHack.class.getClassLoader().getResourceAsStream("assets/thunderhack/lang/" + l + ".json")) {
-                if (is != null) {
-                    try (var reader = new InputStreamReader(is)) {
-                        return JsonParser.parseReader(reader).getAsJsonObject();
-                    }
-                }
-            } catch (Exception ignored) {}
-            return new JsonObject();
-        });
-        if (json.has(key)) return json.get(key).getAsString();
-        return fallback;
-    }
-
     public String getDescription() {
-        return translateDescription(description, description);
+        return description;
     }
 
     public boolean isDrawn() {
@@ -339,7 +317,7 @@ public abstract class Module {
         if (button < 10) // check
             return false;
 
-        return InputUtil.isKeyPressed(mc.getWindow().getHandle(), button);
+        return InputUtil.isKeyPressed(mc.getWindow(), button);
     }
 
     public boolean isKeyPressed(Setting<Bind> bind) {

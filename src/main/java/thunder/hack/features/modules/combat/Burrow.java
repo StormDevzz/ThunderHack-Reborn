@@ -75,25 +75,25 @@ public final class Burrow extends Module {
         if (mode.getValue() != Mode.Default) return;
         if (event.getPacket() instanceof ExplosionS2CPacket) {
             if (scaleExplosion.getValue()) {
-                motionY = ((ExplosionS2CPacket) event.getPacket()).playerKnockback().map(v -> v.y).orElse(0.0);
+                motionY = ((ExplosionS2CPacket) event.getPacket()).getPlayerVelocityY();
                 scaleTimer.reset();
             }
             if (scaleVelocity.getValue()) return;
             if (mc.player != null) {
-                motionY = ((ExplosionS2CPacket) event.getPacket()).playerKnockback().map(v -> v.y).orElse(0.0) / 8000.0;
+                motionY = ((ExplosionS2CPacket) event.getPacket()).getPlayerVelocityY() / 8000.0;
                 scaleTimer.reset();
             }
         }
 
         if (event.getPacket() instanceof PlayerPositionLookS2CPacket) {
             PlayerPositionLookS2CPacket packet = event.getPacket();
-            double x = packet.change().position().x;
-            double y = packet.change().position().y;
-            double z = packet.change().position().z;
+            double x = packet.getX();
+            double y = packet.getY();
+            double z = packet.getZ();
 
-            if (packet.relatives().contains(PositionFlag.X)) x += mc.player.getX();
-            if (packet.relatives().contains(PositionFlag.Y)) y += mc.player.getY();
-            if (packet.relatives().contains(PositionFlag.Z)) z += mc.player.getZ();
+            if (packet.getFlags().contains(PositionFlag.X)) x += mc.player.getX();
+            if (packet.getFlags().contains(PositionFlag.Y)) y += mc.player.getY();
+            if (packet.getFlags().contains(PositionFlag.Z)) z += mc.player.getZ();
 
             last_x = MathUtility.clamp(x, -3.0E7, 3.0E7);
             last_y = y;
@@ -149,7 +149,7 @@ public final class Burrow extends Module {
         }
 
         if (timer.passedMs(250)) {
-            if (rotate.getValue()) sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), 90, onGround.getValue(), false));
+            if (rotate.getValue()) sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), 90, onGround.getValue()));
 
             InventoryUtility.saveSlot();
             InteractionUtility.placeBlock(pos, InteractionUtility.Rotate.None, InteractionUtility.Interact.Vanilla, InteractionUtility.PlaceMode.Packet, webResult.slot(), false, true);
@@ -170,7 +170,7 @@ public final class Burrow extends Module {
         }
 
         if (timer.passedMs(250)) {
-            if (rotate.getValue()) sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), 90, onGround.getValue(), false));
+            if (rotate.getValue()) sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), 90, onGround.getValue()));
             InventoryUtility.saveSlot();
             InteractionUtility.placeBlock(pos, InteractionUtility.Rotate.None, InteractionUtility.Interact.Vanilla, InteractionUtility.PlaceMode.Normal, skullResult.slot(), false, true);
             mc.player.swingHand(Hand.MAIN_HAND);
@@ -227,20 +227,20 @@ public final class Burrow extends Module {
         if (timer.passedMs(1000)) {
             if (rotate.getValue()) {
                 if (r != null) {
-                    if (rEntity.getPos().equals(new Vec3d(last_x, last_y, last_z))) sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(r[0], r[1], onGround.getValue(), false));
-                    else sendPacket(new PlayerMoveC2SPacket.Full(rEntity.getX(), rEntity.getY(), rEntity.getZ(), r[0], r[1], onGround.getValue(), false));
+                    if (rEntity.getPos().equals(new Vec3d(last_x, last_y, last_z))) sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(r[0], r[1], onGround.getValue()));
+                    else sendPacket(new PlayerMoveC2SPacket.Full(rEntity.getX(), rEntity.getY(), rEntity.getZ(), r[0], r[1], onGround.getValue()));
                 }
             }
 
-            sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(rEntity.getX(), rEntity.getY() + 0.42, rEntity.getZ(), onGround.getValue(), false));
-            sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(rEntity.getX(), rEntity.getY() + 0.75, rEntity.getZ(), onGround.getValue(), false));
-            sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(rEntity.getX(), rEntity.getY() + 1.01, rEntity.getZ(), onGround.getValue(), false));
-            sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(rEntity.getX(), rEntity.getY() + 1.16, rEntity.getZ(), onGround.getValue(), false));
+            sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(rEntity.getX(), rEntity.getY() + 0.42, rEntity.getZ(), onGround.getValue()));
+            sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(rEntity.getX(), rEntity.getY() + 0.75, rEntity.getZ(), onGround.getValue()));
+            sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(rEntity.getX(), rEntity.getY() + 1.01, rEntity.getZ(), onGround.getValue()));
+            sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(rEntity.getX(), rEntity.getY() + 1.16, rEntity.getZ(), onGround.getValue()));
 
             InventoryUtility.saveSlot();
             InteractionUtility.placeBlock(pos, InteractionUtility.Rotate.None, InteractionUtility.Interact.Vanilla, InteractionUtility.PlaceMode.Packet, slot, false, true);
             mc.player.swingHand(Hand.MAIN_HAND);
-            sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(rEntity.getX(), y, rEntity.getZ(), false, false));
+            sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(rEntity.getX(), y, rEntity.getZ(), false));
             timer.reset();
             InventoryUtility.returnSlot();
 

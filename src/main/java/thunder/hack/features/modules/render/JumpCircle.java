@@ -1,5 +1,4 @@
 package thunder.hack.features.modules.render;
-import net.minecraft.client.gl.ShaderProgramKeys;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -55,7 +54,7 @@ public class JumpCircle extends Module {
             try {
                 custom = ThunderUtility.getCustomImg("circle");
             } catch (Exception e) {
-                sendMessage(".minecraft -> ThunderHackReborn -> misc -> images -> circle.png");
+                sendMessage(".minecraft -> ThunderHackRecode -> misc -> images -> circle.png");
             }
         }
 
@@ -86,7 +85,7 @@ public class JumpCircle extends Module {
                     RenderSystem.setShaderTexture(0, Objects.requireNonNullElse(custom, TextureStorage.default_circle));
         }
 
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
         for (Circle c : circles) {

@@ -128,7 +128,7 @@ public class ProxyWindow extends WindowBase {
         FontRenderers.sf_medium.drawCenteredString(context.getMatrices(), "Login", posZX + posZWidth / 2f, getY() + 40, textColor);
         FontRenderers.sf_medium.drawCenteredString(context.getMatrices(), "Password", serverX + serverWidth / 2f, getY() + 40, textColor);
 
-        Render2DEngine.addWindow(context, getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1, 1f);
+        Render2DEngine.addWindow(context.getMatrices(), getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1, 1f);
 
         int id = 0;
         for (ProxyPlate proxyPlate : proxyPlates) {
@@ -177,7 +177,7 @@ public class ProxyWindow extends WindowBase {
             FontRenderers.sf_medium_mini.drawCenteredString(context.getMatrices(), ping, getX() + getWidth() - 41, proxyPlate.offset + getY() + 40 + getScrollOffset(), hover10 ? -1 : Color.GRAY.getRGB());
         }
         setMaxElementsHeight(proxyPlates.size() * 20);
-        Render2DEngine.popWindow(context);
+        Render2DEngine.popWindow();
     }
 
     @Override
@@ -302,12 +302,12 @@ public class ProxyWindow extends WindowBase {
 
     @Override
     public void keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_F && (InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
+        if (keyCode == GLFW.GLFW_KEY_F && (InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
             listeningId = -2;
             return;
         }
 
-        if (keyCode == GLFW.GLFW_KEY_V && (InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
+        if (keyCode == GLFW.GLFW_KEY_V && (InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
 
             String paste = GLFW.glfwGetClipboardString(mc.getWindow().getHandle());
             if (paste == null)

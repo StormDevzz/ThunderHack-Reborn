@@ -1,13 +1,5 @@
 package thunder.hack.gui.clickui;
-import net.minecraft.client.gl.ShaderProgramKeys;
 
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.BufferBuilder;
-import org.joml.Matrix4f;
-import net.minecraft.client.render.GameRenderer;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
@@ -111,10 +103,10 @@ public class ModuleButton extends AbstractButton {
 
         if (isOpen()) {
             Render2DEngine.drawGuiBase(context.getMatrices(), x + 4, y + 2f, width - 8, height + (float) getElementsHeight(), 1f, 0);
-            Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(x + 1, y + height - 2, width + x - 2, (float) (height + y + 1f + getElementsHeight())));
+            Render2DEngine.addWindow(context.getMatrices(), new Render2DEngine.Rectangle(x + 1, y + height - 2, width + x - 2, (float) (height + y + 1f + getElementsHeight())));
 
-            if (mc.player != null && thunder.hack.features.modules.client.ClickGui.gear.getValue().isEnabled()) {
-                Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(x, y + height + 1, (width) + x + 6, (float) ((height) + y + 1f + getElementsHeight())));
+            if (mc.player != null && ModuleManager.clickGui.gear.getValue().isEnabled()) {
+                Render2DEngine.addWindow(context.getMatrices(), new Render2DEngine.Rectangle(x, y + height + 1, (width) + x + 6, (float) ((height) + y + 1f + getElementsHeight())));
                 float px = x + 4 + (width - 8) / 2f;
                 float py = y + 12f + (height + (float) getElementsHeight()) / 2f;
                 int gScale = ModuleManager.clickGui.gearScale.getValue();
@@ -124,26 +116,23 @@ public class ModuleButton extends AbstractButton {
                 context.getMatrices().translate(-px, -py, 0.0F);
                 RenderSystem.setShaderTexture(0, TextureStorage.Gear);
                 RenderSystem.enableBlend();
-                RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
                 RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-                Color c1 = Render2DEngine.injectAlpha(HudEditor.getColor(270).darker(), 110);
-                Color c2 = Render2DEngine.injectAlpha(HudEditor.getColor(0).darker(), 110);
-                Color c3 = Render2DEngine.injectAlpha(HudEditor.getColor(180).darker(), 110);
-                Color c4 = Render2DEngine.injectAlpha(HudEditor.getColor(90).darker(), 110);
-
-                Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
-                BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-                buffer.vertex(matrix, px - gScale / 2f, py + gScale / 2f, 0).texture(0, 1).color(c1.getRed() / 255f, c1.getGreen() / 255f, c1.getBlue() / 255f, c1.getAlpha() / 255f);
-                buffer.vertex(matrix, px + gScale / 2f, py + gScale / 2f, 0).texture(1, 1).color(c2.getRed() / 255f, c2.getGreen() / 255f, c2.getBlue() / 255f, c2.getAlpha() / 255f);
-                buffer.vertex(matrix, px + gScale / 2f, py - gScale / 2f, 0).texture(1, 0).color(c3.getRed() / 255f, c3.getGreen() / 255f, c3.getBlue() / 255f, c3.getAlpha() / 255f);
-                buffer.vertex(matrix, px - gScale / 2f, py - gScale / 2f, 0).texture(0, 0).color(c4.getRed() / 255f, c4.getGreen() / 255f, c4.getBlue() / 255f, c4.getAlpha() / 255f);
-                BufferRenderer.drawWithGlobalProgram(buffer.end());
-
+                Render2DEngine.renderGradientTexture(context.getMatrices(), px - gScale / 2f, py - gScale / 2f, gScale, gScale, 0, 0, gScale, gScale, gScale, gScale,
+                        Render2DEngine.injectAlpha(HudEditor.getColor(270).darker(), 110),
+                        Render2DEngine.injectAlpha(HudEditor.getColor(0).darker(), 110),
+                        Render2DEngine.injectAlpha(HudEditor.getColor(180).darker(), 110),
+                        Render2DEngine.injectAlpha(HudEditor.getColor(90).darker(), 110));
                 RenderSystem.disableBlend();
+                context.getMatrices().translate(px, py, 0.0F);
+                context.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float) Render2DEngine.interpolate(mc.player.age - 1, mc.player.age, Render3DEngine.getTickDelta()) * -4f));
+                context.getMatrices().translate(-px, -py, 0.0F);
                 context.getMatrices().pop();
-                Render2DEngine.popWindow(context);
+                Render2DEngine.popWindow();
             }
 
+            if (Render2DEngine.isHovered(mouseX, mouseY, x + 4, y + height - 12f, width - 8, height + (float) getElementsHeight())) {
+                Render2DEngine.drawBlurredShadow(context.getMatrices(), mouseX - 10, mouseY - 10, 20, 20, 40, HudEditor.getColor(270));
+            }
 
             for (AbstractElement element : elements) {
                 if (!element.isVisible())
@@ -178,10 +167,16 @@ public class ModuleButton extends AbstractButton {
             });
             context.getMatrices().pop();
 
+            Render2DEngine.drawBlurredShadow(context.getMatrices(), x + 3, y + height, width - 6, 3, 13, HudEditor.getColor(1));
             if (!module.isEnabled())
                 Render2DEngine.draw2DGradientRect(context.getMatrices(), x + 4, y + height - 1f, x + 3f + width - 7f, 3f + y + height, Render2DEngine.applyOpacity(HudEditor.getColor(0), 0), HudEditor.getColor(0), Render2DEngine.applyOpacity(HudEditor.getColor(90), 0), HudEditor.getColor(90));
-            Render2DEngine.popWindow(context);
+            Render2DEngine.popWindow();
         } else {
+            if (hovered) {
+                Render2DEngine.addWindow(context.getMatrices(), x + 1, y, x + width - 2, y + height, 1.);
+                Render2DEngine.drawBlurredShadow(context.getMatrices(), mouseX - 10, mouseY - 10, 20, 20, 35, HudEditor.getColor(270));
+                Render2DEngine.popWindow();
+            }
         }
 
         category_animation = fast(category_animation, offsetY, 20);
@@ -215,16 +210,13 @@ public class ModuleButton extends AbstractButton {
             }
         }
 
-        if (hovered)
-            Render2DEngine.drawRound(context.getMatrices(), x + 4f, y + 1f, width - 8, height - 2, 2, Render2DEngine.applyOpacity(Color.WHITE, 0.25f));
-
         if (!module.getBind().getBind().equalsIgnoreCase("none") && !binding)
             FontRenderers.sf_medium_modules.drawString(context.getMatrices(), getSbind(), x + width - 11 - FontRenderers.sf_medium_modules.getStringWidth(getSbind()), y + 6, module.isEnabled() ? HudEditor.textColor2.getValue().getColor() : HudEditor.textColor.getValue().getColor());
 
         if (binding)
             FontRenderers.sf_medium_modules.drawString(context.getMatrices(), holdbind ? (Formatting.GRAY + "Toggle / " + Formatting.RESET + "Hold") : (Formatting.RESET + "Toggle " + Formatting.GRAY + "/ Hold"), x + width - 11 - FontRenderers.sf_medium_modules.getStringWidth("Toggle/Hold"), iy + 2, Render2DEngine.applyOpacity(Color.WHITE.getRGB(), animation2));
 
-        if (hovered && InputUtil.isKeyPressed(mc.getWindow().getHandle(), InputUtil.GLFW_KEY_LEFT_SHIFT)) {
+        if (hovered && InputUtil.isKeyPressed(mc.getWindow(), InputUtil.GLFW_KEY_LEFT_SHIFT)) {
             FontRenderers.sf_medium_modules.drawString(context.getMatrices(), "Drawn " + (module.isDrawn() ? Formatting.GREEN + "TRUE" : Formatting.RED + "FALSE"), ix + 1f, iy + 2, module.isEnabled() ? HudEditor.textColor2.getValue().getColor() : HudEditor.textColor.getValue().getColor());
         } else {
             if (binding)
@@ -279,12 +271,12 @@ public class ModuleButton extends AbstractButton {
         }
 
         if (hovered) {
-            if (InputUtil.isKeyPressed(mc.getWindow().getHandle(), InputUtil.GLFW_KEY_LEFT_SHIFT) && button == 0) {
+            if (InputUtil.isKeyPressed(mc.getWindow(), InputUtil.GLFW_KEY_LEFT_SHIFT) && button == 0) {
                 module.setDrawn(!module.isDrawn());
                 return;
             }
 
-            if (InputUtil.isKeyPressed(mc.getWindow().getHandle(), InputUtil.GLFW_KEY_DELETE) && button == 0) {
+            if (InputUtil.isKeyPressed(mc.getWindow(), InputUtil.GLFW_KEY_DELETE) && button == 0) {
                 DialogScreen dialogScreen = new DialogScreen(
                         TextureStorage.questionPic,
                         isRu() ? "Сброс модуля" : "Reset module",

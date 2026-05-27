@@ -39,6 +39,9 @@ replay_*.log
 *.hprof
 *.jfr
 
+# remapped src
+remappedSrc/
+
 #xiao
 xiao
 xiao.pub

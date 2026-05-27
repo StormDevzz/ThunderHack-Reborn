@@ -9,23 +9,23 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import thunder.hack.core.manager.client.ModuleManager;
 
-@Mixin(Entity.class)
+@Mixin(BoatEntity.class)
 public class MixinBoatEntity {
 
     @Unique
     private float prevYaw, prevHeadYaw;
 
-    @Inject(method = "updatePassengerPosition(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/Entity$PositionUpdater;)V", at = @At("HEAD"))
+    @Inject(method = "updatePassengerPosition", at = @At("HEAD"))
     protected void updatePassengerPositionHookPre(Entity passenger, Entity.PositionUpdater positionUpdater, CallbackInfo ci) {
-        if((Object) this instanceof BoatEntity && ModuleManager.boatFly.isEnabled()) {
+        if(ModuleManager.boatFly.isEnabled()) {
             prevYaw = passenger.getYaw();
             prevHeadYaw = passenger.getHeadYaw();
         }
     }
 
-    @Inject(method = "updatePassengerPosition(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/Entity$PositionUpdater;)V", at = @At("RETURN"))
+    @Inject(method = "updatePassengerPosition", at = @At("RETURN"))
     protected void updatePassengerPositionHookPost(Entity passenger, Entity.PositionUpdater positionUpdater, CallbackInfo ci) {
-        if((Object) this instanceof BoatEntity && ModuleManager.boatFly.isEnabled()) {
+        if(ModuleManager.boatFly.isEnabled()) {
             passenger.setYaw(prevYaw);
             passenger.setHeadYaw(prevHeadYaw);
         }

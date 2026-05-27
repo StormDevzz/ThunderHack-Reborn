@@ -79,7 +79,7 @@ public class FriendsWindow extends WindowBase {
         Render2DEngine.horizontalGradient(context.getMatrices(), getX() + 2 + getWidth() / 2f - 2, getY() + 33f, getX() + 2 + getWidth() - 4, getY() + 33.5f, HudEditor.textColor.getValue().getColorObject(), Render2DEngine.injectAlpha(HudEditor.textColor.getValue().getColorObject(), 0));
 
 
-        Render2DEngine.addWindow(context, getX(), getY() + 38, getX() + getWidth(), getY() + getHeight() - 1, 1f);
+        Render2DEngine.addWindow(context.getMatrices(), getX(), getY() + 38, getX() + getWidth(), getY() + getHeight() - 1, 1f);
 
         int id = 0;
         for (FriendPlate friendPlate : friendPlates) {
@@ -100,7 +100,7 @@ public class FriendsWindow extends WindowBase {
             FontRenderers.sf_medium_mini.drawString(context.getMatrices(), id + ".", getX() + 3, friendPlate.offset + getY() + 41 + getScrollOffset(), textColor);
         }
         setMaxElementsHeight(friendPlates.size() * 20);
-        Render2DEngine.popWindow(context);
+        Render2DEngine.popWindow();
     }
 
     @Override
@@ -145,7 +145,7 @@ public class FriendsWindow extends WindowBase {
 
     @Override
     public void keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_F && (InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
+        if (keyCode == GLFW.GLFW_KEY_F && (InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
             listeningId = -2;
             return;
         }

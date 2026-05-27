@@ -32,7 +32,7 @@ import static thunder.hack.utility.render.animation.AnimationUtility.fast;
 /**
  * Кто спиздит у того мать у меня под столом
  *
- * @Copyright by StormDevzz
+ * @Copyright by Pan4ur#2144
  **/
 public class ThunderGui extends Screen {
     public static CurrentMode currentMode = CurrentMode.Modules;
@@ -230,7 +230,7 @@ public class ThunderGui extends Screen {
         context.getMatrices().scale(1, 1, 1);
         context.getMatrices().pop();
 
-        FontRenderers.settings.drawString(context.getMatrices(), "reborn v" + ThunderHack.VERSION, main_posX + 91 - (FontRenderers.settings.getStringWidth("reborn v" + ThunderHack.VERSION)), main_posY + 30, ThunderHackGui.getColorByTheme(3).getRGB());
+        FontRenderers.settings.drawString(context.getMatrices(), "recode v" + ThunderHack.VERSION, main_posX + 91 - (FontRenderers.settings.getStringWidth("recode v" + ThunderHack.VERSION)), main_posY + 30, ThunderHackGui.getColorByTheme(3).getRGB());
 
         // Левая плита под категриями
         Render2DEngine.drawRound(context.getMatrices(), main_posX + 5, main_posY + 40, 90, 120, 7f, ThunderHackGui.getColorByTheme(4));
@@ -252,9 +252,9 @@ public class ThunderGui extends Screen {
         if (isHoveringItem(main_posX + 20, main_posY + 195, 60, 20, mouseX, mouseY)) {
             //   Render2DEngine.drawRound(context.getMatrices(),main_posX + 20, main_posY + 195, 60, 20, 4f, new Color(76, 56, 93, 31));
 
-            Render2DEngine.addWindow(context, main_posX + 20, main_posY + 195, main_posX + 20 + 60, main_posY + 195 + 20, 1);
+            Render2DEngine.addWindow(context.getMatrices(), main_posX + 20, main_posY + 195, main_posX + 20 + 60, main_posY + 195 + 20, 1);
             Render2DEngine.drawBlurredShadow(context.getMatrices(), mouseX - 20, mouseY - 20, 40, 40, 60, new Color(0xC3555A7E, true));
-            Render2DEngine.popWindow(context);
+            Render2DEngine.popWindow();
         }
 
         if (first_open) {
@@ -324,21 +324,21 @@ public class ThunderGui extends Screen {
         if (currentMode != CurrentMode.Modules) {
             searching = false;
 
-            Render2DEngine.addWindow(context, (float) Render2DEngine.interpolate(main_posX + 80, main_posX + 200, manager_animation), main_posY + 39, (float) Render2DEngine.interpolate(399, 195, manager_animation) + main_posX + 36, (float) main_height + main_posY - 3, 1f);
+            Render2DEngine.addWindow(context.getMatrices(), (float) Render2DEngine.interpolate(main_posX + 80, main_posX + 200, manager_animation), main_posY + 39, (float) Render2DEngine.interpolate(399, 195, manager_animation) + main_posX + 36, (float) main_height + main_posY - 3, 1d);
 
             Render2DEngine.drawRound(context.getMatrices(), main_posX + 100, (float) main_posY + 40, (float) 295, (float) main_height - 44, 4f, ThunderHackGui.getColorByTheme(7));
             this.configs.forEach(components -> components.render(context, mouseX, mouseY));
             this.friends.forEach(components -> components.render(context, mouseX, mouseY));
             Render2DEngine.draw2DGradientRect(context.getMatrices(), main_posX + 102, main_posY + 34, main_posX + 393, main_posY + 60, new Color(25, 20, 30, 0), ThunderHackGui.getColorByTheme(7), new Color(25, 20, 30, 0), new Color(37, 27, 41, 245));
             Render2DEngine.draw2DGradientRect(context.getMatrices(), main_posX + 102, main_posY + main_height - 35, main_posX + 393, main_posY + main_height, ThunderHackGui.getColorByTheme(7), new Color(25, 20, 30, 0), ThunderHackGui.getColorByTheme(7), new Color(37, 27, 41, 0));
-            Render2DEngine.popWindow(context);
+            Render2DEngine.popWindow();
         }
 
-        Render2DEngine.addWindow(context, (float) main_posX + 79, (float) main_posY + 35, (float) main_posX + 396 + 40, (float) main_posY + main_height, 1f);
+        Render2DEngine.addWindow(context.getMatrices(), main_posX + 79, main_posY + 35, main_posX + 396 + 40, main_posY + main_height, 1d);
 
-        this.components.forEach(components -> components.render(context, mouseX, mouseY));
-        Render2DEngine.popWindow(context);
-        this.categories.forEach(category -> category.render(context, mouseX, mouseY));
+        this.components.forEach(components -> components.render(context.getMatrices(), mouseX, mouseY));
+        Render2DEngine.popWindow();
+        this.categories.forEach(category -> category.render(context.getMatrices(), mouseX, mouseY));
 
         if (currentMode == CurrentMode.Modules) {
             Render2DEngine.draw2DGradientRect(context.getMatrices(), main_posX + 98, main_posY + 34, main_posX + 191, main_posY + 50, new Color(37, 27, 41, 0), new Color(37, 27, 41, 245), new Color(37, 27, 41, 0), new Color(37, 27, 41, 245));
@@ -362,7 +362,7 @@ public class ThunderGui extends Screen {
             FontRenderers.icons.drawString(context.getMatrices(), "s", main_posX + 378, main_posY + 18, searching ? new Color(0xCBFFFFFF, true).getRGB() : new Color(0x83FFFFFF, true).getRGB());
 
         if (isHoveringItem(main_posX + 250, main_posY + 15, 140, 20, mouseX, mouseY)) {
-            Render2DEngine.addWindow(context, main_posX + 250, main_posY + 15, main_posX + 250 + 140, main_posY + 15 + 10, 1);
+            Render2DEngine.addWindow(context.getMatrices(), main_posX + 250, main_posY + 15, main_posX + 250 + 140, main_posY + 15 + 10, 1);
             //   GL11.glPushMatrix();
             Render2DEngine.drawRound(context.getMatrices(), main_posX + 250, main_posY + 15, 140, 10, 3f, new Color(84, 63, 94, 36));
             // Stencil.write(false);
@@ -371,7 +371,7 @@ public class ThunderGui extends Screen {
             Render2DEngine.drawBlurredShadow(context.getMatrices(), mouseX - 20, mouseY - 20, 40, 40, 60, new Color(0xC3555A7E, true));
             // Stencil.dispose();
             // GL11.glPopMatrix();
-            Render2DEngine.popWindow(context);
+            Render2DEngine.popWindow();
         }
 
         if (currentMode == CurrentMode.Modules)
@@ -397,7 +397,7 @@ public class ThunderGui extends Screen {
         if (scissorX2 < scissorX1) scissorX2 = scissorX1;
         if (scissorY2 < scissorY1) scissorY2 = scissorY1;
 
-        Render2DEngine.addWindow(context, scissorX1, scissorY1, scissorX2, scissorY2, 1f);
+        Render2DEngine.addWindow(context.getMatrices(), scissorX1, scissorY1, scissorX2, scissorY2, 1d);
 
         if (!settings.isEmpty()) {
             float offsetY = 0;
@@ -426,14 +426,14 @@ public class ThunderGui extends Screen {
                         element.setHeight(15);
                     }
                 }
-                element.render(context, mouseX, mouseY, partialTicks);
+                element.render(context.getMatrices(), mouseX, mouseY, partialTicks);
                 offsetY += element.getHeight() + 3f;
             }
         }
         if (selected_plate != null && settings_animation < 0.99) {
             // Render2DEngine.drawRound(stack,(float) Render2DEngine.interpolate(main_posX + 200, selected_plate.getPosX(), settings_animation), (float) Render2DEngine.interpolate(main_posY + 40, selected_plate.getPosY(), settings_animation), (float) Render2DEngine.interpolate(195, 90, settings_animation), (float) Render2DEngine.interpolate(main_height - 45, 30, settings_animation), 4f, Render2DEngine.applyOpacity(ThunderHackGui.getColorByTheme(7),  settings_animation));
         }
-        Render2DEngine.popWindow(context);
+        Render2DEngine.popWindow();
     }
 
     private int getCategoryY(Module.Category category) {
@@ -474,7 +474,7 @@ public class ThunderGui extends Screen {
         }
         if (isHoveringItem(main_posX + 105, main_posY + 14, 11, 11, (float) mouseX, (float) mouseY)) {
             try {
-                net.minecraft.util.Util.getOperatingSystem().open(new File("ThunderHackReborn/configs/").toURI());
+                net.minecraft.util.Util.getOperatingSystem().open(new File("ThunderHackRecode/configs/").toURI());
             } catch (Exception e) {
                 Command.sendMessage("Не удалось открыть проводник!");
             }

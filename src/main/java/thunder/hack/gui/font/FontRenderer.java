@@ -1,5 +1,4 @@
 package thunder.hack.gui.font;
-import net.minecraft.client.gl.ShaderProgramKeys;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.chars.Char2IntArrayMap;
@@ -183,8 +182,10 @@ public class FontRenderer implements Closeable {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         BufferBuilder bb;
         Matrix4f mat = stack.peek().getPositionMatrix();
         char[] chars = s.toCharArray();
@@ -270,8 +271,6 @@ public class FontRenderer implements Closeable {
 
             GLYPH_PAGE_CACHE.clear();
         }
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
         stack.pop();
     }
 
@@ -333,23 +332,6 @@ public class FontRenderer implements Closeable {
         return currentLine + previous;
     }
 
-
-    public void reloadResources() {
-        try {
-            if (prebakeGlyphsFuture != null && !prebakeGlyphsFuture.isDone() && !prebakeGlyphsFuture.isCancelled()) {
-                prebakeGlyphsFuture.cancel(true);
-            }
-            for (GlyphMap map : maps) {
-                map.destroy();
-            }
-            maps.clear();
-            allGlyphs.clear();
-            synchronized (GLYPH_PAGE_CACHE) {
-                GLYPH_PAGE_CACHE.clear();
-            }
-        } catch (Exception ignored) {
-        }
-    }
 
     @Override
     public void close() {

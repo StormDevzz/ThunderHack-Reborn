@@ -7,7 +7,6 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import thunder.hack.features.cmd.Command;
-import thunder.hack.features.cmd.impl.PluginsCommand;
 import thunder.hack.features.cmd.impl.*;
 import thunder.hack.core.manager.IManager;
 
@@ -57,7 +56,6 @@ public class CommandManager implements IManager {
         add(new GotoWaypointCommand());
         add(new ChestStealerCommand());
         add(new GarbageCleanerCommand());
-        add(new PluginsCommand());
     }
 
     private void add(@NotNull Command command) {

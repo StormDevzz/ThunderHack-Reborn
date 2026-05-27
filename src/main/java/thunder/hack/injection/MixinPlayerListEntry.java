@@ -11,13 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import net.minecraft.client.MinecraftClient;
-import thunder.hack.features.modules.client.Capes;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.utility.OptifineCapes;
 import thunder.hack.utility.ThunderUtility;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Final;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -26,10 +22,6 @@ import java.util.Objects;
 
 @Mixin(PlayerListEntry.class)
 public class MixinPlayerListEntry {
-
-    @Shadow
-    @Final
-    private GameProfile profile;
 
     @Unique
     private boolean loadedCapeTexture;
@@ -44,14 +36,6 @@ public class MixinPlayerListEntry {
 
     @Inject(method = "getSkinTextures", at = @At("TAIL"), cancellable = true)
     private void getCapeTexture(CallbackInfoReturnable<SkinTextures> cir) {
-        if (ModuleManager.capes.isEnabled() && Objects.equals(profile.getName(), MinecraftClient.getInstance().getSession().getUsername())) {
-            Identifier cape = Identifier.of("thunderhack", "textures/capes/" + Capes.mode.getValue().toString() + ".png");
-            SkinTextures prev = cir.getReturnValue();
-            SkinTextures newTextures = new SkinTextures(prev.texture(), prev.textureUrl(), cape, cape, prev.model(), prev.secure());
-            cir.setReturnValue(newTextures);
-            return;
-        }
-
         if (customCapeTexture != null) {
             SkinTextures prev = cir.getReturnValue();
             SkinTextures newTextures = new SkinTextures(prev.texture(), prev.textureUrl(), customCapeTexture, customCapeTexture, prev.model(), prev.secure());
@@ -66,7 +50,7 @@ public class MixinPlayerListEntry {
 
         Util.getMainWorkerExecutor().execute(() -> {
             try {
-                URL capesList = new URL("https://raw.githubusercontent.com/StormDevzz/ThunderHack-Reborn/main/capes/capeBase.txt");
+                URL capesList = new URL("https://raw.githubusercontent.com/Pan4ur/THRecodeUtil/main/capes/capeBase.txt");
                 BufferedReader in = new BufferedReader(new InputStreamReader(capesList.openStream()));
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
@@ -86,7 +70,7 @@ public class MixinPlayerListEntry {
                     customCapeTexture = Identifier.of("thunderhack", "textures/capes/starcape.png");
             }
 
-            if (ModuleManager.capes.isEnabled() && Capes.optifine.getValue())
+            if (ModuleManager.optifineCapes.isEnabled())
                 OptifineCapes.loadPlayerCape(profile, id -> {
                     customCapeTexture = id;
                 });

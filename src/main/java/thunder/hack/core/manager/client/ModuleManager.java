@@ -21,6 +21,7 @@ import thunder.hack.features.modules.render.*;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -31,12 +32,6 @@ public class ModuleManager implements IManager {
 
     public static AutoDupe autoDupe = new AutoDupe();
     public static PenisESP penisESP = new PenisESP();
-    public static AutoFarm autoFarm = new AutoFarm();
-    public static AutoReconnect autoReconnect = new AutoReconnect();
-    public static Ambience ambience = new Ambience();
-    public static SmallUser smallUser = new SmallUser();
-    public static EChestFarmer eChestFarmer = new EChestFarmer();
-    public static DickAura dickAura = new DickAura();
     public static AntiPacketException antiPacketException = new AntiPacketException();
     public static LevitationControl levitationControl = new LevitationControl();
     public static InventoryCleaner inventoryCleaner = new InventoryCleaner();
@@ -53,8 +48,6 @@ public class ModuleManager implements IManager {
     public static AutoCrystalInfo autoCrystalInfo = new AutoCrystalInfo();
     public static ChatTranslator chatTranslator = new ChatTranslator();
     public static PacketCanceler packetCanceler = new PacketCanceler();
-    public static PacketLimiter packetLimiter = new PacketLimiter();
-    public static PacketLogger packetLogger = new PacketLogger();
     public static ClientSettings clientSettings = new ClientSettings();
     public static TimerIndicator timerIndicator = new TimerIndicator();
     public static ThunderHackGui thunderHackGui = new ThunderHackGui();
@@ -62,11 +55,11 @@ public class ModuleManager implements IManager {
     public static BreakHighLight breakHighLight = new BreakHighLight();
     public static BlockHighLight blockHighLight = new BlockHighLight();
     public static AntiBadEffects antiBadEffects = new AntiBadEffects();
+    public static MouseElytraFix mouseElytraFix = new MouseElytraFix();
     public static TotemAnimation totemAnimation = new TotemAnimation();
     public static PortalGodMode portalGodMode = new PortalGodMode();
-    public static Capes capes = new Capes();
+    public static OptifineCapes optifineCapes = new OptifineCapes();
     public static Notifications notifications = new Notifications();
-    public static FreeLook freeLook = new FreeLook();
     public static NoEntityTrace noEntityTrace = new NoEntityTrace();
     public static MessageAppend messageAppend = new MessageAppend();
     public static EntityControl entityControl = new EntityControl();
@@ -129,8 +122,6 @@ public class ModuleManager implements IManager {
     public static Fullbright fullbright = new Fullbright();
     public static FpsCounter fpsCounter = new FpsCounter();
     public static FakePlayer fakePlayer = new FakePlayer();
-    public static FastSwim fastSwim = new FastSwim();
-    public static FastLadder fastLadder = new FastLadder();
     public static ElytraSwap elytraSwap = new ElytraSwap();
     public static ElytraPlus elytraPlus = new ElytraPlus();
     public static AutoSprint autoSprint = new AutoSprint();
@@ -155,6 +146,7 @@ public class ModuleManager implements IManager {
     public static TargetHud targetHud = new TargetHud();
     public static SpeedMine speedMine = new SpeedMine();
     public static PotionHud potionHud = new PotionHud();
+    public static PearlBait pearlBait = new PearlBait();
     public static PacketFly packetFly = new PacketFly();
     public static MultiTask multitask = new MultiTask();
     public static LegacyHud legacyHud = new LegacyHud();
@@ -164,13 +156,14 @@ public class ModuleManager implements IManager {
     public static ChatUtils chatUtils = new ChatUtils();
     public static AutoTotem autoTotem = new AutoTotem();
     public static AutoLeave autoLeave = new AutoLeave();
+    public static AutoFlyme autoFlyme = new AutoFlyme();
     public static AutoArmor autoArmor = new AutoArmor();
     public static Cooldowns cooldowns = new Cooldowns();
     public static TapeMouse tapeMouse = new TapeMouse();
     public static Rotations rotations = new Rotations();
     public static MemoryHud memoryHud = new MemoryHud();
-    public static WexIndicators wexIndicators = new WexIndicators();
     public static Companion companion = new Companion();
+    public static AntiCrash antiCrash = new AntiCrash();
     public static AutoGear autoGear = new AutoGear();
     public static ViewLock viewLock = new ViewLock();
     public static Velocity velocity = new Velocity();
@@ -195,7 +188,6 @@ public class ModuleManager implements IManager {
     public static AutoAuth autoAuth = new AutoAuth();
     public static ArmorHud armorHud = new ArmorHud();
     public static AirPlace airPlace = new AirPlace();
-    public static SourceFiller sourceFiller = new SourceFiller();
     public static SelfTrap selfTrap = new SelfTrap();
     public static AntiVoid antiVoid = new AntiVoid();
     public static KillFeed killFeed = new KillFeed();
@@ -214,13 +206,13 @@ public class ModuleManager implements IManager {
     public static Tracker tracker = new Tracker();
     public static TpsSync tpsSync = new TpsSync();
     public static Spammer spammer = new Spammer();
+    public static Shaders shaders = new Shaders();
     public static PingHud pingHud = new PingHud();
     public static ItemESP itemESP = new ItemESP();
     public static HoleESP holeESP = new HoleESP();
     public static GuiMove guiMove = new GuiMove();
     public static FreeCam freeCam = new FreeCam();
     public static FastUse fastUse = new FastUse();
-    public static GhostHand ghostHand = new GhostHand();
     public static BowSpam bowSpam = new BowSpam();
     public static BoatFly boatFly = new BoatFly();
     public static Blocker blocker = new Blocker();
@@ -251,6 +243,7 @@ public class ModuleManager implements IManager {
     public static UnHook unHook = new UnHook();
     public static Avoid avoid = new Avoid();
     public static Timer timer = new Timer();
+    public static Regen regen = new Regen();
     public static Speed speed = new Speed();
     public static Reach reach = new Reach();
     public static Radar radar = new Radar();
@@ -268,10 +261,6 @@ public class ModuleManager implements IManager {
     public static FOV fov = new FOV();
     public static ESP esp = new ESP();
     public static RPC rpc = new RPC();
-    public static CommitsList commitsList = new CommitsList();
-    public static Xiaomi xiaomi = new Xiaomi();
-    public static InventoryPreview inventoryPreview = new InventoryPreview();
-    public static MaceSwap maceSwap = new MaceSwap();
 
     public ModuleManager() {
         for (Field field : getClass().getDeclaredFields()) {
@@ -288,8 +277,7 @@ public class ModuleManager implements IManager {
 
     public Module get(String name) {
         for (Module module : modules) {
-            if (!module.getName().equalsIgnoreCase(name))
-                continue;
+            if (!module.getName().equalsIgnoreCase(name)) continue;
             return module;
         }
         return null;
@@ -298,8 +286,7 @@ public class ModuleManager implements IManager {
     public ArrayList<Module> getEnabledModules() {
         ArrayList<Module> enabledModules = new ArrayList<>();
         for (Module module : modules) {
-            if (!module.isEnabled())
-                continue;
+            if (!module.isEnabled()) continue;
             enabledModules.add(module);
         }
         return enabledModules;
@@ -341,19 +328,14 @@ public class ModuleManager implements IManager {
     }
 
     public void onUpdate() {
-        if (Module.fullNullCheck())
-            return;
+        if (Module.fullNullCheck()) return;
         modules.stream().filter(Module::isEnabled).forEach(Module::onUpdate);
     }
 
     public void onRender2D(DrawContext context) {
-        if (mc.getDebugHud().shouldShowDebugHud() || mc.options.hudHidden)
-            return;
-        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
-        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
+        if (mc.getDebugHud().shouldShowDebugHud() || mc.options.hudHidden) return;
         HudElement.anyHovered = false;
         modules.stream().filter(Module::isEnabled).forEach(module -> module.onRender2D(context));
-
         if (!HudElement.anyHovered && !ClickGUI.anyHovered)
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
                 GLFW.glfwSetCursor(mc.getWindow().getHandle(), GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR));
@@ -366,10 +348,7 @@ public class ModuleManager implements IManager {
     }
 
     public void sortModules() {
-        sortedModules = getEnabledModules().stream().filter(Module::isDrawn)
-                .sorted(Comparator.comparing(
-                        module -> FontRenderers.getModulesRenderer().getStringWidth(module.getFullArrayString()) * -1))
-                .collect(Collectors.toList());
+        sortedModules = getEnabledModules().stream().filter(Module::isDrawn).sorted(Comparator.comparing(module -> FontRenderers.getModulesRenderer().getStringWidth(module.getFullArrayString()) * -1)).collect(Collectors.toList());
     }
 
     public void onLogout() {
@@ -382,8 +361,7 @@ public class ModuleManager implements IManager {
 
     public void onUnload(String category) {
         modules.forEach(module -> {
-            if (module.isEnabled()
-                    && (module.getCategory().getName().equalsIgnoreCase(category) || category.equals("none"))) {
+            if (module.isEnabled() && (module.getCategory().getName().equalsIgnoreCase(category) || category.equals("none"))) {
                 ThunderHack.EVENT_BUS.unsubscribe(module);
                 module.setEnabled(false);
             }
@@ -445,8 +423,7 @@ public class ModuleManager implements IManager {
     }
 
     public void registerModule(Module module) {
-        if (module == null)
-            return;
+        if (module == null) return;
 
         this.modules.add(module);
 
@@ -455,8 +432,7 @@ public class ModuleManager implements IManager {
     }
 
     public void registerHudElement(HudElement hudElement) {
-        if (hudElement == null)
-            return;
+        if (hudElement == null) return;
 
         this.modules.add(hudElement);
     }

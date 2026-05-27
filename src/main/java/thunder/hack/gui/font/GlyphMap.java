@@ -9,8 +9,6 @@ import net.minecraft.util.Identifier;
 import org.lwjgl.system.MemoryUtil;
 import thunder.hack.injection.accesors.INativeImage;
 
-import org.lwjgl.opengl.GL11;
-
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
@@ -123,9 +121,10 @@ class GlyphMap {
             glyphs.put(glyph.value(), glyph);
         }
         registerBufferedImageTexture(bindToTexture, bi);
+        generated = true;
     }
 
-    public void registerBufferedImageTexture(Identifier i, BufferedImage bi) {
+    public static void registerBufferedImageTexture(Identifier i, BufferedImage bi) {
         try {
             // argb from BufferedImage is little endian, alpha is actually where the `a` is in the label
             // rgba from NativeImage (and by extension opengl) is big endian, alpha is on the other side (abgr)
@@ -166,18 +165,8 @@ class GlyphMap {
             tex.upload();
             if (RenderSystem.isOnRenderThread()) {
                 MinecraftClient.getInstance().getTextureManager().registerTexture(i, tex);
-                RenderSystem.setShaderTexture(0, i);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-                generated = true;
             } else {
-                RenderSystem.recordRenderCall(() -> {
-                    MinecraftClient.getInstance().getTextureManager().registerTexture(i, tex);
-                    RenderSystem.setShaderTexture(0, i);
-                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-                    generated = true;
-                });
+                RenderSystem.recordRenderCall(() -> MinecraftClient.getInstance().getTextureManager().registerTexture(i, tex));
             }
         } catch (Throwable e) {
             e.printStackTrace();

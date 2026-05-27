@@ -39,7 +39,7 @@ public class Managers {
     public static final NotificationManager NOTIFICATION = new NotificationManager();
     public static final ProxyManager PROXY = new ProxyManager();
     public static final ServerManager SERVER = new ServerManager();
-    public static final PluginManager PLUGIN = new PluginManager();
+    public static final ShaderManager SHADER = new ShaderManager();
     public static final SoundManager SOUND = new SoundManager();
     public static final TelemetryManager TELEMETRY = new TelemetryManager();
     public static final CommandManager COMMAND = new CommandManager();
@@ -65,7 +65,6 @@ public class Managers {
     public static void subscribe() {
         EVENT_BUS.subscribe(NOTIFICATION);
         EVENT_BUS.subscribe(SERVER);
-        EVENT_BUS.subscribe(PLUGIN);
         EVENT_BUS.subscribe(PLAYER);
         EVENT_BUS.subscribe(COMBAT);
         EVENT_BUS.subscribe(ASYNC);

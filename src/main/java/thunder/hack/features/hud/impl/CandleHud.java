@@ -1,12 +1,9 @@
 package thunder.hack.features.hud.impl;
-import net.minecraft.client.gl.ShaderProgramKeys;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.render.GameRenderer;
 import thunder.hack.features.hud.HudElement;
 import thunder.hack.setting.Setting;
 import thunder.hack.utility.render.Render2DEngine;
@@ -44,16 +41,7 @@ public class CandleHud extends HudElement {
         context.getMatrices().translate((int) getPosX(), (int) getPosY(), 0);
         float scalefactor = (float) scale.getValue() / 100f;
         context.getMatrices().scale(scalefactor, scalefactor, 1);
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
-        RenderSystem.setShaderTexture(0, TextureStorage.candle);
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        Render2DEngine.renderTextureInternal(bufferBuilder, context.getMatrices(), 0, -5, 102, 524, 0, 0, 102, 529, 102, 529);
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+        context.drawTexture(TextureStorage.candle, 0, -5, 0, 0, 102, 529, 102, 529);
         context.getMatrices().pop();
 
         drawFire(context.getMatrices(), getPosX() + (40 + 15f - xAnim) * scalefactor, getPosY() + (10 - yAnim) * scalefactor, 7 * scalefactor, 7 * scalefactor,
@@ -79,19 +67,13 @@ public class CandleHud extends HudElement {
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
         RenderSystem.setShaderTexture(0, TextureStorage.firefly);
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        Render2DEngine.renderTextureInternal(bufferBuilder, matrices, x, y, width, height, 0, 0, width, height, width, height);
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-
+        Render2DEngine.renderTexture(matrices, x, y, width, height, 0, 0, width, height, width, height);
+        RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        RenderSystem.defaultBlendFunc();
     }
 
     private enum For {
-        Luck, Win, LowPing, AntiKick, SuperZOV
+        Luck, Win, LowPing, AntiKick
     }
 }

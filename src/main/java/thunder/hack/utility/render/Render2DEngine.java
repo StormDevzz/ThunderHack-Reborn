@@ -2,8 +2,6 @@ package thunder.hack.utility.render;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.ShaderProgramKeys;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
@@ -15,10 +13,11 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL40C;
 import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.gui.font.Texture;
 import thunder.hack.utility.math.MathUtility;
-
+import thunder.hack.utility.render.shaders.*;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -26,52 +25,92 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Stack;
 
 import static thunder.hack.features.modules.Module.mc;
 
 public class Render2DEngine {
+    public static TextureColorProgram TEXTURE_COLOR_PROGRAM;
+    public static HudShader HUD_SHADER;
+    public static RectangleShader RECTANGLE_SHADER;
+    public static MainMenuProgram MAIN_MENU_PROGRAM;
+    public static ArcShader ARC_PROGRAM;
+    public static BlurProgram BLUR_PROGRAM;
     public static HashMap<Integer, BlurredShadow> shadowCache = new HashMap<>();
     public static HashMap<Integer, BlurredShadow> shadowCache1 = new HashMap<>();
+    final static Stack<Rectangle> clipStack = new Stack<>();
 
-    public static void addWindow(DrawContext context, Rectangle r1) {
-        Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
+    public static void addWindow(MatrixStack stack, Rectangle r1) {
+        Matrix4f matrix = stack.peek().getPositionMatrix();
         Vector4f coord = new Vector4f(r1.x, r1.y, 0, 1);
         Vector4f end = new Vector4f(r1.x1, r1.y1, 0, 1);
-        coord.mul(matrix);
-        end.mul(matrix);
+        coord.mulTranspose(matrix);
+        end.mulTranspose(matrix);
         float x = coord.x();
         float y = coord.y();
         float endX = end.x();
         float endY = end.y();
-        beginScissor(context, x, y, endX, endY);
+        Rectangle r = new Rectangle(x, y, endX, endY);
+        if (clipStack.empty()) {
+            clipStack.push(r);
+            beginScissor(r.x, r.y, r.x1, r.y1);
+        } else {
+            Rectangle lastClip = clipStack.peek();
+            float lsx = lastClip.x;
+            float lsy = lastClip.y;
+            float lstx = lastClip.x1;
+            float lsty = lastClip.y1;
+            float nsx = MathHelper.clamp(r.x, lsx, lstx);
+            float nsy = MathHelper.clamp(r.y, lsy, lsty);
+            float nstx = MathHelper.clamp(r.x1, nsx, lstx);
+            float nsty = MathHelper.clamp(r.y1, nsy, lsty);
+            clipStack.push(new Rectangle(nsx, nsy, nstx, nsty));
+            beginScissor(nsx, nsy, nstx, nsty);
+        }
     }
 
-    public static void popWindow(DrawContext context) {
-        endScissor(context);
+    public static void popWindow() {
+        clipStack.pop();
+        if (clipStack.empty()) {
+            endScissor();
+        } else {
+            Rectangle r = clipStack.peek();
+            beginScissor(r.x, r.y, r.x1, r.y1);
+        }
     }
 
-    public static void addWindow(DrawContext context, float x, float y, float x1, float y1, float radius) {
-        Rectangle r = new Rectangle(x, y, x1, y1);
-        addWindow(context, r);
-    }
-
-    public static void beginScissor(DrawContext context, double x, double y, double endX, double endY) {
+    public static void beginScissor(double x, double y, double endX, double endY) {
         double width = endX - x;
         double height = endY - y;
         width = Math.max(0, width);
         height = Math.max(0, height);
-        context.enableScissor((int) x, (int) y, (int) (x + width), (int) (y + height));
+        float d = (float) Render3DEngine.getScaleFactor();
+        int ay = (int) ((mc.getWindow().getScaledHeight() - (y + height)) * d);
+        RenderSystem.enableScissor((int) (x * d), ay, (int) (width * d), (int) (height * d));
     }
 
-    public static void endScissor(DrawContext context) {
-        context.disableScissor();
+    public static void endScissor() {
+        RenderSystem.disableScissor();
     }
 
+    public static void addWindow(MatrixStack stack, float x, float y, float x1, float y1, double animation_factor) {
+        float h = y + y1;
+        float h2 = (float) (h * (1d - MathUtility.clamp(animation_factor, 0, 1.0025f)));
+
+        float x3 = x;
+        float y3 = y + h2;
+        float x4 = x1;
+        float y4 = y1 - h2;
+
+        if (x4 < x3) x4 = x3;
+        if (y4 < y3) y4 = y3;
+        addWindow(stack, new Rectangle(x3, y3, x4, y4));
+    }
 
     public static void horizontalGradient(MatrixStack matrices, float x1, float y1, float x2, float y2, Color startColor, Color endColor) {
         Matrix4f matrix = matrices.peek().getPositionMatrix();
         setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         buffer.vertex(matrix, x1, y1, 0.0F).color(startColor.getRGB());
         buffer.vertex(matrix, x1, y2, 0.0F).color(startColor.getRGB());
@@ -84,7 +123,7 @@ public class Render2DEngine {
     public static void verticalGradient(MatrixStack matrices, float left, float top, float right, float bottom, Color startColor, Color endColor) {
         Matrix4f matrix = matrices.peek().getPositionMatrix();
         setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         buffer.vertex(matrix, left, top, 0.0F).color(startColor.getRGB());
         buffer.vertex(matrix, left, bottom, 0.0F).color(endColor.getRGB());
@@ -97,7 +136,7 @@ public class Render2DEngine {
     public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, Color c) {
         Matrix4f matrix = matrices.peek().getPositionMatrix();
         setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         buffer.vertex(matrix, x, y + height, 0.0F).color(c.getRGB());
         buffer.vertex(matrix, x + width, y + height, 0.0F).color(c.getRGB());
@@ -110,7 +149,7 @@ public class Render2DEngine {
     public static void drawRectWithOutline(MatrixStack matrices, float x, float y, float width, float height, Color c, Color c2) {
         Matrix4f matrix = matrices.peek().getPositionMatrix();
         setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         buffer.vertex(matrix, x, y + height, 0.0F).color(c.getRGB());
         buffer.vertex(matrix, x + width, y + height, 0.0F).color(c.getRGB());
@@ -131,7 +170,7 @@ public class Render2DEngine {
     public static void drawRectDumbWay(MatrixStack matrices, float x, float y, float x1, float y1, Color c1) {
         Matrix4f matrix = matrices.peek().getPositionMatrix();
         setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         buffer.vertex(matrix, x, y1, 0.0F).color(c1.getRGB());
         buffer.vertex(matrix, x1, y1, 0.0F).color(c1.getRGB());
@@ -153,6 +192,7 @@ public class Render2DEngine {
     }
 
     public static void drawBlurredShadow(MatrixStack matrices, float x, float y, float width, float height, int blurRadius, Color color) {
+        if (!HudEditor.glow.getValue()) return;
         width = width + blurRadius * 2;
         height = height + blurRadius * 2;
         x = x - blurRadius;
@@ -180,6 +220,7 @@ public class Render2DEngine {
     }
 
     public static void drawGradientBlurredShadow(MatrixStack matrices, float x, float y, float width, float height, int blurRadius, Color color1, Color color2, Color color3, Color color4) {
+        if (!HudEditor.glow.getValue()) return;
         width = width + blurRadius * 2;
         height = height + blurRadius * 2;
         x = x - blurRadius;
@@ -206,6 +247,7 @@ public class Render2DEngine {
     }
 
     public static void drawGradientBlurredShadow1(MatrixStack matrices, float x, float y, float width, float height, int blurRadius, Color color1, Color color2, Color color3, Color color4) {
+        if (!HudEditor.glow.getValue()) return;
         width = width + blurRadius * 2;
         height = height + blurRadius * 2;
         x = x - blurRadius;
@@ -265,43 +307,21 @@ public class Render2DEngine {
     }
 
     public static void renderTexture(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
-        setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        renderTextureInternal(buffer, matrices, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-        endRender();
-    }
-
-    public static void renderTextureNoSetup(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        renderTextureInternal(buffer, matrices, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-    }
-
-    public static void renderTextureInternal(BufferBuilder buffer, MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
         double x1 = x0 + width;
         double y1 = y0 + height;
         double z = 0;
         Matrix4f matrix = matrices.peek().getPositionMatrix();
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
         buffer.vertex(matrix, (float) x0, (float) y1, (float) z).texture((u) / (float) textureWidth, (v + (float) regionHeight) / (float) textureHeight);
         buffer.vertex(matrix, (float) x1, (float) y1, (float) z).texture((u + (float) regionWidth) / (float) textureWidth, (v + (float) regionHeight) / (float) textureHeight);
         buffer.vertex(matrix, (float) x1, (float) y0, (float) z).texture((u + (float) regionWidth) / (float) textureWidth, (v) / (float) textureHeight);
         buffer.vertex(matrix, (float) x0, (float) y0, (float) z).texture((u) / (float) textureWidth, (v + 0.0F) / (float) textureHeight);
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
     }
 
     public static void renderGradientTexture(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
-        setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        renderGradientTextureInternal(buffer, matrices, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, c1, c2, c3, c4);
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-        endRender();
-    }
-
-    public static void renderGradientTextureNoSetup(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         renderGradientTextureInternal(buffer, matrices, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, c1, c2, c3, c4);
         BufferRenderer.drawWithGlobalProgram(buffer.end());
@@ -319,7 +339,22 @@ public class Render2DEngine {
     }
 
     public static void renderRoundedGradientRect(MatrixStack matrices, Color color1, Color color2, Color color3, Color color4, float x, float y, float width, float height, float Radius) {
-        drawRect(matrices, x, y, width, height, Radius, 1f, color1, color2, color3, color4);
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+        RenderSystem.colorMask(false, false, false, true);
+        RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
+        RenderSystem.clear(GL40C.GL_COLOR_BUFFER_BIT, false);
+        RenderSystem.colorMask(true, true, true, true);
+
+        Render2DEngine.drawRound(matrices, x, y, width, height, Radius, color1);
+        setupRender();
+        RenderSystem.blendFunc(GL40C.GL_DST_ALPHA, GL40C.GL_ONE_MINUS_DST_ALPHA);
+        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
+        bufferBuilder.vertex(matrix, x, y + height, 0.0F).color(color1.getRGB());
+        bufferBuilder.vertex(matrix, x + width, y + height, 0.0F).color(color2.getRGB());
+        bufferBuilder.vertex(matrix, x + width, y, 0.0F).color(color3.getRGB());
+        bufferBuilder.vertex(matrix, x, y, 0.0F).color(color4.getRGB());
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+        endRender();
     }
 
     public static void drawRound(MatrixStack matrices, float x, float y, float width, float height, float radius, Color color) {
@@ -328,14 +363,14 @@ public class Render2DEngine {
 
     public static void renderRoundedQuad(MatrixStack matrices, Color c, double fromX, double fromY, double toX, double toY, double radius, double samples) {
         setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         renderRoundedQuadInternal(matrices.peek().getPositionMatrix(), c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f, fromX, fromY, toX, toY, radius, samples);
         endRender();
     }
 
     public static void renderRoundedQuad2(MatrixStack matrices, Color c, Color c2, Color c3, Color c4, double fromX, double fromY, double toX, double toY, double radius) {
         setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         renderRoundedQuadInternal2(matrices.peek().getPositionMatrix(), c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f, c2.getRed() / 255f, c2.getGreen() / 255f, c2.getBlue() / 255f, c2.getAlpha() / 255f, c3.getRed() / 255f, c3.getGreen() / 255f, c3.getBlue() / 255f, c3.getAlpha() / 255f, c4.getRed() / 255f, c4.getGreen() / 255f, c4.getBlue() / 255f, c4.getAlpha() / 255f, fromX, fromY, toX, toY, radius);
         endRender();
     }
@@ -390,7 +425,7 @@ public class Render2DEngine {
     public static void draw2DGradientRect(MatrixStack matrices, float left, float top, float right, float bottom, Color leftBottomColor, Color leftTopColor, Color rightBottomColor, Color rightTopColor) {
         Matrix4f matrix = matrices.peek().getPositionMatrix();
         setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(matrix, right, top, 0.0F).color(rightTopColor.getRGB());
         bufferBuilder.vertex(matrix, left, top, 0.0F).color(leftTopColor.getRGB());
@@ -420,7 +455,7 @@ public class Render2DEngine {
         RenderSystem.disableDepthTest();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
         Matrix4f matrix = matrices.peek().getPositionMatrix();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
         bufferBuilder.vertex(matrix, x - (size / 2f), y + size, 0).texture(0f, 1f);
         bufferBuilder.vertex(matrix, x + size / 2f, y + size, 0).texture(1f, 1f);
@@ -441,7 +476,7 @@ public class Render2DEngine {
         setupRender();
         Matrix4f matrix = matrices.peek().getPositionMatrix();
 
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(matrix, x, y, 0.0F).color(color);
         bufferBuilder.vertex(matrix, (x - size * tracerWidth), (y + size), 0.0F).color(color);
@@ -469,6 +504,7 @@ public class Render2DEngine {
 
     public static void endRender() {
         RenderSystem.defaultBlendFunc();
+        RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 
@@ -598,77 +634,106 @@ public class Render2DEngine {
     }
 
     public static void drawArc(MatrixStack matrices, float x, float y, float width, float height, float radius, float thickness, float start, float end, Color c1, Color c2) {
-        setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
-        float cx = x;
-        float cy = y;
-        float outerR = Math.max(width, height) / 2f;
-        float innerR = outerR - thickness;
-        int segments = 64;
-        float angleRange = (end - start) * 360f;
-        for (int i = 0; i <= segments; i++) {
-            float angle = (float) Math.toRadians(start * 360f + angleRange * i / segments);
-            float cos = (float) Math.cos(angle);
-            float sin = (float) Math.sin(angle);
-            float r = i / (float) segments;
-            Color c = Render2DEngine.interpolateColorC(c1, c2, r);
-            buffer.vertex(matrix, cx + cos * outerR, cy + sin * outerR, 0).color(c.getRGB());
-            buffer.vertex(matrix, cx + cos * innerR, cy + sin * innerR, 0).color(c.getRGB());
-        }
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
+        BufferBuilder bb = preShaderDraw(matrices, x - width / 2f, y - height / 2f, x + width / 2f, y + height / 2f);
+        ARC_PROGRAM.setParameters(x, y, width, height, radius, thickness, start, end, c1, c2);
+        ARC_PROGRAM.use();
+        BufferRenderer.drawWithGlobalProgram(bb.end());
         endRender();
     }
 
     public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha) {
-        drawRound(matrices, x, y, width, height, radius, new Color(1f, 1f, 1f, alpha));
+        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
+        RECTANGLE_SHADER.setParameters(x, y, width, height, radius, alpha);
+        RECTANGLE_SHADER.use();
+        BufferRenderer.drawWithGlobalProgram(bb.end());
+        endRender();
     }
 
     public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha, Color c1, Color c2, Color c3, Color c4) {
-        renderRoundedQuad2(matrices, c1, c2, c3, c4, x, y, x + width, y + height, radius);
+        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
+        RECTANGLE_SHADER.setParameters(x, y, width, height, radius, alpha, c1, c2, c3, c4);
+        RECTANGLE_SHADER.use();
+        BufferRenderer.drawWithGlobalProgram(bb.end());
+        endRender();
     }
 
     public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius) {
-        drawHudBase(matrices, x, y, width, height, radius, HudEditor.alpha.getValue());
-    }
-
-    public static void drawHudBase2(MatrixStack matrices, float x, float y, float width, float height, float radius, float blurStrenth, float blurOpacity, float animationFactor) {
-        int a = (int) (240 * animationFactor);
-        drawRound(matrices, x, y, width, height, radius, new Color(0, 0, 0, a));
-    }
-
-    public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius, boolean hud) {
-        drawHudBase(matrices, x, y, width, height, radius, HudEditor.alpha.getValue());
-    }
-
-    public static void drawRoundedBlur(MatrixStack matrices, float x, float y, float width, float height, float radius, Color c1) {
-        drawRound(matrices, x, y, width, height, radius, c1);
-    }
-
-    public static void drawRoundedBlur(MatrixStack matrices, float x, float y, float width, float height, float radius, Color c1, float blurStrenth, float blurOpacity) {
-        float a = Math.min(1f, blurOpacity * 1.5f);
-        drawRound(matrices, x, y, width, height, radius, new Color(c1.getRed(), c1.getGreen(), c1.getBlue(), (int)(a * 255)));
-    }
-
-    public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha) {
         if (HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-            Color c = HudEditor.blurColor.getValue().getColorObject();
-            drawRound(matrices, x, y, width, height, radius, new Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(alpha * c.getAlpha())));
+            drawRoundedBlur(matrices, x, y, width, height, radius, HudEditor.blurColor.getValue().getColorObject());
         } else {
-            Color c = HudEditor.plateColor.getValue().getColorObject();
-            drawRound(matrices, x, y, width, height, radius, new Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(alpha * c.getAlpha())));
+            BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
+            HUD_SHADER.setParameters(x, y, width, height, radius, HudEditor.alpha.getValue(), HudEditor.alpha.getValue());
+            HUD_SHADER.use();
+            BufferRenderer.drawWithGlobalProgram(bb.end());
+            endRender();
         }
     }
 
+    public static void drawHudBase2(MatrixStack matrices, float x, float y, float width, float height, float radius, float blurStrenth, float blurOpacity, float animationFactor) {
+        if (HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
+            blurStrenth *= animationFactor;
+            blurOpacity = (float) Render2DEngine.interpolate(1f, blurOpacity, animationFactor);
+            Color c = Render2DEngine.interpolateColorC(Color.BLACK, HudEditor.blurColor.getValue().getColorObject(), animationFactor);
+            drawRoundedBlur(matrices, x, y, width, height, radius, c, blurStrenth, blurOpacity);
+        } else {
+            BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
+            HUD_SHADER.setParameters(x, y, width, height, radius, HudEditor.alpha.getValue(), HudEditor.alpha.getValue());
+            HUD_SHADER.use();
+            BufferRenderer.drawWithGlobalProgram(bb.end());
+            endRender();
+        }
+    }
+
+    public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius, boolean hud) {
+        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
+        HUD_SHADER.setParameters(x, y, width, height, radius, HudEditor.alpha.getValue(), HudEditor.alpha.getValue());
+        HUD_SHADER.use();
+        BufferRenderer.drawWithGlobalProgram(bb.end());
+        endRender();
+    }
+
+    public static void drawRoundedBlur(MatrixStack matrices, float x, float y, float width, float height, float radius, Color c1) {
+        drawRoundedBlur(matrices, x, y, width, height, radius, c1, HudEditor.blurStrength.getValue(), HudEditor.blurOpacity.getValue());
+    }
+
+    public static void drawRoundedBlur(MatrixStack matrices, float x, float y, float width, float height, float radius, Color c1, float blurStrenth, float blurOpacity) {
+        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
+        BLUR_PROGRAM.setParameters(x, y, width, height, radius, c1, blurStrenth, blurOpacity);
+        BLUR_PROGRAM.use();
+        BufferRenderer.drawWithGlobalProgram(bb.end());
+        endRender();
+    }
+
+    public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha) {
+        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
+        HUD_SHADER.setParameters(x, y, width, height, radius, alpha, HudEditor.alpha.getValue());
+        HUD_SHADER.use();
+        BufferRenderer.drawWithGlobalProgram(bb.end());
+        endRender();
+    }
+
     public static void drawGuiBase(MatrixStack matrices, float x, float y, float width, float height, float radius, float opacity) {
-        Color c = HudEditor.plateColor.getValue().getColorObject();
-        int a = opacity > 0 ? (int)(opacity * 255) : c.getAlpha();
-        drawRound(matrices, x, y, width, height, radius, new Color(c.getRed(), c.getGreen(), c.getBlue(), Math.min(255, a)));
+        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
+        HUD_SHADER.setParameters(x, y, width, height, radius, 1f, opacity);
+        HUD_SHADER.use();
+        BufferRenderer.drawWithGlobalProgram(bb.end());
+        endRender();
     }
 
     public static void drawMainMenuShader(MatrixStack matrices, float x, float y, float width, float height) {
-        verticalGradient(matrices, x, y, x + width, y + height, new Color(0x070015), new Color(0x1a0a2e));
+        BufferBuilder bb = preShaderDraw(matrices, x, y, width, height);
+        MAIN_MENU_PROGRAM.setParameters(x, y, width, height);
+        MAIN_MENU_PROGRAM.use();
+        BufferRenderer.drawWithGlobalProgram(bb.end());
+        endRender();
+    }
+
+    public static BufferBuilder preShaderDraw(MatrixStack matrices, float x, float y, float width, float height) {
+        setupRender();
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
+        setRectanglePoints(buffer, matrix, x, y, x + width, y + height);
+        return buffer;
     }
 
     public static void setRectanglePoints(BufferBuilder buffer, Matrix4f matrix, float x, float y, float x1, float y1) {
@@ -681,8 +746,7 @@ public class Render2DEngine {
     public static void drawOrbiz(MatrixStack matrices, float z, final double r, Color c) {
         Matrix4f matrix = matrices.peek().getPositionMatrix();
         setupRender();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
         for (int i = 0; i <= 20; i++) {
             final float x2 = (float) (Math.sin(((i * 56.548656f) / 180f)) * r);
@@ -697,10 +761,8 @@ public class Render2DEngine {
         setupRender();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
         RenderSystem.setShaderTexture(0, TextureStorage.star);
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        renderGradientTextureInternal(buffer, matrices, 0, 0, scale, scale, 0, 0, 128, 128, 128, 128, c, c, c, c);
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
+        RenderSystem.setShaderColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
+        Render2DEngine.renderGradientTexture(matrices, 0, 0, scale, scale, 0, 0, 128, 128, 128, 128, c, c, c, c);
         endRender();
     }
 
@@ -708,10 +770,8 @@ public class Render2DEngine {
         setupRender();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
         RenderSystem.setShaderTexture(0, TextureStorage.heart);
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        renderGradientTextureInternal(buffer, matrices, 0, 0, scale, scale, 0, 0, 128, 128, 128, 128, c, c, c, c);
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
+        RenderSystem.setShaderColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
+        Render2DEngine.renderGradientTexture(matrices, 0, 0, scale, scale, 0, 0, 128, 128, 128, 128, c, c, c, c);
         endRender();
     }
 
@@ -719,10 +779,8 @@ public class Render2DEngine {
         setupRender();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
         RenderSystem.setShaderTexture(0, TextureStorage.firefly);
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        renderGradientTextureInternal(buffer, matrices, 0, 0, scale, scale, 0, 0, 128, 128, 128, 128, c, c, c, c);
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
+        RenderSystem.setShaderColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
+        Render2DEngine.renderGradientTexture(matrices, 0, 0, scale, scale, 0, 0, 128, 128, 128, 128, c, c, c, c);
         endRender();
     }
 
@@ -732,21 +790,16 @@ public class Render2DEngine {
         RenderSystem.setShaderTexture(0, TextureStorage.bubble);
         matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(angle));
         float scale = factor * 2f;
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        renderTextureInternal(buffer, matrices, -scale / 2f, -scale / 2f, scale, scale, 0, 0, 128, 128, 128, 128);
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
+        Render2DEngine.renderGradientTexture(matrices, -scale / 2, -scale / 2, scale, scale, 0, 0, 128, 128, 128, 128, applyOpacity(HudEditor.getColor(270), 1f - factor), applyOpacity(HudEditor.getColor(0), 1f - factor), applyOpacity(HudEditor.getColor(180), 1f - factor), applyOpacity(HudEditor.getColor(90), 1f - factor));
         endRender();
     }
 
     public static void drawLine(float x, float y, float x1, float y1, int color) {
-        setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(x, y, 0f).color(color);
         bufferBuilder.vertex(x1, y1, 0f).color(color);
         BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-        endRender();
     }
 
     //http://www.java2s.com/example/java/2d-graphics/check-if-a-color-is-more-dark-than-light.html
@@ -763,6 +816,15 @@ public class Render2DEngine {
         float b = g2 - g1;
         float c = b2 - b1;
         return (float) Math.sqrt(a * a + b * b + c * c);
+    }
+
+    public static void initShaders() {
+        HUD_SHADER = new HudShader();
+        MAIN_MENU_PROGRAM = new MainMenuProgram();
+        TEXTURE_COLOR_PROGRAM = new TextureColorProgram();
+        ARC_PROGRAM = new ArcShader();
+        RECTANGLE_SHADER = new RectangleShader();
+        BLUR_PROGRAM = new BlurProgram();
     }
 
     public static @NotNull Color getColor(@NotNull Color start, @NotNull Color end, float progress, boolean smooth) {

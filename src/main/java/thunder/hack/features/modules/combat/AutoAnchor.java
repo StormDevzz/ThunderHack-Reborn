@@ -507,7 +507,7 @@ public final class AutoAnchor extends Module {
         if (rotate.getValue()) {
             if (instant) {
                 float[] angle = InteractionUtility.calculateAngle(data.bhr().getPos());
-                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), angle[0], angle[1], mc.player.isOnGround(), false));
+                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), angle[0], angle[1], mc.player.isOnGround()));
             } else if (!rotated)
                 return;
         }
@@ -645,7 +645,7 @@ public final class AutoAnchor extends Module {
                     break;
                 }
 
-        if (facePlaceButton.getValue().getKey() != -1 && InputUtil.isKeyPressed(mc.getWindow().getHandle(), facePlaceButton.getValue().getKey()))
+        if (facePlaceButton.getValue().getKey() != -1 && InputUtil.isKeyPressed(mc.getWindow(), facePlaceButton.getValue().getKey()))
             override = true;
 
         if ((target.getHealth() + target.getAbsorptionAmount()) - (damage * lethalMultiplier.getValue()) < 0.5)

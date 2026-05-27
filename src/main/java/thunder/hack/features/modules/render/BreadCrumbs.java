@@ -1,5 +1,4 @@
 package thunder.hack.features.modules.render;
-import net.minecraft.client.gl.ShaderProgramKeys;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import meteordevelopment.orbit.EventHandler;
@@ -41,7 +40,7 @@ public class BreadCrumbs extends Module {
 
         RenderSystem.disableCull();
         RenderSystem.lineWidth(1f);
-        RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
 
         for (int i = 0; i < positions.size(); i++) {

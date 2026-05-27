@@ -345,14 +345,14 @@ public class AutoCrystal extends Module {
         if (mc.player == null || mc.world == null) return;
 
         if (e.getPacket() instanceof ExperienceOrbSpawnS2CPacket spawn)
-            processSpawnPacket(spawn.getEntityId());
+            processSpawnPacket(spawn.getId());
 
         if (e.getPacket() instanceof EntitySpawnS2CPacket spawn)
-            processSpawnPacket(spawn.getEntityId());
+            processSpawnPacket(spawn.getId());
 
         if (e.getPacket() instanceof ExplosionS2CPacket explosion) {
             for (Entity ent : Lists.newArrayList(mc.world.getEntities()))
-                if (ent instanceof EndCrystalEntity crystal && crystal.squaredDistanceTo(explosion.center()) <= 144 && !crystalManager.isDead(crystal.getId()))
+                if (ent instanceof EndCrystalEntity crystal && crystal.squaredDistanceTo(explosion.getX(), explosion.getY(), explosion.getZ()) <= 144 && !crystalManager.isDead(crystal.getId()))
                     crystalManager.setDead(crystal.getId(), System.currentTimeMillis());
         }
     }
@@ -687,7 +687,7 @@ public class AutoCrystal extends Module {
             rotationVec = new RotationVec(bhr.getPos(), bhr, true);
             if (packetRotate) {
                 float[] angle = InteractionUtility.calculateAngle(bhr.getPos());
-                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), angle[0], angle[1], mc.player.isOnGround(), false));
+                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), angle[0], angle[1], mc.player.isOnGround()));
             } else if (!rotated && !rotate.getValue().needSeparate()) // TODO check ray trace
                 return;
         }

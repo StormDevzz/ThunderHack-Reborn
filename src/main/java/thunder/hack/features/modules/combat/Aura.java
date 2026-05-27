@@ -58,7 +58,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static net.minecraft.item.consume.UseAction.BLOCK;
+import static net.minecraft.util.UseAction.BLOCK;
 import static net.minecraft.util.math.MathHelper.wrapDegrees;
 import static thunder.hack.features.modules.client.ClientSettings.isRu;
 import static thunder.hack.utility.math.MathUtility.random;
@@ -78,10 +78,9 @@ public class Aura extends Module {
     public final Setting<BooleanSettingGroup> smartCrit = new Setting<>("SmartCrit", new BooleanSettingGroup(true));
     public final Setting<Boolean> onlySpace = new Setting<>("OnlyCrit", false).addToGroup(smartCrit);
     public final Setting<Boolean> autoJump = new Setting<>("AutoJump", false).addToGroup(smartCrit);
-    public final Setting<SprintMode> sprintMode = new Setting<>("SprintMode", SprintMode.Legit);
     public final Setting<Boolean> shieldBreaker = new Setting<>("ShieldBreaker", true);
     public final Setting<Boolean> pauseWhileEating = new Setting<>("PauseWhileEating", false);
-    public final Setting<Boolean> tpsSync = new Setting<>("TPSSync", true);
+    public final Setting<Boolean> tpsSync = new Setting<>("TPSSync", false);
     public final Setting<Boolean> clientLook = new Setting<>("ClientLook", false);
     public final Setting<Boolean> pauseBaritone = new Setting<>("PauseBaritone", false);
     public final Setting<BooleanSettingGroup> oldDelay = new Setting<>("OldDelay", new BooleanSettingGroup(false));
@@ -104,6 +103,8 @@ public class Aura extends Module {
     public final Setting<Float> aimRange = new Setting<>("AimRange", 3.1f, 0f, 6.0f).addToGroup(advanced);
     public final Setting<Boolean> randomHitDelay = new Setting<>("RandomHitDelay", false).addToGroup(advanced);
     public final Setting<Boolean> pauseInInventory = new Setting<>("PauseInInventory", true).addToGroup(advanced);
+    public final Setting<Boolean> dropSprint = new Setting<>("DropSprint", true).addToGroup(advanced);
+    public final Setting<Boolean> returnSprint = new Setting<>("ReturnSprint", true, v -> dropSprint.getValue()).addToGroup(advanced);
     public final Setting<RayTrace> rayTrace = new Setting<>("RayTrace", RayTrace.OnlyTarget).addToGroup(advanced);
     public final Setting<Boolean> grimRayTrace = new Setting<>("GrimRayTrace", true).addToGroup(advanced);
     public final Setting<Boolean> unpressShield = new Setting<>("UnpressShield", true).addToGroup(advanced);
@@ -122,48 +123,11 @@ public class Aura extends Module {
     public final Setting<Float> aimedPitchStep = new Setting<>("AimedPitchStep", 1f, 0f, 90f).addToGroup(advanced);
     public final Setting<Float> maxPitchStep = new Setting<>("MaxPitchStep", 8f, 1f, 90f).addToGroup(advanced);
     public final Setting<Float> pitchAccelerate = new Setting<>("PitchAccelerate", 1.65f, 1f, 10f).addToGroup(advanced);
-    public final Setting<Float> attackCooldown = new Setting<>("AttackCooldown", 0.8f, 0.5f, 1f).addToGroup(advanced);
-    public final Setting<Float> attackBaseTime = new Setting<>("AttackBaseTime", 0f, 0f, 2f).addToGroup(advanced);
-    public final Setting<Integer> attackTickLimit = new Setting<>("AttackTickLimit", 9, 0, 20).addToGroup(advanced);
+    public final Setting<Float> attackCooldown = new Setting<>("AttackCooldown", 0.9f, 0.5f, 1f).addToGroup(advanced);
+    public final Setting<Float> attackBaseTime = new Setting<>("AttackBaseTime", 0.5f, 0f, 2f).addToGroup(advanced);
+    public final Setting<Integer> attackTickLimit = new Setting<>("AttackTickLimit", 11, 0, 20).addToGroup(advanced);
     public final Setting<Float> critFallDistance = new Setting<>("CritFallDistance", 0f, 0f, 1f).addToGroup(advanced);
 
-    /*   ALTERNATIVE ROTATIONS   */
-    public final Setting<SettingGroup> alternativeRotations = new Setting<>("Alternative", new SettingGroup(false, 0), v -> rotationMode.is(Mode.Alternative));
-    public final Setting<Float> altYawSpeed = new Setting<>("YawSpeed", 120f, 30f, 300f, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
-    public final Setting<Float> altPitchSpeed = new Setting<>("PitchSpeed", 80f, 20f, 200f, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
-    public final Setting<Float> altYawNoise = new Setting<>("YawNoise", 0.5f, 0f, 3f, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
-    public final Setting<Float> altPitchNoise = new Setting<>("PitchNoise", 0.5f, 0f, 3f, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
-    public final Setting<Float> altAimThreshold = new Setting<>("AimThreshold", 0.5f, 0f, 5f, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
-    public final Setting<Boolean> altDynamicFOV = new Setting<>("DynamicFOV", true, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
-
-    /*   INTERACT2 ROTATIONS   */
-    public final Setting<SettingGroup> interact2Settings = new Setting<>("Interact2", new SettingGroup(false, 0), v -> rotationMode.is(Mode.Interact2));
-    public final Setting<Integer> interact2Ticks = new Setting<>("Interact2Ticks", 5, 1, 20, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
-    public final Setting<Float> interact2YawSpeed = new Setting<>("YawSpeed", 180f, 30f, 360f, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
-    public final Setting<Float> interact2PitchSpeed = new Setting<>("PitchSpeed", 90f, 20f, 180f, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
-    public final Setting<Float> interact2Noise = new Setting<>("Noise", 0.5f, 0f, 3f, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
-
-    /*   HVH ROTATIONS   */
-    public final Setting<SettingGroup> hvhSettings = new Setting<>("HvH", new SettingGroup(false, 0), v -> rotationMode.is(Mode.HvH));
-    public final Setting<Boolean> hvhInstantAim = new Setting<>("InstantAim", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
-    public final Setting<Float> hvhYawSpeed = new Setting<>("HvHYawSpeed", 300f, 100f, 500f, v -> rotationMode.is(Mode.HvH) && !hvhInstantAim.getValue()).addToGroup(hvhSettings);
-    public final Setting<Float> hvhPitchSpeed = new Setting<>("HvHPitchSpeed", 200f, 100f, 500f, v -> rotationMode.is(Mode.HvH) && !hvhInstantAim.getValue()).addToGroup(hvhSettings);
-    public final Setting<HvHTarget> hvhTargetPoint = new Setting<>("TargetPoint", HvHTarget.Head, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
-    public final Setting<Boolean> hvhIgnoreWalls = new Setting<>("IgnoreWalls", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
-    public final Setting<Boolean> hvhAntiResolve = new Setting<>("AntiResolve", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
-    public final Setting<Boolean> hvhIgnoreCooldown = new Setting<>("IgnoreCooldown", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
-
-    /*   CHINESE ROTATIONS   */  // 中国风旋转模式 - 优雅精准的太极瞄准
-    public final Setting<SettingGroup> chineseSettings = new Setting<>("Chinese", new SettingGroup(false, 0), v -> rotationMode.is(Mode.Chinese));
-    public final Setting<Float> chineseYawSpeed = new Setting<>("偏航速度", 220f, 30f, 360f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);  // 快速但平滑
-    public final Setting<Float> chinesePitchSpeed = new Setting<>("俯仰速度", 160f, 20f, 240f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
-    public final Setting<Float> chineseYawNoise = new Setting<>("偏航扰动", 1.2f, 0f, 5f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
-    public final Setting<Float> chinesePitchNoise = new Setting<>("俯仰扰动", 0.8f, 0f, 5f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
-    public final Setting<Boolean> chineseSmooth = new Setting<>("平滑过渡", true, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
-    public final Setting<Float> chineseAimThreshold = new Setting<>("瞄准阈值", 0.3f, 0f, 3f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
-    public final Setting<ChineseTargetPoint> chineseTargetPoint = new Setting<>("瞄准点", ChineseTargetPoint.Chest, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
-    public final Setting<Boolean> chineseQiStyle = new Setting<>("气功风格", true, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
-    public final Setting<Integer> chineseInteractTicks = new Setting<>("交互持续", 5, 1, 20, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
 
     /*   TARGETS   */
     public final Setting<SettingGroup> targets = new Setting<>("Targets", new SettingGroup(false, 0));
@@ -194,11 +158,9 @@ public class Aura extends Module {
     private int hitTicks;
     private int trackticks;
     private boolean lookingAtHitbox;
-    private int chineseTicks;
 
     private final Timer delayTimer = new Timer();
     private final Timer pauseTimer = new Timer();
-    private int autoJumpTicks;
 
     public Box resolvedBox;
     static boolean wasTargeted = false;
@@ -208,10 +170,10 @@ public class Aura extends Module {
     }
 
     private float getRange(){
-        return elytra.getValue() && mc.player.isGliding() ? elytraAttackRange.getValue() : attackRange.getValue();
+        return elytra.getValue() && mc.player.isFallFlying() ? elytraAttackRange.getValue() : attackRange.getValue();
     }
     private float getWallRange(){
-        return elytra.getValue() && mc.player != null && mc.player.isGliding() ? elytraWallRange.getValue() : wallRange.getValue();
+        return elytra.getValue() && mc.player != null && mc.player.isFallFlying() ? elytraWallRange.getValue() : wallRange.getValue();
     }
 
     public void auraLogic() {
@@ -227,10 +189,8 @@ public class Aura extends Module {
             return;
         }
 
-        if (!mc.options.jumpKey.isPressed() && mc.player.isOnGround() && autoJump.getValue()) {
+        if (!mc.options.jumpKey.isPressed() && mc.player.isOnGround() && autoJump.getValue())
             mc.player.jump();
-            autoJumpTicks = 3;
-        }
 
         boolean readyForAttack;
 
@@ -266,28 +226,16 @@ public class Aura extends Module {
         return true;
     }
 
-    // 注意: Chinese 模式移出了跳过射线追踪, 现在必须真正瞄准目标才能攻击
     private boolean skipRayTraceCheck() {
         return rotationMode.getValue() == Mode.None || rayTrace.getValue() == RayTrace.OFF
                 || rotationMode.is(Mode.Grim)
-                || rotationMode.is(Mode.HvH)
                 || (rotationMode.is(Mode.Interact) && (interactTicks.getValue() <= 1
-                || mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.25, 0.0, -0.25).offset(0.0, 1, 0.0)).iterator().hasNext()))
-                || (rotationMode.is(Mode.Interact2) && (interact2Ticks.getValue() <= 1
                 || mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.25, 0.0, -0.25).offset(0.0, 1, 0.0)).iterator().hasNext()));
     }
 
     public void attack() {
         Criticals.cancelCrit = true;
-
-        if (mc.player.isOnGround()) {
-            if (ModuleManager.criticals.isEnabled()) {
-                ModuleManager.criticals.doCrit();
-            } else if (smartCrit.getValue().isEnabled()) {
-                doAirCrit();
-            }
-        }
-
+        ModuleManager.criticals.doCrit();
         int prevSlot = switchMethod();
         mc.interactionManager.attackEntity(mc.player, target);
         Criticals.cancelCrit = false;
@@ -297,45 +245,30 @@ public class Aura extends Module {
             InventoryUtility.switchTo(prevSlot);
     }
 
-    private void doAirCrit() {
-        double y = mc.player.getY();
-        sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), y + 0.0625, mc.player.getZ(), false, false));
-        sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), y, mc.player.getZ(), false, false));
-    }
-
     private boolean @NotNull [] preAttack() {
         boolean blocking = mc.player.isUsingItem() && mc.player.getActiveItem().getItem().getUseAction(mc.player.getActiveItem()) == BLOCK;
         if (blocking && unpressShield.getValue())
             sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, Direction.DOWN));
 
         boolean sprint = Core.serverSprint;
-        switch (sprintMode.getValue()) {
-            case Legit -> {
-                if (sprint) {
-                    mc.player.setSprinting(false);
-                    mc.options.sprintKey.setPressed(false);
-                }
-            }
-            case HvH -> { if (!sprint) { enableSprint(); sprint = true; } }
-        }
+        if (sprint && dropSprint.getValue())
+            disableSprint();
 
         if (rotationMode.is(Mode.Grim))
-            sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotationYaw, rotationPitch, mc.player.isOnGround(), false));
+            sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotationYaw, rotationPitch, mc.player.isOnGround()));
 
         return new boolean[]{blocking, sprint};
     }
 
     public void postAttack(boolean block, boolean sprint) {
-        switch (sprintMode.getValue()) {
-            case Legit -> {}
-            case HvH -> { if (!mc.player.isSprinting()) enableSprint(); }
-        }
+        if (sprint && returnSprint.getValue() && dropSprint.getValue())
+            enableSprint();
 
         if (block && unpressShield.getValue())
             sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.OFF_HAND, id, rotationYaw, rotationPitch));
 
         if (rotationMode.is(Mode.Grim))
-            sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround(), false));
+            sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround()));
     }
 
     private void disableSprint() {
@@ -453,6 +386,12 @@ public class Aura extends Module {
 
         if (e.getPacket() instanceof EntityStatusS2CPacket pac && pac.getStatus() == 3 && pac.getEntity(mc.world) == mc.player && deathDisable.getValue())
             disable(isRu() ? "Отключаю из-за смерти!" : "Disabling due to death!");
+
+        /*
+        if (resolver.is(Resolver.BackTrack) && e.getPacket() instanceof CommonPingS2CPacket ping && target != null) {
+            Managers.ASYNC.run(() -> mc.executeSync(() -> ping.apply(mc.getNetworkHandler())), backTicks.getValue() * 25L);
+            e.cancel();
+        }*/
     }
 
     @Override
@@ -463,8 +402,6 @@ public class Aura extends Module {
         rotationMotion = Vec3d.ZERO;
         rotationYaw = mc.player.getYaw();
         rotationPitch = mc.player.getPitch();
-        chineseTicks = 0;
-        autoJumpTicks = 0;
         delayTimer.reset();
     }
 
@@ -472,7 +409,7 @@ public class Aura extends Module {
         boolean reasonForSkipCrit =
                 !smartCrit.getValue().isEnabled()
                         || mc.player.getAbilities().flying
-                        || (mc.player.isGliding() || ModuleManager.elytraPlus.isEnabled())
+                        || (mc.player.isFallFlying() || ModuleManager.elytraPlus.isEnabled())
                         || mc.player.hasStatusEffect(StatusEffects.BLINDNESS)
                         || mc.player.hasStatusEffect(StatusEffects.SLOW_FALLING)
                         || Managers.PLAYER.isInWeb();
@@ -483,19 +420,11 @@ public class Aura extends Module {
         if (pauseInInventory.getValue() && Managers.PLAYER.inInventory)
             return false;
 
-        if (getAttackCooldown() < attackCooldown.getValue() && !oldDelay.getValue().isEnabled() && !(rotationMode.is(Mode.HvH) && hvhIgnoreCooldown.getValue()))
+        if (getAttackCooldown() < attackCooldown.getValue() && !oldDelay.getValue().isEnabled())
             return false;
 
         if (ModuleManager.criticals.isEnabled() && ModuleManager.criticals.mode.is(Criticals.Mode.Grim))
             return true;
-
-        if (autoJumpTicks > 0) {
-            autoJumpTicks--;
-            return false;
-        }
-
-        if (autoJump.getValue() && !mc.player.isOnGround() && mc.player.getVelocity().y >= 0)
-            return false;
 
         boolean mergeWithTargetStrafe = !ModuleManager.targetStrafe.isEnabled() || !ModuleManager.targetStrafe.jump.getValue();
         boolean mergeWithSpeed = !ModuleManager.speed.isEnabled() || mc.player.isOnGround();
@@ -509,18 +438,16 @@ public class Aura extends Module {
         if (!mc.options.jumpKey.isPressed() && isAboveWater())
             return true;
 
+        // я хз почему оно не критует когда фд больше 1.14
         if (mc.player.fallDistance > 1 && mc.player.fallDistance < 1.14)
             return false;
 
-        if (!reasonForSkipCrit) {
-            if (onlySpace.getValue())
-                return !mc.player.isOnGround() && mc.player.fallDistance > (shouldRandomizeFallDistance() ? MathUtility.random(0.15f, 0.7f) : critFallDistance.getValue());
-            return !mc.player.isOnGround();
-        }
+        if (!reasonForSkipCrit)
+            return !mc.player.isOnGround() && mc.player.fallDistance > (shouldRandomizeFallDistance() ? MathUtility.random(0.15f, 0.7f) : critFallDistance.getValue());
         return true;
     }
 
-    private boolean shieldBreaker(boolean instant) {
+    private boolean shieldBreaker(boolean instant) { //todo - Actual value of parameter 'instant' is always 'false'
         int axeSlot = InventoryUtility.getAxe().slot();
         if (axeSlot == -1) return false;
         if (!shieldBreaker.getValue()) return false;
@@ -558,7 +485,7 @@ public class Aura extends Module {
     }
 
     public float getAttackCooldownProgressPerTick() {
-        return (float) (1.0 / mc.player.getAttributeValue(EntityAttributes.ATTACK_SPEED) * (20.0 * ThunderHack.TICK_TIMER * (tpsSync.getValue() ? Managers.SERVER.getTPSFactor() : 1f)));
+        return (float) (1.0 / mc.player.getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED) * (20.0 * ThunderHack.TICK_TIMER * (tpsSync.getValue() ? Managers.SERVER.getTPSFactor() : 1f)));
     }
 
     public float getAttackCooldown() {
@@ -584,265 +511,6 @@ public class Aura extends Module {
     }
 
     private void calcRotations(boolean ready) {
-        // --- 中国风旋转模式 (太极: 快慢相间, 后发先至) ---
-        if (rotationMode.is(Mode.Chinese)) {
-            // 交互计时: 有方块碰撞箱则立即恢复转头, 否则维持设定值
-            if (ready) {
-                boolean hasCollision = mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.25, 0.0, -0.25).offset(0.0, 1, 0.0)).iterator().hasNext();
-                chineseTicks = hasCollision ? 1 : chineseInteractTicks.getValue();
-            } else if (chineseTicks > 0) {
-                chineseTicks--;
-            }
-
-            if (target == null) return;
-
-            // 选择瞄准点
-            Vec3d targetVec;
-            switch (chineseTargetPoint.getValue()) {
-                case Head:
-                    targetVec = target.getEyePos();
-                    break;
-                case Chest:
-                    targetVec = target.getPos().add(0, target.getHeight() * 0.7, 0);
-                    break;
-                case Legs:
-                    targetVec = target.getPos().add(0, target.getHeight() * 0.3, 0);
-                    break;
-                default: // Random
-                    Box box = target.getBoundingBox();
-                    targetVec = new Vec3d(
-                        box.minX + Math.random() * (box.maxX - box.minX),
-                        box.minY + Math.random() * (box.maxY - box.minY),
-                        box.minZ + Math.random() * (box.maxZ - box.minZ)
-                    );
-            }
-
-            double diffX = targetVec.x - mc.player.getX();
-            double diffZ = targetVec.z - mc.player.getZ();
-            double diffY = targetVec.y - (mc.player.getY() + mc.player.getEyeHeight(mc.player.getPose()));
-            double distanceXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
-
-            float targetYaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90f;
-            float targetPitch = (float) -Math.toDegrees(Math.atan2(diffY, distanceXZ));
-            targetPitch = MathHelper.clamp(targetPitch, -90f, 90f);
-
-            // 气功风格: 增加微扰动, 模拟呼吸
-            if (chineseQiStyle.getValue()) {
-                targetYaw += (Math.random() - 0.5) * chineseYawNoise.getValue();
-                targetPitch += (Math.random() - 0.5) * chinesePitchNoise.getValue();
-                targetPitch = MathHelper.clamp(targetPitch, -90f, 90f);
-            }
-
-            // 只有 active 状态才进行旋转, 否则保持原角度 (如同 Track 模式)
-            if (chineseTicks > 0) {
-                float deltaYaw = MathHelper.wrapDegrees(targetYaw - rotationYaw);
-                float deltaPitch = targetPitch - rotationPitch;
-
-                if (Math.abs(deltaYaw) > chineseAimThreshold.getValue() || Math.abs(deltaPitch) > chineseAimThreshold.getValue()) {
-                    float maxYawChange = chineseYawSpeed.getValue() * 0.05f;
-                    float maxPitchChange = chinesePitchSpeed.getValue() * 0.05f;
-
-                    float yawChange = MathHelper.clamp(deltaYaw, -maxYawChange, maxYawChange);
-                    float pitchChange = MathHelper.clamp(deltaPitch, -maxPitchChange, maxPitchChange);
-
-                    if (chineseSmooth.getValue()) {
-                        rotationYaw += yawChange * 0.6f;
-                        rotationPitch += pitchChange * 0.6f;
-                    } else {
-                        rotationYaw += yawChange;
-                        rotationPitch += pitchChange;
-                    }
-                    rotationPitch = MathHelper.clamp(rotationPitch, -90f, 90f);
-                }
-
-                // GCD 修正, 避免卡刀
-                double gcdFix = (Math.pow(mc.options.getMouseSensitivity().getValue() * 0.6 + 0.2, 3.0)) * 1.2;
-                rotationYaw = (float) (rotationYaw - (rotationYaw % gcdFix));
-                rotationPitch = (float) (rotationPitch - (rotationPitch % gcdFix));
-            } else {
-                // 非 active 状态: 可以缓慢回正 (可选, 这里不做强制)
-                // 保持当前角度即可
-            }
-
-            ModuleManager.rotations.fixRotation = rotationYaw;
-            lookingAtHitbox = Managers.PLAYER.checkRtx(rotationYaw, rotationPitch, getRange(), getWallRange(), rayTrace.getValue());
-            return;
-        }
-
-        // --- Альтернативный режим ротаций ---
-        if (rotationMode.is(Mode.Alternative)) {
-            if (target == null) return;
-
-            Vec3d targetVec;
-            if (mc.player.isGliding() || ModuleManager.elytraPlus.isEnabled())
-                targetVec = target.getEyePos();
-            else
-                targetVec = getLegitLook(target);
-
-            if (targetVec == null) return;
-
-            double noiseYaw = (Math.random() - 0.5) * altYawNoise.getValue() * 2;
-            double noisePitch = (Math.random() - 0.5) * altPitchNoise.getValue() * 2;
-
-            double diffX = targetVec.x - mc.player.getX();
-            double diffZ = targetVec.z - mc.player.getZ();
-            double diffY = targetVec.y - (mc.player.getY() + mc.player.getEyeHeight(mc.player.getPose()));
-            double distanceXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
-
-            float targetYaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90f;
-            float targetPitch = (float) -Math.toDegrees(Math.atan2(diffY, distanceXZ));
-
-            targetYaw += noiseYaw;
-            targetPitch += noisePitch;
-            targetPitch = MathHelper.clamp(targetPitch, -90f, 90f);
-
-            if (wallsBypass.is(WallsBypass.V2) && !mc.player.canSee(target)) {
-                targetYaw += 20f;
-            }
-
-            float deltaYaw = MathHelper.wrapDegrees(targetYaw - rotationYaw);
-            float deltaPitch = targetPitch - rotationPitch;
-
-            if (Math.abs(deltaYaw) < altAimThreshold.getValue() && Math.abs(deltaPitch) < altAimThreshold.getValue()) {
-                // ничего
-            } else {
-                float maxYawChange = altYawSpeed.getValue() * 0.05f;
-                float maxPitchChange = altPitchSpeed.getValue() * 0.05f;
-
-                if (altDynamicFOV.getValue()) {
-                    float yawFactor = MathHelper.clamp(Math.abs(deltaYaw) / 10f, 0.1f, 1f);
-                    float pitchFactor = MathHelper.clamp(Math.abs(deltaPitch) / 5f, 0.1f, 1f);
-                    maxYawChange *= yawFactor;
-                    maxPitchChange *= pitchFactor;
-                }
-
-                float yawChange = MathHelper.clamp(deltaYaw, -maxYawChange, maxYawChange);
-                float pitchChange = MathHelper.clamp(deltaPitch, -maxPitchChange, maxPitchChange);
-
-                double gcdFix = (Math.pow(mc.options.getMouseSensitivity().getValue() * 0.6 + 0.2, 3.0)) * 1.2;
-                rotationYaw = (float) (rotationYaw + yawChange - ((rotationYaw + yawChange - rotationYaw) % gcdFix));
-                rotationPitch = (float) (rotationPitch + pitchChange - ((rotationPitch + pitchChange - rotationPitch) % gcdFix));
-            }
-
-            if (!rotationMode.is(Mode.Grim))
-                ModuleManager.rotations.fixRotation = rotationYaw;
-            lookingAtHitbox = Managers.PLAYER.checkRtx(rotationYaw, rotationPitch, getRange(), getWallRange(), rayTrace.getValue());
-            return;
-        }
-
-        // --- HvH режим ---
-        if (rotationMode.is(Mode.HvH)) {
-            if (target == null) return;
-
-            Vec3d targetVec;
-            if (hvhTargetPoint.is(HvHTarget.Head)) {
-                targetVec = target.getEyePos();
-            } else if (hvhTargetPoint.is(HvHTarget.Body)) {
-                targetVec = target.getPos().add(0, target.getHeight() / 2, 0);
-            } else {
-                Box box = target.getBoundingBox();
-                targetVec = new Vec3d(
-                    box.minX + Math.random() * (box.maxX - box.minX),
-                    box.minY + Math.random() * (box.maxY - box.minY),
-                    box.minZ + Math.random() * (box.maxZ - box.minZ)
-                );
-            }
-
-            double diffX = targetVec.x - mc.player.getX();
-            double diffZ = targetVec.z - mc.player.getZ();
-            double diffY = targetVec.y - (mc.player.getY() + mc.player.getEyeHeight(mc.player.getPose()));
-            double distanceXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
-
-            float targetYaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90f;
-            float targetPitch = (float) -Math.toDegrees(Math.atan2(diffY, distanceXZ));
-            targetPitch = MathHelper.clamp(targetPitch, -90f, 90f);
-
-            if (hvhInstantAim.getValue()) {
-                rotationYaw = targetYaw;
-                rotationPitch = targetPitch;
-            } else {
-                float deltaYaw = MathHelper.wrapDegrees(targetYaw - rotationYaw);
-                float deltaPitch = targetPitch - rotationPitch;
-
-                float maxYawChange = hvhYawSpeed.getValue() * 0.05f;
-                float maxPitchChange = hvhPitchSpeed.getValue() * 0.05f;
-
-                float yawChange = MathHelper.clamp(deltaYaw, -maxYawChange, maxYawChange);
-                float pitchChange = MathHelper.clamp(deltaPitch, -maxPitchChange, maxPitchChange);
-
-                rotationYaw += yawChange;
-                rotationPitch += pitchChange;
-                rotationPitch = MathHelper.clamp(rotationPitch, -90f, 90f);
-            }
-
-            if (hvhAntiResolve.getValue() && target instanceof OtherClientPlayerEntity) {
-                rotationYaw += (Math.random() - 0.5) * 2f;
-                rotationPitch += (Math.random() - 0.5) * 1f;
-            }
-
-            if (!rotationMode.is(Mode.Grim))
-                ModuleManager.rotations.fixRotation = rotationYaw;
-            lookingAtHitbox = Managers.PLAYER.checkRtx(rotationYaw, rotationPitch, getRange(), hvhIgnoreWalls.getValue() ? 6f : getWallRange(), rayTrace.getValue());
-            return;
-        }
-
-        // --- Interact2 ---
-        if (rotationMode.is(Mode.Interact2)) {
-            if (ready) {
-                trackticks = (mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.25, 0.0, -0.25).offset(0.0, 1, 0.0)).iterator().hasNext() ? 1 : interact2Ticks.getValue());
-            } else if (trackticks > 0) {
-                trackticks--;
-            }
-
-            if (target == null) return;
-
-            Vec3d targetVec;
-            if (mc.player.isGliding() || ModuleManager.elytraPlus.isEnabled()) targetVec = target.getEyePos();
-            else targetVec = getLegitLook(target);
-
-            if (targetVec == null) return;
-
-            double noiseYaw = (Math.random() - 0.5) * interact2Noise.getValue() * 2;
-            double noisePitch = (Math.random() - 0.5) * interact2Noise.getValue() * 2;
-
-            double diffX = targetVec.x - mc.player.getX();
-            double diffZ = targetVec.z - mc.player.getZ();
-            double diffY = targetVec.y - (mc.player.getY() + mc.player.getEyeHeight(mc.player.getPose()));
-            double distanceXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
-
-            float targetYaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90f;
-            float targetPitch = (float) -Math.toDegrees(Math.atan2(diffY, distanceXZ));
-
-            targetYaw += noiseYaw;
-            targetPitch += noisePitch;
-            targetPitch = MathHelper.clamp(targetPitch, -90f, 90f);
-
-            float deltaYaw = MathHelper.wrapDegrees(targetYaw - rotationYaw);
-            float deltaPitch = targetPitch - rotationPitch;
-
-            float maxYawChange = interact2YawSpeed.getValue() * 0.05f;
-            float maxPitchChange = interact2PitchSpeed.getValue() * 0.05f;
-
-            float yawChange = MathHelper.clamp(deltaYaw, -maxYawChange, maxYawChange);
-            float pitchChange = MathHelper.clamp(deltaPitch, -maxPitchChange, maxPitchChange);
-
-            double gcdFix = (Math.pow(mc.options.getMouseSensitivity().getValue() * 0.6 + 0.2, 3.0)) * 1.2;
-
-            if (trackticks > 0) {
-                rotationYaw = (float) (rotationYaw + yawChange - ((rotationYaw + yawChange - rotationYaw) % gcdFix));
-                rotationPitch = (float) (rotationPitch + pitchChange - ((rotationPitch + pitchChange - rotationPitch) % gcdFix));
-            } else {
-                rotationYaw = mc.player.getYaw();
-                rotationPitch = mc.player.getPitch();
-            }
-
-            if (!rotationMode.is(Mode.Grim))
-                ModuleManager.rotations.fixRotation = rotationYaw;
-            lookingAtHitbox = Managers.PLAYER.checkRtx(rotationYaw, rotationPitch, getRange(), getWallRange(), rayTrace.getValue());
-            return;
-        }
-
-        // --- Оригинальная логика для Interact, Track, Grim, None ---
         if (ready) {
             trackticks = (mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.25, 0.0, -0.25).offset(0.0, 1, 0.0)).iterator().hasNext() ? 1 : interactTicks.getValue());
         } else if (trackticks > 0) {
@@ -852,9 +520,10 @@ public class Aura extends Module {
         if (target == null)
             return;
 
+
         Vec3d targetVec;
 
-        if (mc.player.isGliding() || ModuleManager.elytraPlus.isEnabled()) targetVec = target.getEyePos();
+        if (mc.player.isFallFlying() || ModuleManager.elytraPlus.isEnabled()) targetVec = target.getEyePos();
         else targetVec = getLegitLook(target);
 
         if (targetVec == null)
@@ -932,7 +601,7 @@ public class Aura extends Module {
     public float getSquaredRotateDistance() {
         float dst = getRange();
         dst += aimRange.getValue();
-        if ((mc.player.isGliding() || ModuleManager.elytraPlus.isEnabled()) && target != null) dst += 4f;
+        if ((mc.player.isFallFlying() || ModuleManager.elytraPlus.isEnabled()) && target != null) dst += 4f;
         if (ModuleManager.strafe.isEnabled()) dst += 4f;
         if (rotationMode.getValue() != Mode.Track || rayTrace.getValue() == RayTrace.OFF)
             dst = getRange();
@@ -940,9 +609,19 @@ public class Aura extends Module {
         return dst * dst;
     }
 
+    /*
+     * Эта хуеверть основанна на приципе "DVD Logo"
+     * У нас есть точка и "коробка" (хитбокс цели)
+     * Точка летает внутри коробки и отталкивается от стенок с рандомной скоростью и легким джиттером
+     * Также выбирает лучшую дистанцию для удара, то есть считает не от центра до центра, а от наших глаз до достигаемых точек хитбокса цели
+     * Со стороны не сильно заметно что ты играешь с киллкой, в отличие от аур семейства Wexside
+     */
+
     public Vec3d getLegitLook(Entity target) {
+
         float minMotionXZ = 0.003f;
         float maxMotionXZ = 0.03f;
+
         float minMotionY = 0.001f;
         float maxMotionY = 0.03f;
 
@@ -950,27 +629,42 @@ public class Aura extends Module {
         double lenghtY = target.getBoundingBox().getLengthY();
         double lenghtZ = target.getBoundingBox().getLengthZ();
 
+
+        // Задаем начальную скорость точки
         if (rotationMotion.equals(Vec3d.ZERO))
             rotationMotion = new Vec3d(random(-0.05f, 0.05f), random(-0.05f, 0.05f), random(-0.05f, 0.05f));
 
         rotationPoint = rotationPoint.add(rotationMotion);
 
+        // Сталкиваемся с хитбоксом по X
         if (rotationPoint.x >= (lenghtX - 0.05) / 2f)
             rotationMotion = new Vec3d(-random(minMotionXZ, maxMotionXZ), rotationMotion.getY(), rotationMotion.getZ());
+
+        // Сталкиваемся с хитбоксом по Y
         if (rotationPoint.y >= lenghtY)
             rotationMotion = new Vec3d(rotationMotion.getX(), -random(minMotionY, maxMotionY), rotationMotion.getZ());
+
+        // Сталкиваемся с хитбоксом по Z
         if (rotationPoint.z >= (lenghtZ - 0.05) / 2f)
             rotationMotion = new Vec3d(rotationMotion.getX(), rotationMotion.getY(), -random(minMotionXZ, maxMotionXZ));
+
+        // Сталкиваемся с хитбоксом по -X
         if (rotationPoint.x <= -(lenghtX - 0.05) / 2f)
             rotationMotion = new Vec3d(random(minMotionXZ, 0.03f), rotationMotion.getY(), rotationMotion.getZ());
+
+        // Сталкиваемся с хитбоксом по -Y
         if (rotationPoint.y <= 0.05)
             rotationMotion = new Vec3d(rotationMotion.getX(), random(minMotionY, maxMotionY), rotationMotion.getZ());
+
+        // Сталкиваемся с хитбоксом по -Z
         if (rotationPoint.z <= -(lenghtZ - 0.05) / 2f)
             rotationMotion = new Vec3d(rotationMotion.getX(), rotationMotion.getY(), random(minMotionXZ, maxMotionXZ));
 
+        // Добавляем джиттер
         rotationPoint.add(random(-0.03f, 0.03f), 0f, random(-0.03f, 0.03f));
 
         if (!mc.player.canSee(target)) {
+            // Если мы используем обход ударов через стену V1 и наша цель за стеной, то целимся в верхушку хитбокса т.к. матриксу поебать
             if (Objects.requireNonNull(wallsBypass.getValue()) == WallsBypass.V1) {
                 return target.getPos().add(random(-0.15, 0.15), lenghtY, random(-0.15, 0.15));
             }
@@ -978,21 +672,31 @@ public class Aura extends Module {
 
         float[] rotation;
 
+        // Если мы перестали смотреть на цель
         if (!Managers.PLAYER.checkRtx(rotationYaw, rotationPitch, getRange(), getWallRange(), rayTrace.getValue())) {
             float[] rotation1 = Managers.PLAYER.calcAngle(target.getPos().add(0, target.getEyeHeight(target.getPose()) / 2f, 0));
 
+            // Проверяем видимость центра игрока
             if (PlayerUtility.squaredDistanceFromEyes(target.getPos().add(0, target.getEyeHeight(target.getPose()) / 2f, 0)) <= attackRange.getPow2Value()
                     && Managers.PLAYER.checkRtx(rotation1[0], rotation1[1], getRange(), 0, rayTrace.getValue())) {
+                // наводим на центр
                 rotationPoint = new Vec3d(random(-0.1f, 0.1f), target.getEyeHeight(target.getPose()) / (random(1.8f, 2.5f)), random(-0.1f, 0.1f));
             } else {
+                // Сканим хитбокс на видимую точку
                 float halfBox = (float) (lenghtX / 2f);
+
                 for (float x1 = -halfBox; x1 <= halfBox; x1 += 0.05f) {
                     for (float z1 = -halfBox; z1 <= halfBox; z1 += 0.05f) {
                         for (float y1 = 0.05f; y1 <= target.getBoundingBox().getLengthY(); y1 += 0.15f) {
+
                             Vec3d v1 = new Vec3d(target.getX() + x1, target.getY() + y1, target.getZ() + z1);
+
+                            // Скипаем, если вне досягаемости
                             if (PlayerUtility.squaredDistanceFromEyes(v1) > attackRange.getPow2Value()) continue;
+
                             rotation = Managers.PLAYER.calcAngle(v1);
                             if (Managers.PLAYER.checkRtx(rotation[0], rotation[1], getRange(), 0, rayTrace.getValue())) {
+                                // Наводимся, если видим эту точку
                                 rotationPoint = new Vec3d(x1, y1, z1);
                                 break;
                             }
@@ -1005,6 +709,7 @@ public class Aura extends Module {
     }
 
     public boolean isInRange(Entity target) {
+
         if (PlayerUtility.squaredDistanceFromEyes(target.getPos().add(0, target.getEyeHeight(target.getPose()), 0)) > getSquaredRotateDistance() + 4) {
             return false;
         }
@@ -1012,6 +717,7 @@ public class Aura extends Module {
         float[] rotation;
         float halfBox = (float) (target.getBoundingBox().getLengthX() / 2f);
 
+        // уменьшил частоту выборки
         for (float x1 = -halfBox; x1 <= halfBox; x1 += 0.15f) {
             for (float z1 = -halfBox; z1 <= halfBox; z1 += 0.15f) {
                 for (float y1 = 0.05f; y1 <= target.getBoundingBox().getLengthY(); y1 += 0.25f) {
@@ -1045,13 +751,18 @@ public class Aura extends Module {
         return switch (sort.getValue()) {
             case LowestDistance ->
                     first_stage.stream().min(Comparator.comparing(e -> (mc.player.squaredDistanceTo(e.getPos())))).orElse(null);
+
             case HighestDistance ->
                     first_stage.stream().max(Comparator.comparing(e -> (mc.player.squaredDistanceTo(e.getPos())))).orElse(null);
+
             case FOV -> first_stage.stream().min(Comparator.comparing(this::getFOVAngle)).orElse(null);
+
             case LowestHealth ->
                     first_stage.stream().min(Comparator.comparing(e -> (e.getHealth() + e.getAbsorptionAmount()))).orElse(null);
+
             case HighestHealth ->
                     first_stage.stream().max(Comparator.comparing(e -> (e.getHealth() + e.getAbsorptionAmount()))).orElse(null);
+
             case LowestDurability -> first_stage.stream().min(Comparator.comparing(e -> {
                         float v = 0;
                         for (ItemStack armor : e.getArmorItems())
@@ -1061,6 +772,7 @@ public class Aura extends Module {
                         return v;
                     }
             )).orElse(null);
+
             case HighestDurability -> first_stage.stream().max(Comparator.comparing(e -> {
                         float v = 0;
                         for (ItemStack armor : e.getArmorItems())
@@ -1108,15 +820,15 @@ public class Aura extends Module {
     }
 
     private boolean skipNotSelected(Entity entity) {
-        if (entity instanceof SlimeEntity) {
-            if (!Slimes.getValue()) return true;
-            return false;
-        }
+        if (entity instanceof SlimeEntity && !Slimes.getValue()) return true;
         if (entity instanceof HostileEntity he) {
-            if (!hostiles.getValue()) return true;
-            if (onlyAngry.getValue() && he.getTarget() != null) return !mc.player.equals(he.getTarget());
-            return false;
+            if (!hostiles.getValue())
+                return true;
+
+            if (onlyAngry.getValue())
+                return !he.isAngryAt(mc.player);
         }
+
         if (entity instanceof PlayerEntity && !Players.getValue()) return true;
         if (entity instanceof VillagerEntity && !Villagers.getValue()) return true;
         if (entity instanceof MobEntity && !Mobs.getValue()) return true;
@@ -1135,7 +847,7 @@ public class Aura extends Module {
     }
 
     private boolean shouldRandomizeDelay() {
-        return randomHitDelay.getValue() && (mc.player.isOnGround() || mc.player.fallDistance < 0.12f || mc.player.isSwimming() || mc.player.isGliding());
+        return randomHitDelay.getValue() && (mc.player.isOnGround() || mc.player.fallDistance < 0.12f || mc.player.isSwimming() || mc.player.isFallFlying());
     }
 
     private boolean shouldRandomizeFallDistance() {
@@ -1145,29 +857,64 @@ public class Aura extends Module {
     public static class Position {
         private double x, y, z;
         private int ticks;
+
         public Position(double x, double y, double z) {
             this.x = x;
             this.y = y;
             this.z = z;
         }
+
         public boolean shouldRemove() {
             return ticks++ > ModuleManager.aura.backTicks.getValue();
         }
-        public double getX() { return x; }
-        public double getY() { return y; }
-        public double getZ() { return z; }
+
+        public double getX() {
+            return x;
+        }
+
+        public double getY() {
+            return y;
+        }
+
+        public double getZ() {
+            return z;
+
+        }
     }
 
-    public enum RayTrace { OFF, OnlyTarget, AllEntities }
-    public enum Sort { LowestDistance, HighestDistance, LowestHealth, HighestHealth, LowestDurability, HighestDurability, FOV }
-    public enum Switch { Normal, None, Silent }
-    public enum Resolver { Off, Advantage, Predictive, BackTrack }
-    public enum Mode { Interact, Track, Grim, None, Alternative, Interact2, HvH, Chinese }
-    public enum AttackHand { MainHand, OffHand, None }
-    public enum ESP { Off, ThunderHack, NurikZapen, CelkaPasta, ThunderHackV2 }
-    public enum AccelerateOnHit { Off, Yaw, Pitch, Both }
-    public enum WallsBypass { Off, V1, V2 }
-    public enum HvHTarget { Head, Body, Random }
-    public enum ChineseTargetPoint { Head, Chest, Legs, Random }
-    public enum SprintMode { Normal, Legit, HvH }
+    public enum RayTrace {
+        OFF, OnlyTarget, AllEntities
+    }
+
+    public enum Sort {
+        LowestDistance, HighestDistance, LowestHealth, HighestHealth, LowestDurability, HighestDurability, FOV
+    }
+
+    public enum Switch {
+        Normal, None, Silent
+    }
+
+    public enum Resolver {
+        Off, Advantage, Predictive, BackTrack
+    }
+
+    public enum Mode {
+        Interact, Track, Grim, None
+    }
+
+    public enum AttackHand {
+        MainHand, OffHand, None
+    }
+
+    public enum ESP {
+        Off, ThunderHack, NurikZapen, CelkaPasta, ThunderHackV2
+    }
+
+    public enum AccelerateOnHit {
+        Off, Yaw, Pitch, Both
+    }
+
+    public enum WallsBypass {
+        Off, V1, V2
+    }
 }

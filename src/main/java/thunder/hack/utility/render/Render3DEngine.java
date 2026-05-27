@@ -3,7 +3,6 @@ package thunder.hack.utility.render;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -49,7 +48,7 @@ public class Render3DEngine {
             BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             RenderSystem.disableDepthTest();
             setupRender();
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
             FILLED_QUEUE.forEach(action -> setFilledBoxVertexes(bufferBuilder, stack.peek().getPositionMatrix(), action.box(), action.color()));
 
@@ -72,7 +71,7 @@ public class Render3DEngine {
             BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
             RenderSystem.disableCull();
             RenderSystem.disableDepthTest();
-            RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+            RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
 
             RenderSystem.lineWidth(2f);
 
@@ -100,7 +99,7 @@ public class Render3DEngine {
             BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.LINES);
 
             RenderSystem.disableCull();
-            RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+            RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
             DEBUG_LINE_QUEUE.forEach(action -> {
                 MatrixStack matrices = matrixFrom(action.start.getX(), action.start.getY(), action.start.getZ());
                 vertexLine(matrices, buffer, 0f, 0f, 0f, (float) (action.end.getX() - action.start.getX()), (float) (action.end.getY() - action.start.getY()), (float) (action.end.getZ() - action.start.getZ()), action.color);
@@ -116,7 +115,7 @@ public class Render3DEngine {
             setupRender();
             Tessellator tessellator = Tessellator.getInstance();
             RenderSystem.disableCull();
-            RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+            RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
             RenderSystem.lineWidth(2f);
             RenderSystem.disableDepthTest();
             BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
@@ -426,7 +425,7 @@ public class Render3DEngine {
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
 
         RenderSystem.disableCull();
-        RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
         RenderSystem.lineWidth(lineWidth);
 
         box = box.offset(new Vec3d(box.minX, box.minY, box.minZ).negate());
@@ -532,7 +531,7 @@ public class Render3DEngine {
         RenderSystem.disableCull();
         RenderSystem.disableDepthTest();
 
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
 
         Matrix4f matrix = stack.peek().getPositionMatrix();
@@ -544,7 +543,7 @@ public class Render3DEngine {
         }
         Render2DEngine.endBuilding(bufferBuilder);
 
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
         for (int j = 0; j < vecs1.size() - 1; ++j) {
             float alpha = 1f - (((float) j + ((System.currentTimeMillis() - ThunderHack.initTime) / 5f)) % 360) / 60f;
@@ -553,7 +552,7 @@ public class Render3DEngine {
         }
         Render2DEngine.endBuilding(bufferBuilder);
 
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
         for (int j = 0; j < vecs2.size() - 1; ++j) {
             float alpha = 1f - (((float) j + ((System.currentTimeMillis() - ThunderHack.initTime) / 5f)) % 360) / 60f;
@@ -573,7 +572,7 @@ public class Render3DEngine {
         setupRender();
         MatrixStack matrices = matrixFrom(box.minX, box.minY, box.minZ);
         RenderSystem.disableCull();
-        RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
         RenderSystem.lineWidth(lineWidth);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
 
@@ -602,7 +601,7 @@ public class Render3DEngine {
             rho = (float) i * drho;
 
             BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
             for (j = 0; j < slices; ++j) {
                 theta = (float) j * dtheta;
@@ -619,7 +618,7 @@ public class Render3DEngine {
 
             BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
 
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
             for (i = 0; i <= stacks; ++i) {
                 rho = (float) i * drho;
@@ -639,7 +638,7 @@ public class Render3DEngine {
         final float dz = height / stacks;
 
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
         float y = 0;
 
@@ -655,7 +654,7 @@ public class Render3DEngine {
         BufferRenderer.drawWithGlobalProgram(buffer.end());
 
         buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
         for (int i = 0; i <= slices; ++i) {
             final float x = (float) Math.cos(i * da);
@@ -671,7 +670,7 @@ public class Render3DEngine {
 
     public static void drawCircle3D(MatrixStack stack, Entity ent, float radius, int color, int points, boolean hudColor, int colorOffset) {
         setupRender();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
         double x = ent.prevX + (ent.getX() - ent.prevX) * getTickDelta() - mc.getEntityRenderDispatcher().camera.getPos().getX();
         double y = ent.prevY + (ent.getY() - ent.prevY) * getTickDelta() - mc.getEntityRenderDispatcher().camera.getPos().getY();
@@ -707,7 +706,7 @@ public class Render3DEngine {
         RenderSystem.disableDepthTest();
         BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
 
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         float cos;
         float sin;
         for (int i = 0; i <= 30; i++) {
@@ -736,7 +735,7 @@ public class Render3DEngine {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
         RenderSystem.setShaderTexture(0, TextureStorage.firefly);
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
         boolean canSee = mc.player.canSee(target);

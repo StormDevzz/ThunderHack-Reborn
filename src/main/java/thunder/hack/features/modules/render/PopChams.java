@@ -1,5 +1,4 @@
 package thunder.hack.features.modules.render;
-import net.minecraft.client.gl.ShaderProgramKeys;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -107,25 +106,19 @@ public final class PopChams extends Module {
         matrices.multiply(RotationAxis.POSITIVE_Y.rotation(MathUtility.rad(180 - entity.bodyYaw + yRotYaw)));
         prepareScale(matrices);
 
-        net.minecraft.client.render.entity.state.PlayerEntityRenderState state = new net.minecraft.client.render.entity.state.PlayerEntityRenderState();
-        state.isInSneakingPose = entity.isSneaking();
-        state.handSwingProgress = entity.handSwingProgress;
-        state.limbFrequency = entity.limbAnimator.getSpeed();
-        state.limbAmplitudeMultiplier = Math.min(entity.limbAnimator.getSpeed(), 1f);
-        state.pitch = entity.getPitch();
-        state.yawDegrees = entity.headYaw;
-        state.bodyYaw = entity.bodyYaw;
-        state.pose = entity.getPose();
+        modelBase.animateModel((PlayerEntity) entity, entity.limbAnimator.getPos(), entity.limbAnimator.getSpeed(), Render3DEngine.getTickDelta());
 
-        modelBase.setAngles(state);
+        float limbSpeed = Math.min(entity.limbAnimator.getSpeed(), 1f);
+
+        modelBase.setAngles((PlayerEntity) entity, entity.limbAnimator.getPos(), limbSpeed, entity.age, entity.headYaw - entity.bodyYaw, entity.getPitch());
 
         BufferBuilder buffer;
         if (mode.is(Mode.Textured)) {
             RenderSystem.setShaderTexture(0, texture);
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
         } else {
-            RenderSystem.setShader(ShaderProgramKeys.POSITION);
+            RenderSystem.setShader(GameRenderer::getPositionProgram);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
         }
 
@@ -151,7 +144,7 @@ public final class PopChams extends Module {
 
         public Person(PlayerEntity player, Identifier texture) {
             this.player = player;
-            modelPlayer = new PlayerEntityModel(mc.getLoadedEntityModels().getModelPart(EntityModelLayers.PLAYER), false);
+            modelPlayer = new PlayerEntityModel(new EntityRendererFactory.Context(mc.getEntityRenderDispatcher(), mc.getItemRenderer(), mc.getBlockRenderManager(), mc.getEntityRenderDispatcher().getHeldItemRenderer(), mc.getResourceManager(), mc.getEntityModelLoader(), mc.textRenderer).getPart(EntityModelLayers.PLAYER), false);
             modelPlayer.getHead().scale(new Vector3f(-0.3f, -0.3f, -0.3f));
             alpha = color.getValue().getAlpha();
             this.texture = texture;
@@ -160,7 +153,7 @@ public final class PopChams extends Module {
         public void update(CopyOnWriteArrayList<Person> arrayList) {
             if (alpha <= 0) {
                 arrayList.remove(this);
-                player.discard();
+                player.kill();
                 player.remove(Entity.RemovalReason.KILLED);
                 player.onRemoved();
                 return;

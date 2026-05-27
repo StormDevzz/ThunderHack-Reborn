@@ -32,7 +32,6 @@ public class MixinTitleScreen extends Screen {
 
     @Inject(method = "init", at = @At("RETURN"))
     public void postInitHook(CallbackInfo ci) {
-        /*
         if (ClientSettings.customMainMenu.getValue() && !MainMenuScreen.getInstance().confirm && ModuleManager.clickGui.getBind().getKey() != -1) {
             mc.setScreen(MainMenuScreen.getInstance());
         }
@@ -69,15 +68,14 @@ public class MixinTitleScreen extends Screen {
             );
             mc.setScreen(dialogScreen1);
         }
-        */
 
         if (ThunderHack.isOutdated && !FabricLoader.getInstance().isDevelopmentEnvironment()) {
             mc.setScreen(new ConfirmScreen(
                     confirm -> {
-                        if (confirm) Util.getOperatingSystem().open(URI.create("https://github.com/StormDevzz/ThunderHack-Reborn/releases/download/latest/thunderhack-1.8.jar"));
+                        if (confirm) Util.getOperatingSystem().open(URI.create("https://github.com/Pan4ur/ThunderHack-Recode/releases/download/latest/thunderhack-1.7.jar/"));
                         else mc.stop();
                     },
-                    Text.of(Formatting.RED + "You are using an outdated version of ThunderHack Reborn"), Text.of("Please update to the latest release"), Text.of("Download"), Text.of("Quit Game")));
+                    Text.of(Formatting.RED + "You are using an outdated version of ThunderHack Recode"), Text.of("Please update to the latest release"), Text.of("Download"), Text.of("Quit Game")));
         }
     }
 }

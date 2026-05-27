@@ -1,5 +1,4 @@
 package thunder.hack.gui.windows.impl;
-import net.minecraft.client.gl.ShaderProgramKeys;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -66,7 +65,7 @@ public class ItemSelectWindow extends WindowBase {
         Render2DEngine.drawRect(context.getMatrices(), getX() + getWidth() - 90, getY() + 3, 70, 10, hover1 ? new Color(0xC5838383, true) : new Color(0xC5575757, true));
         FontRenderers.sf_medium_mini.drawString(context.getMatrices(), search, getX() + getWidth() - 86, getY() + 7, new Color(0xD5D5D5).getRGB());
 
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
         int tabColor1 = allTab ? new Color(0xD5D5D5).getRGB() : Color.GRAY.getRGB();
         int tabColor2 = allTab ? Color.GRAY.getRGB() : new Color(0xBDBDBD).getRGB();
@@ -91,7 +90,7 @@ public class ItemSelectWindow extends WindowBase {
                     getX() + getWidth() / 2f, getY() + getHeight() / 2f, new Color(0xBDBDBD).getRGB());
         }
 
-        Render2DEngine.addWindow(context, getX(), getY() + 30, getX() + getWidth(), getY() + getHeight() - 1, 1f);
+        Render2DEngine.addWindow(context.getMatrices(), getX(), getY() + 30, getX() + getWidth(), getY() + getHeight() - 1, 1f);
 
         for (ItemPlate itemPlate : (allTab ? allItems : itemPlates)) {
             if (itemPlate.offset + getY() + 25 + getScrollOffset() > getY() + getHeight() || itemPlate.offset + getScrollOffset() + getY() + 10 < getY())
@@ -118,7 +117,7 @@ public class ItemSelectWindow extends WindowBase {
             }
         }
         setMaxElementsHeight((allTab ? allItems : itemPlates).size() * 20);
-        Render2DEngine.popWindow(context);
+        Render2DEngine.popWindow();
     }
 
     @Override
@@ -171,7 +170,7 @@ public class ItemSelectWindow extends WindowBase {
 
     @Override
     public void keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_F && (InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
+        if (keyCode == GLFW.GLFW_KEY_F && (InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
             listening = !listening;
             return;
         }

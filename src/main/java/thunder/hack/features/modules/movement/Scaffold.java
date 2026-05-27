@@ -29,15 +29,15 @@ import static thunder.hack.utility.player.InteractionUtility.checkNearBlocks;
 
 public class Scaffold extends Module {
     private final Setting<Mode> mode = new Setting<>("Mode", Mode.NCP);
-    private final Setting<InteractionUtility.PlaceMode> placeMode = new Setting<>("PlaceMode", InteractionUtility.PlaceMode.Normal, v -> !mode.is(Mode.OldGrim) && !mode.is(Mode.NewGrim));
+    private final Setting<InteractionUtility.PlaceMode> placeMode = new Setting<>("PlaceMode", InteractionUtility.PlaceMode.Normal, v -> !mode.is(Mode.Grim));
     private final Setting<Switch> autoSwitch = new Setting<>("Switch", Switch.Silent);
     private final Setting<Boolean> rotate = new Setting<>("Rotate", true);
     private final Setting<Boolean> lockY = new Setting<>("LockY", false);
     private final Setting<Boolean> onlyNotHoldingSpace = new Setting<>("OnlyNotHoldingSpace", false, v -> lockY.getValue());
     private final Setting<Boolean> autoJump = new Setting<>("AutoJump", false);
     private final Setting<Boolean> allowShift = new Setting<>("WorkWhileSneaking", false);
-    private final Setting<Boolean> tower = new Setting<>("Tower", true, v -> !mode.is(Mode.OldGrim) && !mode.is(Mode.NewGrim));
-    private final Setting<Boolean> safewalk = new Setting<>("SafeWalk", true, v -> !mode.is(Mode.OldGrim) && !mode.is(Mode.NewGrim));
+    private final Setting<Boolean> tower = new Setting<>("Tower", true, v -> !mode.is(Mode.Grim));
+    private final Setting<Boolean> safewalk = new Setting<>("SafeWalk", true, v -> !mode.is(Mode.Grim));
     private final Setting<Boolean> echestholding = new Setting<>("EchestHolding", false);
     private final Setting<SettingGroup> renderCategory = new Setting<>("Render", new SettingGroup(false, 0));
     private final Setting<Boolean> render = new Setting<>("Render", true).addToGroup(renderCategory);
@@ -48,7 +48,7 @@ public class Scaffold extends Module {
     private final Setting<Integer> renderLineWidth = new Setting<>("RenderLineWidth", 2, 1, 5).addToGroup(renderCategory);
 
     private enum Mode {
-        NCP, StrictNCP, OldGrim, NewGrim, Vanilla
+        NCP, StrictNCP, Grim
     }
 
     private enum Switch {
@@ -71,7 +71,7 @@ public class Scaffold extends Module {
     @EventHandler
     public void onMove(EventMove event) {
         if (fullNullCheck()) return;
-        if (safewalk.getValue() && !mode.is(Mode.OldGrim) && !mode.is(Mode.NewGrim)) {
+        if (safewalk.getValue() && !mode.is(Mode.Grim)) {
             double x = event.getX();
             double y = event.getY();
             double z = event.getZ();
@@ -122,7 +122,7 @@ public class Scaffold extends Module {
 
     @EventHandler
     public void onTick(EventTick e) {
-        if (mode.is(Mode.OldGrim)) {
+        if (mode.is(Mode.Grim)) {
             preAction();
             postAction();
         }
@@ -130,15 +130,8 @@ public class Scaffold extends Module {
 
     @EventHandler
     public void onPre(EventSync e) {
-        if (!mode.is(Mode.OldGrim))
+        if (!mode.is(Mode.Grim))
             preAction();
-        
-        if (mode.is(Mode.NewGrim) && currentblock != null) {
-            Vec3d hitVec = new Vec3d(currentblock.position().getX() + 0.5, currentblock.position().getY() + 0.5, currentblock.position().getZ() + 0.5).add(new Vec3d(currentblock.facing().getUnitVector()).multiply(0.5));
-            float[] rotations = InteractionUtility.calculateAngle(hitVec);
-            mc.player.setYaw(rotations[0]);
-            mc.player.setPitch(rotations[1]);
-        }
     }
 
     public void preAction() {
@@ -166,9 +159,8 @@ public class Scaffold extends Module {
         if (!mc.world.getBlockState(blockPos2).isReplaceable()) return;
 
         currentblock = checkNearBlocksExtended(blockPos2);
-
         if (currentblock != null) {
-            if (rotate.getValue() && !mode.is(Mode.OldGrim) && !mode.is(Mode.NewGrim) && !mode.is(Mode.Vanilla)) {
+            if (rotate.getValue() && !mode.is(Mode.Grim)) {
                 Vec3d hitVec = new Vec3d(currentblock.position().getX() + 0.5, currentblock.position().getY() + 0.5, currentblock.position().getZ() + 0.5).add(new Vec3d(currentblock.facing().getUnitVector()).multiply(0.5));
                 float[] rotations = InteractionUtility.calculateAngle(hitVec);
                 mc.player.setYaw(rotations[0]);
@@ -179,12 +171,12 @@ public class Scaffold extends Module {
 
     @EventHandler
     public void onPost(EventPostSync e) {
-        if (!mode.is(Mode.OldGrim))
+        if (!mode.is(Mode.Grim))
             postAction();
     }
 
     public void postAction() {
-        float offset = (mode.is(Mode.OldGrim) || mode.is(Mode.NewGrim)) ? 0.3f : 0.2f;
+        float offset = mode.is(Mode.Grim) ? 0.3f : 0.2f;
 
         if (mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-offset, 0, -offset).offset(0, -0.5, 0)).iterator().hasNext())
             return;
@@ -194,7 +186,7 @@ public class Scaffold extends Module {
         int prevItem = prePlace(true);
 
         if (prevItem != -1) {
-            if (mc.player.input.playerInput.jump() && !MovementUtility.isMoving() && tower.getValue() && !mode.is(Mode.OldGrim) && !mode.is(Mode.NewGrim)) {
+            if (mc.player.input.jumping && !MovementUtility.isMoving() && tower.getValue() && !mode.is(Mode.Grim)) {
                 mc.player.setVelocity(0.0, 0.42, 0.0);
                 if (timer.passedMs(1500)) {
                     mc.player.setVelocity(mc.player.getVelocity().x, -0.28, mc.player.getVelocity().z);
@@ -206,8 +198,6 @@ public class Scaffold extends Module {
 
             if (mode.is(Mode.StrictNCP))
                 bhr = new BlockHitResult(new Vec3d(currentblock.position().getX() + 0.5, currentblock.position().getY() + 0.5, currentblock.position().getZ() + 0.5).add(new Vec3d(currentblock.facing().getUnitVector()).multiply(0.5)), currentblock.facing(), currentblock.position(), false);
-            else if (mode.is(Mode.Vanilla))
-                 bhr = new BlockHitResult(new Vec3d(currentblock.position().getX() + 0.5, currentblock.position().getY() + 0.5, currentblock.position().getZ() + 0.5), currentblock.facing(), currentblock.position(), false);
             else
                 bhr = new BlockHitResult(new Vec3d((double) currentblock.position().getX() + Math.random(), currentblock.position().getY() + 0.99f, (double) currentblock.position().getZ() + Math.random()), currentblock.facing(), currentblock.position(), false);
 
@@ -218,12 +208,10 @@ public class Scaffold extends Module {
             if (sneak)
                 mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
 
-            if (mode.is(Mode.OldGrim))
-                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotations[0], rotations[1], mc.player.isOnGround(), false));
+            if (mode.is(Mode.Grim))
+                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotations[0], rotations[1], mc.player.isOnGround()));
 
-            if (mode.is(Mode.NewGrim)) {
-                sendSequencedPacket(id -> new PlayerInteractBlockC2SPacket(prevItem == -2 ? Hand.OFF_HAND : Hand.MAIN_HAND, bhr, id));
-            } else if (placeMode.getValue() == InteractionUtility.PlaceMode.Packet && !mode.is(Mode.OldGrim)) {
+            if (placeMode.getValue() == InteractionUtility.PlaceMode.Packet && !mode.is(Mode.Grim)) {
                 boolean finalIsOffhand = prevItem == -2;
                 sendSequencedPacket(id -> new PlayerInteractBlockC2SPacket(finalIsOffhand ? Hand.OFF_HAND : Hand.MAIN_HAND, bhr, id));
             } else
@@ -236,8 +224,8 @@ public class Scaffold extends Module {
             if (sneak)
                 mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
 
-            if (mode.is(Mode.OldGrim))
-                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround(), false));
+            if (mode.is(Mode.Grim))
+                sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround()));
 
             if (render.getValue())
                 BlockAnimationUtility.renderBlock(currentblock.position(), renderLineColor.getValue().getColorObject(), renderLineWidth.getValue(), renderFillColor.getValue().getColorObject(), animationMode.getValue(), renderMode.getValue());

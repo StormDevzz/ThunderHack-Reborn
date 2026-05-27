@@ -51,7 +51,7 @@ public class MoreKnockback extends Module {
     private boolean canCrit() {
         boolean reasonForSkipCrit =
                         mc.player.getAbilities().flying
-                        || (mc.player.isGliding()
+                        || (mc.player.isFallFlying()
                         || ModuleManager.elytraPlus.isEnabled())
                         || mc.player.hasStatusEffect(StatusEffects.BLINDNESS)
                         || mc.world.getBlockState(BlockPos.ofFloored(mc.player.getPos())).getBlock() == Blocks.COBWEB

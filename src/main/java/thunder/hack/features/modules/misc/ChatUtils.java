@@ -37,10 +37,6 @@ public class ChatUtils extends Module {
     private final Setting<Boolean> wavy = new Setting<>("wAvY", false);
     private final Setting<Boolean> translit = new Setting<>("Translit", false);
     private final Setting<Boolean> antiCoordLeak = new Setting<>("AntiCoordLeak", false);
-    private final Setting<Boolean> superZov = new Setting<>("SuperZOV", false);
-    private final Setting<Boolean> cute = new Setting<>("Cute", false);
-    private final Setting<Boolean> nya = new Setting<>("Nya", false);
-    private final Setting<Boolean> potuzhno = new Setting<>("Potuzhno", false);
 
     private final Timer timer = new Timer();
     private final Timer antiSpam = new Timer();
@@ -233,32 +229,28 @@ public class ChatUtils extends Module {
     @EventHandler
     public void onPacketSend(PacketEvent.@NotNull Send e) {
         if (e.getPacket() instanceof ChatMessageC2SPacket pac) {
+            if (antiCoordLeak.getValue() && pac.chatMessage.replaceAll("\\D", "").length() >= 6) {
+                sendMessage("[ChatUtils] " + (isRu() ? "В сообщении содержатся координаты!" : "The message contains coordinates!"));
+                e.cancel();
+            }
+
+            messageTimer.reset();
+        }
+
+        if (fullNullCheck()) return;
+        if (e.getPacket() instanceof ChatMessageC2SPacket pac && (zov.getValue() || wavy.getValue() || translit.getValue())) {
+
             if (Objects.equals(pac.chatMessage(), skip)) {
                 return;
             }
 
+            if (mc.player.getMainHandStack().getItem() == Items.FILLED_MAP || mc.player.getOffHandStack().getItem() == Items.FILLED_MAP)
+                return;
+
             if (pac.chatMessage().startsWith("/") || pac.chatMessage().startsWith(Managers.COMMAND.getPrefix()))
                 return;
 
-            if (antiCoordLeak.getValue() && pac.chatMessage.replaceAll("\\D", "").length() >= 6) {
-                sendMessage("[ChatUtils] " + (isRu() ? "В сообщении содержатся координаты!" : "The message contains coordinates!"));
-                e.cancel();
-                return;
-            }
-
             String message = pac.chatMessage();
-            boolean changed = false;
-
-            if (superZov.getValue()) {
-                message = "ZoV";
-                changed = true;
-            }
-
-            if (potuzhno.getValue()) {
-                message = "ПОТУЖНООООО";
-                changed = true;
-            }
-
             if (zov.getValue()) {
                 StringBuilder builder = new StringBuilder();
                 for (char Z : message.toCharArray()) {
@@ -271,9 +263,7 @@ public class ChatUtils extends Module {
                     }
                 }
                 message = builder.toString();
-                changed = true;
             }
-
             if (wavy.getValue()) {
                 StringBuilder builder = new StringBuilder();
                 boolean up = false;
@@ -286,31 +276,12 @@ public class ChatUtils extends Module {
                     up = Character.isLetter(C) != up;
                 }
                 message = builder.toString();
-                changed = true;
             }
-
-            if (translit.getValue()) {
+            if (translit.getValue())
                 message = transliterate(message);
-                changed = true;
-            }
-
-            if (cute.getValue()) {
-                message += " :3";
-                changed = true;
-            }
-
-            if (nya.getValue()) {
-                message += "~";
-                changed = true;
-            }
-
-            if (changed) {
-                skip = message;
-                mc.player.networkHandler.sendChatMessage(skip);
-                e.cancel();
-            }
-
-            messageTimer.reset();
+            skip = message;
+            mc.player.networkHandler.sendChatMessage(skip);
+            e.cancel();
         }
     }
 

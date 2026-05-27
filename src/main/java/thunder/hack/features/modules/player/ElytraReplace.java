@@ -1,6 +1,7 @@
 package thunder.hack.features.modules.player;
 
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.item.ElytraItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
@@ -26,7 +27,7 @@ public class ElytraReplace extends Module {
         if(is.isOf(Items.ELYTRA) && ((100f - ((float) is.getDamage() / (float) is.getMaxDamage()) * 100f) <= durability.getValue())){
 
             SearchInvResult result = InventoryUtility.findInInventory(stack -> {
-                if (stack.isOf(Items.ELYTRA))
+                if (stack.getItem() instanceof ElytraItem)
                     return (100f - ((float) stack.getDamage() / (float) stack.getMaxDamage()) * 100f) > durability.getValue();
                 return false;
             });

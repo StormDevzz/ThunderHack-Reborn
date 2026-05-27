@@ -108,7 +108,7 @@ public class Timer extends Module {
         }
 
         if (e.getPacket() instanceof EntityVelocityUpdateS2CPacket velo
-                && velo.getEntityId() == mc.player.getId() && mode.is(Mode.Grim)) {
+                && velo.getId() == mc.player.getId() && mode.is(Mode.Grim)) {
             ThunderHack.TICK_TIMER = 1f;
             energy = 0;
         }

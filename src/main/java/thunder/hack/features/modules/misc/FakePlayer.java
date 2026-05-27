@@ -73,9 +73,9 @@ public class FakePlayer extends Module {
     public void onPacketReceive(PacketEvent.Receive e) {
         if (e.getPacket() instanceof ExplosionS2CPacket explosion && fakePlayer != null && fakePlayer.hurtTime == 0) {
             fakePlayer.onDamaged(mc.world.getDamageSources().generic());
-            fakePlayer.setHealth(fakePlayer.getHealth() + fakePlayer.getAbsorptionAmount() - ExplosionUtility.getAutoCrystalDamage(new Vec3d(explosion.center().x, explosion.center().y, explosion.center().z), fakePlayer, 0, false));
+            fakePlayer.setHealth(fakePlayer.getHealth() + fakePlayer.getAbsorptionAmount() - ExplosionUtility.getAutoCrystalDamage(new Vec3d(explosion.getX(), explosion.getY(), explosion.getZ()), fakePlayer, 0, false));
             if (fakePlayer.isDead()) {
-                if (((thunder.hack.injection.accesors.ILivingEntity) fakePlayer).invokeTryUseDeathProtector(mc.world.getDamageSources().generic())) {
+                if (fakePlayer.tryUseTotem(mc.world.getDamageSources().generic())) {
                     fakePlayer.setHealth(10f);
 
 
@@ -132,7 +132,7 @@ public class FakePlayer extends Module {
                 fakePlayer.setHealth(fakePlayer.getHealth() + fakePlayer.getAbsorptionAmount() - InventoryUtility.getHitDamage(mc.player.getMainHandStack(), fakePlayer));
             else fakePlayer.setHealth(fakePlayer.getHealth() + fakePlayer.getAbsorptionAmount() - 1f);
             if (fakePlayer.isDead()) {
-                if (((thunder.hack.injection.accesors.ILivingEntity) fakePlayer).invokeTryUseDeathProtector(mc.world.getDamageSources().generic())) {
+                if (fakePlayer.tryUseTotem(mc.world.getDamageSources().generic())) {
                     fakePlayer.setHealth(10f);
                     new EntityStatusS2CPacket(fakePlayer, EntityStatuses.USE_TOTEM_OF_UNDYING).apply(mc.player.networkHandler);
                 }
@@ -143,7 +143,7 @@ public class FakePlayer extends Module {
     @Override
     public void onDisable() {
         if (fakePlayer == null) return;
-        fakePlayer.discard();
+        fakePlayer.kill();
         fakePlayer.setRemoved(Entity.RemovalReason.KILLED);
         fakePlayer.onRemoved();
         fakePlayer = null;

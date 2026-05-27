@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
 import thunder.hack.core.Managers;
+import thunder.hack.utility.render.shaders.satin.impl.ReloadableShaderEffectManager;
 import net.minecraft.client.option.Perspective;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
@@ -55,7 +56,7 @@ public abstract class MixinGameRenderer {
     @Shadow
     public abstract void tick();
 
-    @Inject(at = @At("TAIL"), method = "render")
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiler/Profiler;pop()V", ordinal = 1, shift = At.Shift.BEFORE), method = "render")
     void postHudRenderHook(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
         FrameRateCounter.INSTANCE.recordFrame();
     }
@@ -69,6 +70,7 @@ public abstract class MixinGameRenderer {
         RenderSystem.getModelViewStack().pushMatrix().mul(matrixStack.peek().getPositionMatrix());
         matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(camera.getPitch()));
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(camera.getYaw() + 180.0f));
+        RenderSystem.applyModelViewMatrix();
 
         Render3DEngine.lastProjMat.set(RenderSystem.getProjectionMatrix());
         Render3DEngine.lastModMat.set(RenderSystem.getModelViewMatrix());
@@ -79,12 +81,24 @@ public abstract class MixinGameRenderer {
         Render3DEngine.onRender3D(matrixStack); // <- не двигать
 
         RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.applyModelViewMatrix();
+    }
+
+    @Inject(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;renderHand(Lnet/minecraft/client/render/Camera;FLorg/joml/Matrix4f;)V", shift = At.Shift.AFTER))
+    public void postRender3dHook(RenderTickCounter tickCounter, CallbackInfo ci) {
+        if (Module.fullNullCheck()) return;
+        Managers.SHADER.renderShaders();
     }
 
     @Redirect(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;lerp(FFF)F"))
     private float renderWorldHook(float delta, float first, float second) {
         if (ModuleManager.noRender.isEnabled() && ModuleManager.noRender.nausea.getValue()) return 0;
         return MathHelper.lerp(delta, first, second);
+    }
+
+    @Inject(method = "loadPrograms", at = @At(value = "RETURN"))
+    private void loadSatinPrograms(ResourceFactory factory, CallbackInfo ci) {
+        ReloadableShaderEffectManager.INSTANCE.reload(factory);
     }
 
     @Inject(method = "updateCrosshairTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;findCrosshairTarget(Lnet/minecraft/entity/Entity;DDF)Lnet/minecraft/util/hit/HitResult;"), cancellable = true)
@@ -101,6 +115,7 @@ public abstract class MixinGameRenderer {
          */
 
         if (ModuleManager.freeCam.isEnabled()) {
+            mc.getProfiler().pop();
             info.cancel();
             mc.crosshairTarget = Managers.PLAYER.getRtxTarget(ModuleManager.freeCam.getFakeYaw(), ModuleManager.freeCam.getFakePitch(), ModuleManager.freeCam.getFakeX(), ModuleManager.freeCam.getFakeY(), ModuleManager.freeCam.getFakeZ());
         }
@@ -118,7 +133,7 @@ public abstract class MixinGameRenderer {
     }
 
     @Inject(method = "getBasicProjectionMatrix", at = @At("TAIL"), cancellable = true)
-    public void getBasicProjectionMatrixHook(float fov, CallbackInfoReturnable<Matrix4f> cir) {
+    public void getBasicProjectionMatrixHook(double fov, CallbackInfoReturnable<Matrix4f> cir) {
         if (ModuleManager.aspectRatio.isEnabled()) {
             MatrixStack matrixStack = new MatrixStack();
             matrixStack.peek().getPositionMatrix().identity();
@@ -131,21 +146,21 @@ public abstract class MixinGameRenderer {
         }
     }
 
-    @Inject(method = "getFov(Lnet/minecraft/client/render/Camera;FZ)F", at = @At("TAIL"), cancellable = true)
-    public void getFov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Float> cb) {
+    @Inject(method = "getFov(Lnet/minecraft/client/render/Camera;FZ)D", at = @At("TAIL"), cancellable = true)
+    public void getFov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Double> cb) {
         if (ModuleManager.fov.isEnabled()) {
-            if (cb.getReturnValue() == 70f && !ModuleManager.fov.itemFov.getValue() && mc.options.getPerspective() != Perspective.FIRST_PERSON)
+            if (cb.getReturnValue() == 70 && !ModuleManager.fov.itemFov.getValue() && mc.options.getPerspective() != Perspective.FIRST_PERSON)
                 return;
 
-            else if (ModuleManager.fov.itemFov.getValue() && cb.getReturnValue() == 70f) {
-                cb.setReturnValue(ModuleManager.fov.itemFovModifier.getValue().floatValue());
+            else if (ModuleManager.fov.itemFov.getValue() && cb.getReturnValue() == 70) {
+                cb.setReturnValue(ModuleManager.fov.itemFovModifier.getValue().doubleValue());
                 return;
             }
 
             if (mc.player.isSubmergedInWater())
                 return;
 
-            cb.setReturnValue(ModuleManager.fov.fovModifier.getValue().floatValue());
+            cb.setReturnValue(ModuleManager.fov.fovModifier.getValue().doubleValue());
         }
     }
 

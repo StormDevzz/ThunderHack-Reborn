@@ -50,8 +50,8 @@ public abstract class MixinScreen {
             }
     }
 
-    @Inject(method = "onFilesDropped", at = @At("HEAD"))
-    public void onFilesDropped(List<Path> paths, CallbackInfo ci) {
+    @Inject(method = "filesDragged", at = @At("HEAD"))
+    public void filesDragged(List<Path> paths, CallbackInfo ci) {
         String configPath = paths.get(0).toString();
         File cfgFile = new File(configPath);
         String fileName = cfgFile.getName();

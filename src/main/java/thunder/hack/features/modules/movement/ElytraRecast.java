@@ -4,6 +4,7 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.item.ElytraItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
@@ -69,9 +70,9 @@ public class ElytraRecast extends Module {
 
     @Override
     public void onDisable() {
-        if (!InputUtil.isKeyPressed(mc.getWindow().getHandle(), mc.options.forwardKey.getDefaultKey().getCode()))
+        if (!InputUtil.isKeyPressed(mc.getWindow(), mc.options.forwardKey.getDefaultKey().getCode()))
             mc.options.forwardKey.setPressed(false);
-        if (!InputUtil.isKeyPressed(mc.getWindow().getHandle(), mc.options.jumpKey.getDefaultKey().getCode()))
+        if (!InputUtil.isKeyPressed(mc.getWindow(), mc.options.jumpKey.getDefaultKey().getCode()))
             mc.options.jumpKey.setPressed(false);
     }
 
@@ -80,7 +81,7 @@ public class ElytraRecast extends Module {
         if (autoJump.getValue()) mc.options.jumpKey.setPressed(true);
         if (autoWalk.getValue()) mc.options.forwardKey.setPressed(true);
 
-        if (!mc.player.isGliding() && mc.player.fallDistance > 0 && checkElytra() && !mc.player.isGliding())
+        if (!mc.player.isFallFlying() && mc.player.fallDistance > 0 && checkElytra() && !mc.player.isFallFlying())
             castElytra();
 
         jitter = (20 * MathUtility.sin((System.currentTimeMillis() - ThunderHack.initTime) / 50f));
@@ -97,9 +98,9 @@ public class ElytraRecast extends Module {
     }
 
     private boolean checkElytra() {
-        if (mc.player.input.playerInput.jump() && !mc.player.getAbilities().flying && !mc.player.hasVehicle() && !mc.player.isClimbing()) {
+        if (mc.player.input.jumping && !mc.player.getAbilities().flying && !mc.player.hasVehicle() && !mc.player.isClimbing()) {
             ItemStack is = mc.player.getEquippedStack(EquipmentSlot.CHEST);
-            return is.isOf(Items.ELYTRA) && ((is.getDamage() < is.getMaxDamage() - 1) || allowBroken.getValue());
+            return is.isOf(Items.ELYTRA) && (ElytraItem.isUsable(is) || allowBroken.getValue());
         }
         return false;
     }
@@ -107,8 +108,8 @@ public class ElytraRecast extends Module {
     private boolean check() {
         if (!mc.player.isTouchingWater() && !mc.player.hasStatusEffect(StatusEffects.LEVITATION)) {
             ItemStack is = mc.player.getEquippedStack(EquipmentSlot.CHEST);
-            if (is.isOf(Items.ELYTRA) && ((is.getDamage() < is.getMaxDamage() - 1) || allowBroken.getValue())) {
-                mc.player.startGliding();
+            if (is.isOf(Items.ELYTRA) && (ElytraItem.isUsable(is) || allowBroken.getValue())) {
+                mc.player.startFallFlying();
                 return true;
             }
         }

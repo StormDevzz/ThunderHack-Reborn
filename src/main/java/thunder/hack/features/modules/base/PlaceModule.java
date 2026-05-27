@@ -154,7 +154,7 @@ public abstract class PlaceModule extends Module {
         attackTimer.reset();
 
         if (remove.getValue()) {
-            entity.discard();
+            entity.kill();
             entity.setRemoved(Entity.RemovalReason.KILLED);
             entity.onRemoved();
         }
@@ -190,7 +190,7 @@ public abstract class PlaceModule extends Module {
         if (oakPlanks.getValue())
             canUseBlocks.addAll(List.of(Blocks.OAK_PLANKS, Blocks.BIRCH_PLANKS, Blocks.DARK_OAK_PLANKS));
         final ItemStack mainHandStack = mc.player.getMainHandStack();
-        if (!mainHandStack.isEmpty() && mainHandStack.getItem() instanceof BlockItem) {
+        if (mainHandStack != ItemStack.EMPTY && mainHandStack.getItem() instanceof BlockItem) {
             final Block blockFromMainHandItem = ((BlockItem) mainHandStack.getItem()).getBlock();
             if (canUseBlocks.contains(blockFromMainHandItem))
                 return new SearchInvResult(mc.player.getInventory().selectedSlot, true, mainHandStack);

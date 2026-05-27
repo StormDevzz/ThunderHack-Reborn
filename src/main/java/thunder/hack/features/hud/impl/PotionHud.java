@@ -34,7 +34,7 @@ public class PotionHud extends HudElement {
     }
 
         /*
-        Render2DEngine.addWindow(context, getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
+        Render2DEngine.addWindow(context.getMatrices(), getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
         for (StatusEffectInstance potionEffect : effects) {
             StatusEffect potion = potionEffect.getEffectType().value();
             String power = "";
@@ -100,7 +100,7 @@ public class PotionHud extends HudElement {
             }
         }
 
-        Render2DEngine.addWindow(context, getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
+        Render2DEngine.addWindow(context.getMatrices(), getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
         int y_offset = 0;
         for (StatusEffectInstance potionEffect : mc.player.getStatusEffects()) {
             StatusEffect potion = potionEffect.getEffectType().value();
@@ -109,7 +109,7 @@ public class PotionHud extends HudElement {
 
             context.getMatrices().push();
             context.getMatrices().translate(getPosX() + 2, getPosY() + 16 + y_offset, 0);
-            context.drawSpriteStretched(net.minecraft.client.render.RenderLayer::getGuiTextured, mc.getStatusEffectSpriteManager().getSprite(potionEffect.getEffectType()), 0, 0, 8, 8);
+            context.drawSprite(0, 0, 0, 8, 8, mc.getStatusEffectSpriteManager().getSprite(potionEffect.getEffectType()));
             context.getMatrices().pop();
 
             FontRenderers.sf_bold_mini.drawString(context.getMatrices(), potion.getName().getString() + " " + Formatting.RED + (potionEffect.getAmplifier() + 1), getPosX() + 12, getPosY() + 19 + y_offset, HudEditor.textColor.getValue().getColor());
@@ -117,7 +117,7 @@ public class PotionHud extends HudElement {
             Render2DEngine.drawRect(context.getMatrices(), px, getPosY() + 17 + y_offset, 0.5f, 8, new Color(0x44FFFFFF, true));
             y_offset += 9;
         }
-        Render2DEngine.popWindow(context);
+        Render2DEngine.popWindow();
         setBounds(getPosX(), getPosY(), hAnimation, vAnimation);
     }
 }

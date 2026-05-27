@@ -40,53 +40,29 @@ import java.util.List;
 import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 public class ServerHelper extends Module {
-    public final Setting<Mode> mode = new Setting<>("Mode", Mode.Jenro);
-
     public ServerHelper() {
         super("ServerHelper", Category.MISC);
     }
 
-    // Jenro settings
-    private final Setting<Boolean> photomath = new Setting<>("PhotoMath", false, v -> mode.is(Mode.Jenro));
-    private final Setting<Boolean> antiTpHere = new Setting<>("AntiTpHere", false, v -> mode.is(Mode.Jenro));
-    private final Setting<Boolean> clanInvite = new Setting<>("ClanInvite", false, v -> mode.is(Mode.Jenro));
-    private final Setting<Integer> clanInviteDelay = new Setting<>("InviteDelay", 10, 1, 30, v -> mode.is(Mode.Jenro) && clanInvite.getValue());
-    private final Setting<Boolean> fixAll = new Setting<>("/fix all", true, v -> mode.is(Mode.Jenro));
-    private final Setting<Boolean> feed = new Setting<>("/feed", true, v -> mode.is(Mode.Jenro));
-    private final Setting<Boolean> near = new Setting<>("/near", true, v -> mode.is(Mode.Jenro));
-    private final Setting<Boolean> airDropWay = new Setting<>("AirDropWay", true, v -> mode.is(Mode.Jenro));
-    private final Setting<Boolean> farmilka = new Setting<>("Farmilka", true, v -> mode.is(Mode.Jenro));
-    public final Setting<Boolean> trueSight = new Setting<>("TrueSight", true, v -> mode.is(Mode.Jenro));
-    private final Setting<Boolean> spek = new Setting<>("SpekNotify", true, v -> mode.is(Mode.Jenro));
-    private final Setting<Bind> desorient = new Setting<>("Desorient", new Bind(-1, false, false), v -> mode.is(Mode.Jenro));
-    private final Setting<Bind> trap = new Setting<>("Trap", new Bind(-1, false, false), v -> mode.is(Mode.Jenro));
-    public final Setting<Boolean> aucHelper = new Setting<>("AucHelper", true, v -> mode.is(Mode.Jenro));
-    private final Setting<GroupBy> groupBy = new Setting<>("GroupBy", GroupBy.ItemType, v -> mode.is(Mode.Jenro) && aucHelper.getValue());
-    private final Setting<Integer> contrast = new Setting<>("Contrast", 4, 1, 15, v -> mode.is(Mode.Jenro) && aucHelper.getValue());
-
-    // Anarchy settings
-    private final Setting<Boolean> autoKit = new Setting<>("AutoKit", false, v -> mode.is(Mode.Anarchy));
-    private final Setting<String> kitCommand = new Setting<>("KitCommand", "kit starter", v -> mode.is(Mode.Anarchy) && autoKit.getValue());
-    private final Setting<Boolean> autoMessage = new Setting<>("AutoMessage", false, v -> mode.is(Mode.Anarchy));
-    private final Setting<String> messageText = new Setting<>("Message", "!", v -> mode.is(Mode.Anarchy) && autoMessage.getValue());
-    private final Setting<Integer> messageDelay = new Setting<>("MessageDelay", 5, 1, 30, v -> mode.is(Mode.Anarchy) && autoMessage.getValue());
-    private final Setting<Boolean> coordLog = new Setting<>("CoordLog", false, v -> mode.is(Mode.Anarchy));
-    private final Setting<Integer> coordLogInterval = new Setting<>("CoordLogInterval", 120, 10, 600, v -> mode.is(Mode.Anarchy) && coordLog.getValue());
-    private final Setting<Boolean> antiSpawnKill = new Setting<>("AntiSpawnKill", false, v -> mode.is(Mode.Anarchy));
-    private final Setting<Boolean> askGapple = new Setting<>("Gapple", true, v -> mode.is(Mode.Anarchy) && antiSpawnKill.getValue());
-    private final Setting<Boolean> askSafeMove = new Setting<>("SafeMove", false, v -> mode.is(Mode.Anarchy) && antiSpawnKill.getValue());
-    private final Setting<Integer> askSafeTime = new Setting<>("SafeTime", 2, 1, 5, v -> mode.is(Mode.Anarchy) && antiSpawnKill.getValue() && askSafeMove.getValue());
-    private final Setting<Boolean> autoRocket = new Setting<>("AutoRocket", false, v -> mode.is(Mode.Anarchy));
-    private final Setting<Integer> rocketDelay = new Setting<>("RocketDelay", 300, 100, 2000, v -> mode.is(Mode.Anarchy) && autoRocket.getValue());
-    private final Setting<Boolean> rocketOnlyJump = new Setting<>("OnlyOnJump", true, v -> mode.is(Mode.Anarchy) && autoRocket.getValue());
-    private final Setting<Boolean> rocketOnlyRockets = new Setting<>("OnlyWithRockets", false, v -> mode.is(Mode.Anarchy) && autoRocket.getValue());
+    private final Setting<Boolean> photomath = new Setting<>("PhotoMath", false);
+    private final Setting<Boolean> antiTpHere = new Setting<>("AntiTpHere", false);
+    private final Setting<Boolean> clanInvite = new Setting<>("ClanInvite", false);
+    private final Setting<Integer> clanInviteDelay = new Setting<>("InviteDelay", 10, 1, 30, v -> clanInvite.getValue());
+    private final Setting<Boolean> fixAll = new Setting<>("/fix all", true);
+    private final Setting<Boolean> feed = new Setting<>("/feed", true);
+    private final Setting<Boolean> near = new Setting<>("/near", true);
+    private final Setting<Boolean> airDropWay = new Setting<>("AirDropWay", true);
+    private final Setting<Boolean> farmilka = new Setting<>("Farmilka", true);
+    public final Setting<Boolean> trueSight = new Setting<>("TrueSight", true);
+    private final Setting<Boolean> spek = new Setting<>("SpekNotify", true);
+    private final Setting<Bind> desorient = new Setting<>("Desorient", new Bind(-1, false, false));
+    private final Setting<Bind> trap = new Setting<>("Trap", new Bind(-1, false, false));
+    public final Setting<Boolean> aucHelper = new Setting<>("AucHelper", true);
+    private final Setting<GroupBy> groupBy = new Setting<>("GroupBy", GroupBy.ItemType, v -> aucHelper.getValue());
+    private final Setting<Integer> contrast = new Setting<>("Contrast", 4, 1, 15, v -> aucHelper.getValue());
 
     private enum GroupBy {
         Name, ItemType
-    }
-
-    public enum Mode {
-        Jenro, Anarchy
     }
 
     private final Timer pvpTimer = new Timer();
@@ -98,30 +74,11 @@ public class ServerHelper extends Module {
     private final Timer disorientTimer = new Timer();
     private final Timer trapTimer = new Timer();
 
-    // Anarchy timers
-    private final Timer messageTimer = new Timer();
-    private final Timer coordTimer = new Timer();
-    private final Timer spawnTimer = new Timer();
-    private final Timer rocketTimer = new Timer();
-
     private boolean flag = false;
-    private boolean wasDead = false;
-    private boolean hasSentMessage = false;
-    private boolean hasSpawned = false;
 
-
-    @Override
-    public void onEnable() {
-        wasDead = mc.player != null && (mc.player.getHealth() <= 0 || mc.player.isDead());
-        hasSentMessage = false;
-        hasSpawned = false;
-        messageTimer.reset();
-    }
 
     @EventHandler
     public void onPacketReceive(PacketEvent.Receive event) {
-        if (!mode.is(Mode.Jenro)) return;
-
         if (event.getPacket() instanceof GameMessageS2CPacket pac) {
             if (spek.getValue()) {
                 String content = pac.content().getString().toLowerCase();
@@ -160,16 +117,6 @@ public class ServerHelper extends Module {
 
     @Override
     public void onUpdate() {
-        if (fullNullCheck()) return;
-
-        if (mode.is(Mode.Jenro)) {
-            updateJenro();
-        } else {
-            updateAnarchy();
-        }
-    }
-
-    private void updateJenro() {
         if (flag && atphtimer.passedMs(100) && antiTpHere.getValue()) {
             StringBuilder log = new StringBuilder("Тебя телепортировали в X: " + (int) mc.player.getX() + " Z: " + (int) mc.player.getZ() + ". Ближайшие игроки : ");
 
@@ -256,87 +203,6 @@ public class ServerHelper extends Module {
         }
     }
 
-    private void updateAnarchy() {
-        boolean isDead = mc.player.getHealth() <= 0 || mc.player.isDead();
-        if (!isDead && wasDead) {
-            if (autoKit.getValue()) {
-                mc.player.networkHandler.sendChatCommand(kitCommand.getValue());
-                Managers.NOTIFICATION.publicity("AutoKit", "Kit claimed: " + kitCommand.getValue(), 3, Notification.Type.SUCCESS);
-            }
-            if (antiSpawnKill.getValue()) {
-                hasSpawned = true;
-                spawnTimer.reset();
-            }
-        }
-        wasDead = isDead;
-
-        if (hasSpawned && antiSpawnKill.getValue()) {
-            if (askGapple.getValue()) {
-                SearchInvResult gapple = InventoryUtility.findItemInHotBar(Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
-                SearchInvResult gappleInv = InventoryUtility.findItemInInventory(Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
-                if (gapple.found()) {
-                    InventoryUtility.saveAndSwitchTo(gapple.slot());
-                    sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-                    InventoryUtility.returnSlot();
-                } else if (gappleInv.found()) {
-                    clickSlot(gappleInv.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
-                    sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-                    clickSlot(gappleInv.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
-                    sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
-                }
-            }
-            hasSpawned = false;
-        }
-
-        if (askSafeMove.getValue() && antiSpawnKill.getValue() && !spawnTimer.passedS(askSafeTime.getValue())) {
-            mc.player.input.movementForward = 0;
-            mc.player.input.movementSideways = 0;
-            mc.player.input.playerInput = new net.minecraft.util.PlayerInput(
-                mc.player.input.playerInput.forward(),
-                mc.player.input.playerInput.backward(),
-                mc.player.input.playerInput.left(),
-                mc.player.input.playerInput.right(),
-                false,
-                false,
-                mc.player.input.playerInput.sprint()
-            );
-        }
-
-        if (autoMessage.getValue() && !hasSentMessage) {
-            if (messageTimer.passedS(messageDelay.getValue())) {
-                mc.player.networkHandler.sendChatMessage(messageText.getValue());
-                hasSentMessage = true;
-            }
-        }
-
-        if (coordLog.getValue() && coordTimer.every(coordLogInterval.getValue() * 1000L)) {
-            String coords = String.format("X: %.1f Y: %.1f Z: %.1f | %s",
-                    mc.player.getX(), mc.player.getY(), mc.player.getZ(),
-                    mc.world.getRegistryKey().getValue().toString());
-            sendMessage("[CoordLog] " + coords);
-        }
-
-        if (autoRocket.getValue() && mc.player.isGliding() && rocketTimer.every(rocketDelay.getValue().longValue())) {
-            if (rocketOnlyJump.getValue() && !mc.options.jumpKey.isPressed())
-                return;
-
-            SearchInvResult rocket = InventoryUtility.findItemInHotBar(Items.FIREWORK_ROCKET);
-            if (rocket.found()) {
-                InventoryUtility.saveAndSwitchTo(rocket.slot());
-                sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-                InventoryUtility.returnSlot();
-            } else if (!rocketOnlyRockets.getValue()) {
-                SearchInvResult rocketInv = InventoryUtility.findItemInInventory(Items.FIREWORK_ROCKET);
-                if (rocketInv.found()) {
-                    clickSlot(rocketInv.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
-                    sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-                    clickSlot(rocketInv.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
-                    sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
-                }
-            }
-        }
-    }
-
     private boolean canSendCommand() {
         if (pvpTimer.passedMs(30000)) {
             pvpTimer.reset();
@@ -351,7 +217,6 @@ public class ServerHelper extends Module {
 
     @EventHandler
     public void onPacketSend(PacketEvent.Send e) {
-        if (!mode.is(Mode.Jenro)) return;
         if (e.getPacket() instanceof CommandExecutionC2SPacket)
             checktimer.reset();
     }
@@ -359,7 +224,6 @@ public class ServerHelper extends Module {
     @EventHandler
     private void onSync(EventSync event) {
         if (fullNullCheck()) return;
-        if (!mode.is(Mode.Jenro)) return;
 
         if (isKeyPressed(desorient.getValue().getKey()) && disorientTimer.passedMs(3000) && mc.currentScreen == null) {
             use(InventoryUtility.findInHotBar(i -> i.getItem() == Items.ENDER_EYE),
@@ -378,12 +242,11 @@ public class ServerHelper extends Module {
         if (groupBy.is(GroupBy.Name)) {
             return stack.getName().getString();
         } else {
-            return stack.getItem().getTranslationKey();
+            return stack.getTranslationKey();
         }
     }
 
     public void onRenderChest(DrawContext context, Slot slot) {
-        if (!mode.is(Mode.Jenro)) return;
         if (mc.player.currentScreenHandler instanceof GenericContainerScreenHandler chest)
             if (mc.currentScreen.getTitle().getString().contains("Аукцион") || mc.currentScreen.getTitle().getString().contains("Поиск"))
                 for (AucItem item : result)

@@ -2,10 +2,8 @@ package thunder.hack.features.modules.client;
 
 import baritone.api.BaritoneAPI;
 import meteordevelopment.orbit.EventHandler;
-import java.awt.Color;
 import net.minecraft.util.Identifier;
 import thunder.hack.ThunderHack;
-import thunder.hack.setting.impl.ColorSetting;
 import thunder.hack.events.impl.EventSetting;
 import thunder.hack.gui.clickui.ClickGUI;
 import thunder.hack.gui.font.FontRenderers;

@@ -1,6 +1,5 @@
 package thunder.hack.gui.mainmenu;
 
-import java.awt.Color;
 import net.minecraft.client.gui.DrawContext;
 import org.jetbrains.annotations.NotNull;
 import thunder.hack.gui.font.FontRenderers;

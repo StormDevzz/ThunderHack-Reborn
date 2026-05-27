@@ -51,14 +51,12 @@ public final class ThunderUtility {
     }
 
     public static Identifier getCustomImg(String name) throws IOException {
-        Identifier id = Identifier.of("th-" + name + "-" + (int) MathUtility.random(0, 1000));
-        mc.getTextureManager().registerTexture(id, new NativeImageBackedTexture(NativeImage.read(new FileInputStream(IMAGES_FOLDER + "/" + name + ".png"))));
-        return id;
+        return mc.getTextureManager().registerDynamicTexture("th-" + name + "-" + (int) MathUtility.random(0, 1000), new NativeImageBackedTexture(NativeImage.read(new FileInputStream(IMAGES_FOLDER + "/" + name + ".png"))));
     }
 
     public static void syncVersion() {
         try {
-            if (!new BufferedReader(new InputStreamReader(new URL("https://raw.githubusercontent.com/StormDevzz/ThunderHack-Reborn/main/syncVersion121.txt").openStream())).readLine().equals(ThunderHack.VERSION))
+            if (!new BufferedReader(new InputStreamReader(new URL("https://raw.githubusercontent.com/Pan4ur/THRecodeUtil/main/syncVersion121.txt").openStream())).readLine().equals(ThunderHack.VERSION))
                 ThunderHack.isOutdated = true;
         } catch (Exception ignored) {
         }
@@ -69,7 +67,7 @@ public final class ThunderUtility {
 
         try {
             for (int page = 1; page <= 3; page++) {
-                URL url = new URL("https://api.github.com/repos/StormDevzz/ThunderHack-Reborn/stargazers?per_page=100&page=" + page);
+                URL url = new URL("https://api.github.com/repos/Pan4ur/ThunderHack-Recode/stargazers?per_page=100&page=" + page);
                 BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
                 StringBuilder response = new StringBuilder();
                 String inputLine;
@@ -94,7 +92,7 @@ public final class ThunderUtility {
 
     public static void syncContributors() {
         try {
-            URL list = new URL("https://raw.githubusercontent.com/StormDevzz/ThunderHack-Reborn/main/thTeam.txt");
+            URL list = new URL("https://raw.githubusercontent.com/Pan4ur/THRecodeUtil/main/thTeam.txt");
             BufferedReader in = new BufferedReader(new InputStreamReader(list.openStream(), StandardCharsets.UTF_8));
             String inputLine;
             int i = 0;
@@ -106,55 +104,6 @@ public final class ThunderUtility {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static boolean checkLatestVersion() {
-        try {
-            URL url = new URL("https://api.github.com/repos/StormDevzz/ThunderHack-Reborn/releases/latest");
-            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
-            StringBuilder response = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null)
-                response.append(inputLine);
-            in.close();
-
-            JsonObject json = JsonParser.parseString(response.toString()).getAsJsonObject();
-            String releaseName = json.get("name").getAsString();
-
-            String remoteVersion = releaseName.replaceAll(".*\\(([^)]+)\\).*", "$1").trim();
-            if (remoteVersion.isEmpty()) return false;
-
-            String currentVersion = ThunderHack.VERSION;
-
-            return compareVersions(remoteVersion, currentVersion) > 0;
-        } catch (Exception ignored) {
-            return false;
-        }
-    }
-
-    public static boolean isUpdateAvailable(String remoteVersion, String currentVersion) {
-        return compareVersions(remoteVersion, currentVersion) > 0;
-    }
-
-    private static int compareVersions(String remote, String current) {
-        int[] rParts = parseVersion(remote);
-        int[] cParts = parseVersion(current);
-        int len = Math.max(rParts.length, cParts.length);
-        for (int i = 0; i < len; i++) {
-            int r = i < rParts.length ? rParts[i] : 0;
-            int c = i < cParts.length ? cParts[i] : 0;
-            if (r != c) return r - c;
-        }
-        return 0;
-    }
-
-    private static int[] parseVersion(String version) {
-        String numeric = version.replaceAll("^([0-9]+(\\.[0-9]+)*).*", "$1");
-        String[] parts = numeric.split("\\.");
-        int[] result = new int[parts.length];
-        for (int i = 0; i < parts.length; i++)
-            result[i] = Integer.parseInt(parts[i]);
-        return result;
     }
 
     public static String readManifestField(String fieldName) {
@@ -180,20 +129,17 @@ public final class ThunderUtility {
 
     public static void parseCommits() {
         try {
-            URL url = new URL("https://api.github.com/repos/StormDevzz/ThunderHack-Reborn/commits?per_page=50");
+            URL url = new URL("https://api.github.com/repos/Pan4ur/ThunderHack-Recode/commits?per_page=50");
             BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
 
-            changeLog.add("Changelog [Reborn; Date: " + ThunderHack.BUILD_DATE + "]");
+            changeLog.add("Changelog [Recode; Date: " + ThunderHack.BUILD_DATE + "; GitHash:" + ThunderHack.GITHUB_HASH + "]");
             changeLog.add("\n");
 
-            int commitCount = 0;
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 JsonArray jsonArray = JsonParser.parseString(inputLine).getAsJsonArray();
 
                 for (int i = 0; i < jsonArray.size(); i++) {
-                    if (commitCount >= 60) break;
-
                     JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
                     JsonObject commitObject = jsonObject.getAsJsonObject("commit");
                     JsonObject authorObject = commitObject.getAsJsonObject("author");
@@ -206,33 +152,11 @@ public final class ThunderUtility {
                         continue;
                     }
 
-                    if (info.length() > 72) {
-                        info = info.substring(0, 69) + "...";
-                    }
-
                     String formattedDate = Formatting.GRAY + date.split("T")[0] + Formatting.RESET;
-                    String formattedName = Formatting.DARK_GRAY + "@" + Formatting.AQUA + name + Formatting.RESET;
+                    String formattedName = "@" + Formatting.RED + name + Formatting.RESET;
 
-                    String prefix = "";
-                    if (info.startsWith("[+]")) {
-                        prefix = Formatting.GREEN + "[+] ";
-                        info = info.substring(3).trim();
-                    } else if (info.startsWith("[-]")) {
-                        prefix = Formatting.RED + "[-] ";
-                        info = info.substring(3).trim();
-                    } else if (info.startsWith("[/]")) {
-                        prefix = Formatting.LIGHT_PURPLE + "[/] ";
-                        info = info.substring(3).trim();
-                    } else if (info.startsWith("[*]")) {
-                        prefix = Formatting.GOLD + "[*] ";
-                        info = info.substring(3).trim();
-                    }
-
-                    changeLog.add(prefix + Formatting.WHITE + info + Formatting.RESET + " " + formattedDate + " " + formattedName);
-                    commitCount++;
+                    changeLog.add("- " + info + " [" + formattedDate + "]  (" + formattedName + ")");
                 }
-
-                if (commitCount >= 30) break;
             }
             in.close();
         } catch (Exception e) {

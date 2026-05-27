@@ -21,6 +21,7 @@ import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventFixVelocity;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.combat.HitBox;
+import thunder.hack.features.modules.render.Shaders;
 import thunder.hack.features.modules.render.Trails;
 import thunder.hack.utility.interfaces.IEntity;
 
@@ -92,6 +93,14 @@ public abstract class MixinEntity implements IEntity {
         }
     }
 
+    @Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true)
+    public void isGlowingHook(CallbackInfoReturnable<Boolean> cir) {
+        Shaders shaders = ModuleManager.shaders;
+        if (shaders.isEnabled()) {
+            cir.setReturnValue(shaders.shouldRender((Entity) (Object) this));
+        }
+    }
+
     @Inject(method = "isOnFire", at = @At("HEAD"), cancellable = true)
     public void isOnFireHook(CallbackInfoReturnable<Boolean> cir) {
         if (ModuleManager.noRender.isEnabled() && ModuleManager.noRender.fireEntity.getValue()) {
@@ -126,33 +135,15 @@ public abstract class MixinEntity implements IEntity {
 
     @ModifyVariable(method = "changeLookDirection", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     private double changeLookDirectionHook0(double value) {
-        if ((Object) this != mc.player) return value;
         if(ModuleManager.viewLock.isEnabled() && ModuleManager.viewLock.yaw.getValue())
             return 0d;
-        if (ModuleManager.freeCam.isEnabled()) {
-            ModuleManager.freeCam.handleMouseYaw(value);
-            return 0d;
-        }
-        if (ModuleManager.freeLook != null && ModuleManager.freeLook.isEnabled()) {
-            ModuleManager.freeLook.handleMouseYaw(value);
-            return 0d;
-        }
         return value;
     }
 
     @ModifyVariable(method = "changeLookDirection", at = @At("HEAD"), ordinal = 1, argsOnly = true)
     private double changeLookDirectionHook1(double value) {
-        if ((Object) this != mc.player) return value;
         if(ModuleManager.viewLock.isEnabled() && ModuleManager.viewLock.pitch.getValue())
             return 0d;
-        if (ModuleManager.freeCam.isEnabled()) {
-            ModuleManager.freeCam.handleMousePitch(value);
-            return 0d;
-        }
-        if (ModuleManager.freeLook != null && ModuleManager.freeLook.isEnabled()) {
-            ModuleManager.freeLook.handleMousePitch(value);
-            return 0d;
-        }
         return value;
     }
 }

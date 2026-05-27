@@ -58,7 +58,7 @@ public class PlayerManager implements IManager {
         lastYaw = ((IClientPlayerEntity) mc.player).getLastYaw();
         lastPitch = ((IClientPlayerEntity) mc.player).getLastPitch();
         if (mc.currentScreen == null) inInventory = false;
-        if (mc.player.isGliding() && mc.player.getEquippedStack(EquipmentSlot.CHEST).getItem() == Items.ELYTRA) {
+        if (mc.player.isFallFlying() && mc.player.getEquippedStack(EquipmentSlot.CHEST).getItem() == Items.ELYTRA) {
             ticksElytraFlying++;
         } else ticksElytraFlying = 0;
     }
@@ -96,25 +96,21 @@ public class PlayerManager implements IManager {
 
     @EventHandler
     public void onJump(EventPlayerJump e) {
-        if (mc.player == null) return;
         ModuleManager.rotations.onJump(e);
     }
 
     @EventHandler
     public void onPlayerMove(EventFixVelocity e) {
-        if (mc.player == null) return;
         ModuleManager.rotations.onPlayerMove(e);
     }
 
     @EventHandler
     public void modifyVelocity(EventPlayerTravel e) {
-        if (mc.player == null) return;
         ModuleManager.rotations.modifyVelocity(e);
     }
 
     @EventHandler
     public void onKeyInput(EventKeyboardInput e) {
-        if (mc.player == null) return;
         ModuleManager.rotations.onKeyInput(e);
     }
 
@@ -136,7 +132,7 @@ public class PlayerManager implements IManager {
     public void onPacketReceive(PacketEvent.@NotNull Receive event) {
         if (event.getPacket() instanceof UpdateSelectedSlotS2CPacket slot) {
             switchTimer.reset();
-            serverSideSlot = slot.slot();
+            serverSideSlot = slot.getSlot();
         }
     }
 

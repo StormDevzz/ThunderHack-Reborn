@@ -110,7 +110,8 @@ public abstract class MixinMinecraftClient {
 
     @Inject(method = "setOverlay", at = @At("HEAD"))
     public void setOverlay(Overlay overlay, CallbackInfo ci) {
-        // Texture reload is now handled by TextureReloadListener (SynchronizedResourceReloadListener)
+        //   if (overlay instanceof SplashOverlay)
+        //  Managers.SHADER.reloadShaders();
     }
 
     @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
@@ -159,12 +160,9 @@ public abstract class MixinMinecraftClient {
 
             for (int i = 0; i < imgList.size(); i++) {
                 NativeImage nativeImage = NativeImage.read(imgList.get(i));
-                int[] pixels = new int[nativeImage.getWidth() * nativeImage.getHeight()];
-                for (int p = 0; p < pixels.length; p++) {
-                    pixels[p] = nativeImage.getColorArgb(p % nativeImage.getWidth(), p / nativeImage.getWidth());
-                }
                 ByteBuffer bytebuffer = MemoryUtil.memAlloc(nativeImage.getWidth() * nativeImage.getHeight() * 4);
-                bytebuffer.asIntBuffer().put(pixels);
+
+                bytebuffer.asIntBuffer().put(nativeImage.copyPixelsRgba());
                 buffer.position(i);
                 buffer.width(nativeImage.getWidth());
                 buffer.height(nativeImage.getHeight());

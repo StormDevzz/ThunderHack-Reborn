@@ -1,5 +1,4 @@
 package thunder.hack.gui.clickui.impl;
-import net.minecraft.client.render.RenderLayer;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
@@ -46,7 +45,7 @@ public class BooleanParentElement extends AbstractElement {
         matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-180f * arrowAnimation));
         matrixStack.translate(-tx, -ty, 0);
         matrixStack.translate((x + width - 14), (y + 4.5f), 0);
-        context.drawTexture(RenderLayer::getGuiTextured, TextureStorage.guiArrow, 0, 0, 0, 0, 6, 6, 6, 6);
+        context.drawTexture(TextureStorage.guiArrow, 0, 0, 0, 0, 6, 6, 6, 6);
         matrixStack.translate(-(x + width - 14), -(y + 4.5f), 0);
         matrixStack.pop();
 

@@ -115,7 +115,7 @@ public class MacroWindow extends WindowBase {
         FontRenderers.sf_medium.drawCenteredString(context.getMatrices(), "Text", textX + textWidth / 2f, getY() + 40, textColor);
 
 
-        Render2DEngine.addWindow(context, getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1, 1f);
+        Render2DEngine.addWindow(context.getMatrices(), getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1, 1f);
 
         int id = 0;
         for (MacroPlate macroPlate : macroPlates) {
@@ -148,7 +148,7 @@ public class MacroWindow extends WindowBase {
             FontRenderers.sf_medium_mini.drawString(context.getMatrices(), id + ".", getX() + 3, macroPlate.offset + getY() + 41 + getScrollOffset(), textColor);
         }
         setMaxElementsHeight(macroPlates.size() * 20);
-        Render2DEngine.popWindow(context);
+        Render2DEngine.popWindow();
     }
 
     @Override
@@ -234,12 +234,12 @@ public class MacroWindow extends WindowBase {
 
     @Override
     public void keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_F && (InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
+        if (keyCode == GLFW.GLFW_KEY_F && (InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
             listeningId = -2;
             return;
         }
 
-        if (keyCode == GLFW.GLFW_KEY_V && (InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
+        if (keyCode == GLFW.GLFW_KEY_V && (InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
 
             String paste = GLFW.glfwGetClipboardString(mc.getWindow().getHandle());
             if (paste == null)

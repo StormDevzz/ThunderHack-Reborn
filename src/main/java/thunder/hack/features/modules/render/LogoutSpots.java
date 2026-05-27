@@ -1,5 +1,4 @@
 package thunder.hack.features.modules.render;
-import net.minecraft.client.gl.ShaderProgramKeys;
 
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -112,8 +111,10 @@ public class LogoutSpots extends Module {
                 if (renderMode.is(RenderMode.Box)) {
                     Render3DEngine.drawBoxOutline(data.getBoundingBox(), color.getValue().getColorObject(), 2);
                 } else {
-                    PlayerEntityModel modelPlayer = new PlayerEntityModel(
-                            mc.getLoadedEntityModels().getModelPart(EntityModelLayers.PLAYER), false);
+                    PlayerEntityModel modelPlayer = new PlayerEntityModel(new EntityRendererFactory.Context(
+                            mc.getEntityRenderDispatcher(), mc.getItemRenderer(),
+                            mc.getBlockRenderManager(), mc.getEntityRenderDispatcher().getHeldItemRenderer(),
+                            mc.getResourceManager(), mc.getEntityModelLoader(), mc.textRenderer).getPart(EntityModelLayers.PLAYER), false);
                     modelPlayer.getHead().scale(new Vector3f(-0.3f, -0.3f, -0.3f));
 
                     renderEntity(s, data, modelPlayer, ((OtherClientPlayerEntity)data).getSkinTextures().texture(), color.getValue().getAlpha());
@@ -154,17 +155,6 @@ public class LogoutSpots extends Module {
     }
 
     private void renderEntity(@NotNull MatrixStack matrices, @NotNull LivingEntity entity, @NotNull PlayerEntityModel modelBase, Identifier texture, int alpha) {
-        net.minecraft.client.render.entity.state.PlayerEntityRenderState state = new net.minecraft.client.render.entity.state.PlayerEntityRenderState();
-        net.minecraft.client.render.entity.EntityRenderer renderer = mc.getEntityRenderDispatcher().getRenderer(entity);
-        renderer.updateRenderState(entity, state, Render3DEngine.getTickDelta());
-
-        state.leftPantsLegVisible = true;
-        state.rightPantsLegVisible = true;
-        state.leftSleeveVisible = true;
-        state.rightSleeveVisible = true;
-        state.jacketVisible = true;
-        state.hatVisible = true;
-
         modelBase.leftPants.visible = true;
         modelBase.rightPants.visible = true;
         modelBase.leftSleeve.visible = true;
@@ -180,14 +170,16 @@ public class LogoutSpots extends Module {
         matrices.translate((float) x, (float) y, (float) z);
         matrices.multiply(RotationAxis.POSITIVE_Y.rotation(MathUtility.rad(180 - entity.bodyYaw)));
         prepareScale(matrices);
-        modelBase.setAngles(state);
+        modelBase.animateModel((PlayerEntity) entity, entity.limbAnimator.getPos(), entity.limbAnimator.getSpeed(), Render3DEngine.getTickDelta());
+        float limbSpeed = Math.min(entity.limbAnimator.getSpeed(), 1f);
+        modelBase.setAngles((PlayerEntity) entity, entity.limbAnimator.getPos(), limbSpeed, entity.age, entity.headYaw - entity.bodyYaw, entity.getPitch());
         BufferBuilder buffer;
         if (renderMode.is(RenderMode.TexturedChams)) {
             RenderSystem.setShaderTexture(0, texture);
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
         } else {
-            RenderSystem.setShader(ShaderProgramKeys.POSITION);
+            RenderSystem.setShader(GameRenderer::getPositionProgram);
             buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
         }
         RenderSystem.setShaderColor(color.getValue().getGlRed(), color.getValue().getGlGreen(), color.getValue().getGlBlue(), alpha / 255f);

@@ -51,16 +51,16 @@ public class MixinClientWorld {
     }
 
     @Inject(method = "getSkyColor", at = @At("HEAD"), cancellable = true)
-    private void getSkyColorHook(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Integer> cir) {
+    private void getSkyColorHook(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
         if (ModuleManager.worldTweaks.isEnabled() && WorldTweaks.fogModify.getValue().isEnabled()) {
             ColorSetting c = WorldTweaks.fogColor.getValue();
-            cir.setReturnValue(c.getColorObject().getRGB() & 0xFFFFFF);
+            cir.setReturnValue(new Vec3d(c.getGlRed(), c.getGlGreen(), c.getGlBlue()));
         }
     }
 
     @Inject(method = "playSound(DDDLnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FFZJ)V", at = @At("HEAD"))
     private void playSoundHoof(double x, double y, double z, SoundEvent event, SoundCategory category, float volume, float pitch, boolean useDistance, long seed, CallbackInfo ci) {
         if(ModuleManager.soundESP.isEnabled())
-            ModuleManager.soundESP.add(x, y, z, event.id().toString());
+            ModuleManager.soundESP.add(x, y, z, event.getId().toTranslationKey());
     }
 }

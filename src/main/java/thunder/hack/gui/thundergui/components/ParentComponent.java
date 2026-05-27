@@ -1,6 +1,4 @@
 package thunder.hack.gui.thundergui.components;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
 
 import net.minecraft.client.util.math.MatrixStack;
 import thunder.hack.gui.font.FontRenderers;
@@ -19,9 +17,8 @@ public class ParentComponent extends SettingElement {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
-        MatrixStack stack = context.getMatrices();
-        super.render(context, mouseX, mouseY, partialTicks);
+    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
+        super.render(stack, mouseX, mouseY, partialTicks);
         if ((getY() > ThunderGui.getInstance().main_posY + ThunderGui.getInstance().height) || getY() < ThunderGui.getInstance().main_posY) {
             return;
         }

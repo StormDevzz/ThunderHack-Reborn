@@ -1,14 +1,7 @@
 package thunder.hack.features.modules.client;
 
-import thunder.hack.ThunderHack;
-import thunder.hack.core.Managers;
 import thunder.hack.features.modules.Module;
-import thunder.hack.gui.notification.Notification;
 import thunder.hack.setting.Setting;
-import thunder.hack.utility.ThunderUtility;
-import thunder.hack.utility.Timer;
-
-import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 public final class ClientSettings extends Module {
     public static Setting<Boolean> futureCompatibility = new Setting<>("FutureCompatibility", false);
@@ -26,9 +19,6 @@ public final class ClientSettings extends Module {
     public static Setting<Language> language = new Setting<>("Language", Language.ENG);
     public static Setting<String> prefix = new Setting<>("Prefix", "@");
     public static Setting<ClipCommandMode> clipCommandMode = new Setting<>("ClipCommandMode", ClipCommandMode.Matrix);
-
-    private final Timer updateCheckTimer = new Timer();
-    private boolean firstCheck = true;
 
     public enum Language {
         RU,
@@ -51,33 +41,5 @@ public final class ClientSettings extends Module {
     @Override
     public boolean isToggleable() {
         return false;
-    }
-
-    @Override
-    public void onUpdate() {
-        if (!futureCompatibility.getValue())
-            return;
-
-        if (ThunderHack.isOutdated)
-            return;
-
-        if (firstCheck || updateCheckTimer.passedMs(1_800_000)) {
-            firstCheck = false;
-            updateCheckTimer.reset();
-            checkForUpdate();
-        }
-    }
-
-    private void checkForUpdate() {
-        Managers.ASYNC.run(() -> {
-            try {
-                if (ThunderUtility.checkLatestVersion()) {
-                    ThunderHack.isOutdated = true;
-                    String msg = isRu() ? "Доступна новая версия! Скачайте её на GitHub." : "New version available! Download it on GitHub.";
-                    Managers.NOTIFICATION.publicity("FutureCompatibility", msg, 8, Notification.Type.WARNING);
-                }
-            } catch (Exception ignored) {
-            }
-        });
     }
 }

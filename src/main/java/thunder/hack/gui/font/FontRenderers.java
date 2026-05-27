@@ -30,26 +30,6 @@ public class FontRenderers {
         return modules;
     }
 
-    public static void reloadAll() {
-        if (settings != null) settings.reloadResources();
-        if (modules != null) modules.reloadResources();
-        if (categories != null) categories.reloadResources();
-        if (icons != null) icons.reloadResources();
-        if (mid_icons != null) mid_icons.reloadResources();
-        if (big_icons != null) big_icons.reloadResources();
-        if (thglitch != null) thglitch.reloadResources();
-        if (thglitchBig != null) thglitchBig.reloadResources();
-        if (monsterrat != null) monsterrat.reloadResources();
-        if (sf_bold != null) sf_bold.reloadResources();
-        if (sf_bold_mini != null) sf_bold_mini.reloadResources();
-        if (sf_bold_micro != null) sf_bold_micro.reloadResources();
-        if (sf_medium != null) sf_medium.reloadResources();
-        if (sf_medium_mini != null) sf_medium_mini.reloadResources();
-        if (sf_medium_modules != null) sf_medium_modules.reloadResources();
-        if (minecraft != null) minecraft.reloadResources();
-        if (profont != null) profont.reloadResources();
-    }
-
     public static @NotNull FontRenderer create(float size, String name) throws IOException, FontFormatException {
         return new FontRenderer(Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(ThunderHack.class.getClassLoader().getResourceAsStream("assets/thunderhack/fonts/" + name + ".ttf"))).deriveFont(Font.PLAIN, size / 2f), size / 2f);
     }

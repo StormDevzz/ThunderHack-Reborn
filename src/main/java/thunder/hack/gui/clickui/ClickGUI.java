@@ -6,7 +6,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.ModuleManager;
@@ -141,8 +140,8 @@ public class ClickGUI extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // if (ModuleManager.clickGui.blur.getValue())
-        //    applyBlur(delta);
+        if (ModuleManager.clickGui.blur.getValue())
+            applyBlur(delta);
 
         anyHovered = false;
 
@@ -152,10 +151,14 @@ public class ClickGUI extends Screen {
             RenderSystem.setShaderTexture(0, image.file);
 
             Render2DEngine.renderTexture(context.getMatrices(),
+
                     mc.getWindow().getScaledWidth() - image.fileWidth * imageAnimation.getAnimationd(),
                     mc.getWindow().getScaledHeight() - image.fileHeight,
+
                     image.fileWidth,
                     image.fileHeight,
+
+
                     0, 0,
                     image.fileWidth, image.fileHeight, image.fileWidth, image.fileHeight);
         }
@@ -174,13 +177,13 @@ public class ClickGUI extends Screen {
 
         if (ModuleManager.clickGui.scrollMode.getValue() == ClickGui.scrollModeEn.Old) {
             for (AbstractCategory window : windows) {
-                if (InputUtil.isKeyPressed(mc.getWindow().getHandle(), 264))
+                if (InputUtil.isKeyPressed(mc.getWindow(), 264))
                     window.setY(window.getY() + 2);
-                if (InputUtil.isKeyPressed(mc.getWindow().getHandle(), 265))
+                if (InputUtil.isKeyPressed(mc.getWindow(), 265))
                     window.setY(window.getY() - 2);
-                if (InputUtil.isKeyPressed(mc.getWindow().getHandle(), 262))
+                if (InputUtil.isKeyPressed(mc.getWindow(), 262))
                     window.setX(window.getX() + 2);
-                if (InputUtil.isKeyPressed(mc.getWindow().getHandle(), 263))
+                if (InputUtil.isKeyPressed(mc.getWindow(), 263))
                     window.setX(window.getX() - 2);
                 if (scrollY != 0)
                     window.setY(window.getY() + scrollY);
@@ -207,11 +210,7 @@ public class ClickGUI extends Screen {
                             "\nПерекиньте конфиг в окошко майна, чтобы загрузить его" +
                             "\nShift + Left Mouse Click, чтобы изменить отображение модуля в Array list" +
                             "\nЩелкните колёсиком мыши по слайдеру, чтобы ввести значение с клавиатуры." +
-                            "\nDelete + Left Mouse Click по модулю, чтобы сбросить его настройки" +
-                            "\nНаведите на модуль, чтобы увидеть его описание" +
-                            "\nПеретащите заголовок категории, чтобы переместить её" +
-                            "\nПКМ по ползунку сбрасывает на значение по умолчанию" +
-                            "\nПрокручивайте колёсиком по настройке, чтобы изменить её значение"
+                            "\nDelete + Left Mouse Click по модулю, чтобы сбросить его настройки"
                             :
                             "Left Mouse Click to enable module" +
                                     "\nRight Mouse Click to open module settings" +
@@ -220,17 +219,14 @@ public class ClickGUI extends Screen {
                                     "\nDrag n Drop config there to load" +
                                     "\nShift + Left Mouse Click to change module visibility in Array list" +
                                     "\nMiddle Mouse Click on slider to enter value from keyboard" +
-                                    "\nDelete + Left Mouse Click on module to reset" +
-                                    "\nHover over a module to see its description" +
-                                    "\nDrag the category header to move it" +
-                                    "\nRight Click on a slider to reset to default" +
-                                    "\nScroll on a setting to change its value",
-                    5, mc.getWindow().getScaledHeight() - 140, HudEditor.getColor(0).getRGB());
+                                    "\nDelete + Left Mouse Click on module to reset",
+                    5, mc.getWindow().getScaledHeight() - 80, HudEditor.getColor(0).getRGB());
 
         if (!HudElement.anyHovered && !ClickGUI.anyHovered)
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
                 GLFW.glfwSetCursor(mc.getWindow().getHandle(), GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR));
             }
+
     }
 
     @Override

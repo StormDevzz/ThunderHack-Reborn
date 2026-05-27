@@ -87,7 +87,7 @@ public final class Quiver extends Module {
     }
 
     private void releaseBow() {
-        sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), -90, mc.player.isOnGround(), false));
+        sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), -90, mc.player.isOnGround()));
         mc.options.useKey.setPressed(false);
         mc.interactionManager.stopUsingItem(mc.player);
         count++;
@@ -95,13 +95,9 @@ public final class Quiver extends Module {
 
     private SearchInvResult getArrow(String name) {
         return InventoryUtility.findInInventory(stack -> {
-            if (stack.getItem() instanceof TippedArrowItem) {
-                var potion = stack.get(net.minecraft.component.DataComponentTypes.POTION_CONTENTS);
-                if (potion != null) {
-                    for (var effect : potion.getEffects()) {
-                        if (effect.getEffectType().value().getTranslationKey().contains(name)) return true;
-                    }
-                }
+            if (stack.getItem() instanceof TippedArrowItem tai) {
+                String key = tai.getTranslationKey(stack);
+                return key.contains("effect." + name);
             }
             return false;
         });
