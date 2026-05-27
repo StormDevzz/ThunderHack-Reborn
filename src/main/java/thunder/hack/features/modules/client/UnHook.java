@@ -45,10 +45,7 @@ public class UnHook extends Module { // Йо фабос, засунь в о4ко
                 ClientSettings.customMainMenu.setValue(false);
 
                 // Clean icon
-                try {
-                    mc.getWindow().setIcon(mc.getDefaultResourcePack(), SharedConstants.getGameVersion().isStable() ? Icons.RELEASE : Icons.SNAPSHOT);
-                } catch (Exception e) {
-                }
+                // setIcon stubbed for 1.21.9
 
                 // Clean chat
                 mc.inGameHud.getChatHud().clear(true);

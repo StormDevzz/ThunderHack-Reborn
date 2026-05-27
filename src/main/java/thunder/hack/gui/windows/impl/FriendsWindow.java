@@ -2,6 +2,7 @@ package thunder.hack.gui.windows.impl;
 
 import com.google.common.collect.Lists;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.StringHelper;
@@ -79,7 +80,7 @@ public class FriendsWindow extends WindowBase {
         Render2DEngine.horizontalGradient(context.getMatrices(), getX() + 2 + getWidth() / 2f - 2, getY() + 33f, getX() + 2 + getWidth() - 4, getY() + 33.5f, HudEditor.textColor.getValue().getColorObject(), Render2DEngine.injectAlpha(HudEditor.textColor.getValue().getColorObject(), 0));
 
 
-        Render2DEngine.addWindow(context.getMatrices(), getX(), getY() + 38, getX() + getWidth(), getY() + getHeight() - 1, 1f);
+        Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(getX(), getY() + 38, getX() + getWidth(), getY() + getHeight() - 1));
 
         int id = 0;
         for (FriendPlate friendPlate : friendPlates) {
@@ -87,7 +88,7 @@ public class FriendsWindow extends WindowBase {
             if ((int) (friendPlate.offset + getY() + 25) + getScrollOffset() > getY() + getHeight() || friendPlate.offset + getScrollOffset() + getY() + 10 < getY())
                 continue;
 
-            boolean online = mc.player != null && mc.player.networkHandler.getPlayerList().stream().map(p -> p.getProfile().getName()).toList().contains(friendPlate.name()) || Managers.TELEMETRY.getOnlinePlayers().contains(friendPlate.name());
+            boolean online = mc.player != null && mc.player.networkHandler.getListedPlayerListEntries().stream().map(p -> ((PlayerListEntry) p).getProfile().name()).toList().contains(friendPlate.name()) || Managers.TELEMETRY.getOnlinePlayers().contains(friendPlate.name());
 
             // Name
             Render2DEngine.drawRectWithOutline(context.getMatrices(), getX() + 11, friendPlate.offset + getY() + 36 + getScrollOffset(), getWidth() - 28, 11, color, color2);

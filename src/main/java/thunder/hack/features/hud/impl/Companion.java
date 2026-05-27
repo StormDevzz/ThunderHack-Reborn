@@ -1,6 +1,7 @@
 package thunder.hack.features.hud.impl;
 
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.entity.player.PlayerEntity;
 import org.jetbrains.annotations.NotNull;
@@ -47,44 +48,8 @@ public class Companion extends HudElement {
     }
 
     public void onRender2D(DrawContext context) {
-        super.onRender2D(context);
-
-        context.getMatrices().push();
-        context.getMatrices().translate((int) getPosX() + 100, (int) getPosY() + 100, 0);
-        context.getMatrices().scale((float) scale.getValue() / 100f, (float) scale.getValue() / 100f, 1);
-        context.getMatrices().translate(-((int) getPosX() + 100), -((int) getPosY() + 100), 0);
-        if (mode.getValue() == Mode.Boykisser)
-            context.drawTexture(TextureStorage.boykisser, (int) getPosX(), (int) getPosY(), 0, currentFrame * 128, 130, 128, 130, 6784);
-        else if (mode.getValue() == Mode.Paimon)
-            context.drawTexture(TextureStorage.paimon, (int) getPosX(), (int) getPosY(), 0, currentFrame * 200, 200, 200, 200, 10600);
-        else if (mode.getValue() == Mode.Baltika)
-            context.drawTexture(TextureStorage.baltika, (int) getPosX(), (int) getPosY(), 0, 0, 421, 800, 421, 800);
-        else if (mode.getValue() == Mode.Kowk)
-            context.drawTexture(TextureStorage.kowk, (int) getPosX(), (int) getPosY(), 0, 0, 287, 252, 287, 252);
-        context.getMatrices().pop();
-
-        if (!lastPop.passedMs(2000)) {
-            float w = FontRenderers.sf_bold.getStringWidth(message) + 8;
-            float factor = MathUtility.clamp(lastPop.getPassedTimeMs(), 0, 500) / 500f;
-            Render2DEngine.drawRound(context.getMatrices(), getPosX() + scale.getValue() / 3f, getPosY() + 70 - scale.getValue(), factor * w, 10, 3, new Color(0xFCD7DD));
-
-            Render2DEngine.addWindow(context.getMatrices(), getPosX() + scale.getValue() / 3f, getPosY() + 72 - scale.getValue(), factor * w + getPosX() + scale.getValue() / 3f, 20 + getPosY() + 72 - scale.getValue(), 1f);
-            FontRenderers.sf_bold.drawString(context.getMatrices(), message, getPosX() + 2 + scale.getValue() / 3f, getPosY() + 72 - scale.getValue(), new Color(0x484848).getRGB());
-            Render2DEngine.popWindow();
-        }
-
-        if (frameRate.passedMs(64)) {
-            frameRate.reset();
-            currentFrame++;
-            if (currentFrame > 52)
-                currentFrame = 0;
-        }
-
-        if (mode.getValue() == Mode.Baltika)
-            setBounds(getPosX() + 100, getPosY() + 100, (scale.getValue() * 3f), (scale.getValue() * 3f));
-        else
-            setBounds(getPosX(), getPosY(), (scale.getValue() * 3f), (scale.getValue() * 3f));
-    }
+    // stubbed for 1.21.9
+}
 
 
     @EventHandler
@@ -96,6 +61,10 @@ public class Companion extends HudElement {
         else
             message = event.getEntity().getName().getString() + " popped " + (event.getPops() > 1 ? event.getPops() + " totems!" : " a totem!");
         lastPop.reset();
+    }
+
+    private void drawTextureImmediate(Matrix4f matrix, Identifier tex, int x, int y, float u, float v, int width, int height, int texWidth, int texHeight) {
+        // stubbed for 1.21.9
     }
 
     private enum Mode {

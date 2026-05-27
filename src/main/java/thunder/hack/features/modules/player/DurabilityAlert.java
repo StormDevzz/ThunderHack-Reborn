@@ -2,8 +2,10 @@ package thunder.hack.features.modules.player;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
 import thunder.hack.core.Managers;
 import thunder.hack.features.modules.Module;
@@ -32,8 +34,9 @@ public class DurabilityAlert extends Module {
             for (PlayerEntity player : mc.world.getPlayers()) {
                 if (!Managers.FRIEND.isFriend(player)) continue;
                 if (player == mc.player) continue;
-                for (ItemStack stack : player.getInventory().armor) {
-                    if (stack.isEmpty() || !(stack.getItem() instanceof ArmorItem)) continue;
+                for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+                    ItemStack stack = player.getEquippedStack(slot);
+                    if (stack.isEmpty() || stack.get(DataComponentTypes.EQUIPPABLE) == null) continue;
                     if (getDurability(stack) < percent.getValue() && timer.passedMs(30000)) {
                         mc.player.networkHandler.sendChatCommand("msg " + player.getName().getString() + (isRu() ? " Срочно чини броню!" : " Fix your armor right now!"));
 
@@ -44,8 +47,9 @@ public class DurabilityAlert extends Module {
         }
 
         boolean flag = false;
-        for (ItemStack stack : mc.player.getInventory().armor) {
-            if (stack.isEmpty() || !(stack.getItem() instanceof ArmorItem)) continue;
+        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            ItemStack stack = mc.player.getEquippedStack(slot);
+            if (stack.isEmpty() || stack.get(DataComponentTypes.EQUIPPABLE) == null) continue;
             if (getDurability(stack) < percent.getValue()) {
                 need_alert = true;
                 flag = true;
@@ -59,9 +63,9 @@ public class DurabilityAlert extends Module {
             FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), isRu() ? "Срочно чини броню!" : "Fix your armor right now!", (float) mc.getWindow().getScaledWidth() / 2f, (float) mc.getWindow().getScaledHeight() / 3f, new Color(0xFFDF00).getRGB());
 
             Color c1 = new Color(0xFFDF00);
-            RenderSystem.setShaderColor(c1.getRed() / 255f, c1.getGreen() / 255f, c1.getBlue() / 255f, 1f);
-            context.drawTexture(TextureStorage.brokenShield, (int) (mc.getWindow().getScaledWidth() / 2f - 40), (int) (mc.getWindow().getScaledHeight() / 3f - 120), 80, 80, 0, 0, 80, 80, 80, 80);
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+            //RenderSystem.setShaderColor(c1.getRed() / 255f, c1.getGreen() / 255f, c1.getBlue() / 255f, 1f);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, TextureStorage.brokenShield, (int) (mc.getWindow().getScaledWidth() / 2f - 40), (int) (mc.getWindow().getScaledHeight() / 3f - 120), 80, 80, 0, 0, 80, 80, 80, 80);
+            //RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         }
     }
 

@@ -55,8 +55,8 @@ public class PlayerManager implements IManager {
 
         yaw = mc.player.getYaw();
         pitch = mc.player.getPitch();
-        lastYaw = ((IClientPlayerEntity) mc.player).getLastYaw();
-        lastPitch = ((IClientPlayerEntity) mc.player).getLastPitch();
+        lastYaw = mc.player.lastYaw;
+        lastPitch = mc.player.lastPitch;
         if (mc.currentScreen == null) inInventory = false;
         if (mc.player.isFallFlying() && mc.player.getEquippedStack(EquipmentSlot.CHEST).getItem() == Items.ELYTRA) {
             ticksElytraFlying++;
@@ -65,7 +65,7 @@ public class PlayerManager implements IManager {
 
     @EventHandler
     public void onTick(EventTick e) {
-        currentPlayerSpeed = (float) Math.hypot(mc.player.getX() - mc.player.prevX, mc.player.getZ() - mc.player.prevZ);
+        currentPlayerSpeed = (float) Math.hypot(mc.player.getX() - mc.player.lastX, mc.player.getZ() - mc.player.lastZ);
 
         if (speedResult.size() > 20)
             speedResult.poll();
@@ -137,14 +137,14 @@ public class PlayerManager implements IManager {
     }
 
     private float getBodyYaw() {
-        double x = mc.player.getX() - mc.player.prevX;
-        double z = mc.player.getZ() - mc.player.prevZ;
+        double x = mc.player.getX() - mc.player.lastX;
+        double z = mc.player.getZ() - mc.player.lastZ;
         float offset = bodyYaw;
         if ((x * x + z * z) > 0.0025000002f) offset = (float) (MathHelper.atan2(z, x) * 57.295776f - 90.0f);
         if (mc.player.handSwingProgress > 0.0f)
-            offset = ((IClientPlayerEntity) MinecraftClient.getInstance().player).getLastYaw();
-        float deltaBodyYaw = clamp(MathHelper.wrapDegrees((((IClientPlayerEntity) MinecraftClient.getInstance().player).getLastYaw()) - (bodyYaw + MathHelper.wrapDegrees(offset - bodyYaw) * 0.3f)), -45.0f, 75.0f);
-        return (deltaBodyYaw > 50f ? deltaBodyYaw * 0.2f : 0) + ((IClientPlayerEntity) MinecraftClient.getInstance().player).getLastYaw() - deltaBodyYaw;
+            offset = mc.player.lastYaw;
+        float deltaBodyYaw = clamp(MathHelper.wrapDegrees((mc.player.lastYaw) - (bodyYaw + MathHelper.wrapDegrees(offset - bodyYaw) * 0.3f)), -45.0f, 75.0f);
+        return (deltaBodyYaw > 50f ? deltaBodyYaw * 0.2f : 0) + mc.player.lastYaw - deltaBodyYaw;
     }
 
     public boolean checkRtx(float yaw, float pitch, float distance, float wallDistance, Aura.RayTrace rt) {
@@ -152,7 +152,7 @@ public class PlayerManager implements IManager {
             return true;
 
         HitResult result = rayTrace(distance, yaw, pitch);
-        Vec3d startPoint = mc.player.getPos().add(0, mc.player.getEyeHeight(mc.player.getPose()), 0);
+        Vec3d startPoint = mc.player.getEyePos();
         double distancePow2 = Math.pow(distance, 2);
 
         if (result != null)
@@ -187,7 +187,7 @@ public class PlayerManager implements IManager {
 
     public boolean checkRtx(float yaw, float pitch, float distance, float wallDistance, Entity entity) {
         HitResult result = rayTrace(distance, yaw, pitch);
-        Vec3d startPoint = mc.player.getPos().add(0, mc.player.getEyeHeight(mc.player.getPose()), 0);
+        Vec3d startPoint = mc.player.getEyePos();
         double distancePow2 = Math.pow(distance, 2);
 
         if (result != null)
@@ -221,7 +221,7 @@ public class PlayerManager implements IManager {
     public Entity getRtxTarget(float yaw, float pitch, float distance, boolean ignoreWalls) {
         Entity targetedEntity = null;
         HitResult result = ignoreWalls ? null : rayTrace(distance, yaw, pitch);
-        Vec3d vec3d = mc.player.getPos().add(0, mc.player.getEyeHeight(mc.player.getPose()), 0);
+        Vec3d vec3d = mc.player.getEyePos();
         double distancePow2 = Math.pow(distance, 2);
         if (result != null) distancePow2 = result.getPos().squaredDistanceTo(vec3d);
         Vec3d vec3d2 = getRotationVector(pitch, yaw);
@@ -243,7 +243,7 @@ public class PlayerManager implements IManager {
     }
 
     public Vec3d getRtxPoint(float yaw, float pitch, float distance) {
-        Vec3d vec3d = mc.player.getPos().add(0, mc.player.getEyeHeight(mc.player.getPose()), 0);
+        Vec3d vec3d = mc.player.getEyePos();
         double distancePow2 = Math.pow(distance, 2);
         Vec3d vec3d2 = getRotationVector(pitch, yaw);
         Vec3d vec3d3 = vec3d.add(vec3d2.x * distance, vec3d2.y * distance, vec3d2.z * distance);
@@ -299,7 +299,7 @@ public class PlayerManager implements IManager {
 
     public boolean isInWeb() {
         Box pBox = mc.player.getBoundingBox();
-        BlockPos pBlockPos = BlockPos.ofFloored(mc.player.getPos());
+        BlockPos pBlockPos = mc.player.getBlockPos();
 
         for (int x = pBlockPos.getX() - 2; x <= pBlockPos.getX() + 2; x++) {
             for (int y = pBlockPos.getY() - 1; y <= pBlockPos.getY() + 4; y++) {

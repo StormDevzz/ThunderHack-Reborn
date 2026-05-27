@@ -44,7 +44,7 @@ public class WaterSpeed extends Module {
     public void onMove(EventMove e) {
         if (mode.getValue() == Mode.Intave) {
             if (mc.player.isSwimming()) {
-                double[] dirSpeed = MovementUtility.forward(acceleration / (mc.player.input.movementSideways != 0 ? 2.2f : 2f));
+                double[] dirSpeed = MovementUtility.forward(acceleration / ((mc.player.input.playerInput.left() || mc.player.input.playerInput.right()) ? 2.2f : 2f));
                 e.setX(e.getX() + dirSpeed[0]);
                 e.setZ(e.getZ() + dirSpeed[1]);
                 e.cancel();
@@ -56,13 +56,21 @@ public class WaterSpeed extends Module {
 
         if (mode.getValue() == Mode.FunTimeNew) {
             if (mc.player.isSwimming()) {
-                mc.player.input.movementSideways = 0;
+                mc.player.input.playerInput = new net.minecraft.util.PlayerInput(
+                    mc.player.input.playerInput.forward(),
+                    mc.player.input.playerInput.backward(),
+                    false,
+                    false,
+                    mc.player.input.playerInput.jump(),
+                    mc.player.input.playerInput.sneak(),
+                    mc.player.input.playerInput.sprint()
+                );
                 double[] dirSpeed = MovementUtility.forward(acceleration / 6.3447f);
                 e.setX(e.getX() + dirSpeed[0]);
                 e.setZ(e.getZ() + dirSpeed[1]);
                 e.cancel();
 
-                if (Math.abs(mc.player.getYaw() - mc.player.prevYaw) > 3) acceleration -= 0.1f;
+                if (Math.abs(mc.player.getYaw() - mc.player.lastYaw) > 3) acceleration -= 0.1f;
                 else acceleration += 0.015f;
 
                 acceleration = MathUtility.clamp(acceleration, 0f, 1f);
@@ -72,7 +80,15 @@ public class WaterSpeed extends Module {
 
         if (mode.getValue() == Mode.Custom) {
             if (mc.player.isSwimming() && mc.player.isTouchingWater()) {
-                mc.player.input.movementSideways = 0;
+                mc.player.input.playerInput = new net.minecraft.util.PlayerInput(
+                    mc.player.input.playerInput.forward(),
+                    mc.player.input.playerInput.backward(),
+                    false,
+                    false,
+                    mc.player.input.playerInput.jump(),
+                    mc.player.input.playerInput.sneak(),
+                    mc.player.input.playerInput.sprint()
+                );
                 double[] dirSpeed = MovementUtility.forward(acceleration * customSpeed.getValue());
                 e.setX(e.getX() + dirSpeed[0]);
                 e.setZ(e.getZ() + dirSpeed[1]);

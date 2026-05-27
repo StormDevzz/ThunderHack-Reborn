@@ -1,6 +1,5 @@
 package thunder.hack.gui.windows;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
@@ -50,8 +49,6 @@ public class WindowBase {
         prevScrollOffset = AnimationUtility.fast(prevScrollOffset, scrollOffset, 12);
         Color color2 = new Color(0xC55B5B5B, true);
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
         Render2DEngine.drawHudBase(context.getMatrices(), x, y, width + 10, height, 1, false);
         Render2DEngine.drawRect(context.getMatrices(), x + 0.5f, y, width + 9, 16, new Color(0x5F000000, true));
         Render2DEngine.horizontalGradient(context.getMatrices(), x + 2, y + 16f, x + 2 + width / 2f - 2, y + 16.5f, Render2DEngine.injectAlpha(HudEditor.textColor.getValue().getColorObject(), 0), HudEditor.textColor.getValue().getColorObject());
@@ -68,7 +65,6 @@ public class WindowBase {
 
         Render2DEngine.drawLine(x + width - 2, y + 5, x + width + 4, y + 11, Colors.WHITE);
         Render2DEngine.drawLine(x + width - 2, y + 11, x + width + 4, y + 5, Colors.WHITE);
-        RenderSystem.disableBlend();
 
         if (dragging) {
             setX(Render2DEngine.scrollAnimate((normaliseX() - dragX), getX(), .15f));

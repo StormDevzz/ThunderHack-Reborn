@@ -27,7 +27,8 @@ public class ServerManager implements IManager {
     }
 
     public float getTPSFactor() {
-        return (float) tickTime / 1000f;
+        if (tps == 0.0f) return 1.0f;
+        return 20.0f / tps;
     }
 
     public static float round2(double value) {

@@ -116,37 +116,8 @@ public final class SpeedMine extends Module {
 
     @Override
     public void onRender3D(MatrixStack stack) {
-        if (mode.is(Mode.Damage) || mc.world == null)
-            return;
-
-        actions.forEach(a -> {
-            if (!mc.world.isAir(a.getPos())) {
-                float noom = (float) MathUtility.clamp(Render2DEngine.interpolate(a.getPrevProgress(), a.getProgress(), Render3DEngine.getTickDelta()), 0f, 1f);
-                Box renderBox =
-
-                        switch (renderMode.getValue()) {
-                            case Block -> new Box(a.getPos());
-                            case Grow ->
-                                    new Box(a.getPos().getX(), a.getPos().getY(), a.getPos().getZ(), a.getPos().getX() + 1, a.getPos().getY() + noom, a.getPos().getZ() + 1);
-                            case Shrink ->
-                                    new Box(a.getPos().getX(), a.getPos().getY(), a.getPos().getZ(), a.getPos().getX(), a.getPos().getY(), a.getPos().getZ())
-                                            .shrink(noom, noom, noom)
-                                            .offset(0.5 + noom * 0.5, 0.5 + noom * 0.5, 0.5 + noom * 0.5);
-                        };
-
-                Render3DEngine.FILLED_QUEUE.add(new Render3DEngine.FillAction(
-                        renderBox,
-                        Render2DEngine.getColor(startFillColor.getValue().getColorObject(), endFillColor.getValue().getColorObject(), a.getProgress(), smooth.getValue())
-                ));
-
-                Render3DEngine.OUTLINE_QUEUE.add(new Render3DEngine.OutlineAction(
-                        renderBox,
-                        Render2DEngine.getColor(startLineColor.getValue().getColorObject(), endLineColor.getValue().getColorObject(), a.getProgress(), smooth.getValue()),
-                        lineWidth.getValue()
-                ));
-            }
-        });
-    }
+    // stubbed for 1.21.9
+}
 
     @EventHandler
     @SuppressWarnings("unused")
@@ -308,7 +279,7 @@ public final class SpeedMine extends Module {
                 if (ExplosionUtility.getSelfExplosionDamage(action.getPos().toCenterPos().add(0, 0.5, 0), 0, false) > ModuleManager.autoCrystal.maxSelfDamage.getValue())
                     return null;
 
-                return ModuleManager.autoCrystal.getPlaceData(action.getPos(), null, mc.player.getPos());
+                return ModuleManager.autoCrystal.getPlaceData(action.getPos(), null, mc.player.getEntityPos());
             }
         }
         return null;
@@ -324,7 +295,7 @@ public final class SpeedMine extends Module {
                 if (ExplosionUtility.getSelfExplosionDamage(action.getPos().down().offset(dir).toCenterPos().add(0, 0.5, 0), 0, false) > ModuleManager.autoCrystal.maxSelfDamage.getValue())
                     continue;
 
-                AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getPos().down().offset(dir), null, mc.player.getPos());
+                AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getPos().down().offset(dir), null, mc.player.getEntityPos());
                 if (autoMineData != null) {
                     mc.world.setBlockState(action.getPos(), prevState);
                     return autoMineData;
@@ -334,7 +305,7 @@ public final class SpeedMine extends Module {
             float selfDmg = ExplosionUtility.getSelfExplosionDamage(action.getPos().toCenterPos().add(0, 0.5, 0), 0, false);
             mc.world.setBlockState(action.getPos(), prevState);
 
-            AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getPos(), null, mc.player.getPos());
+            AutoCrystal.PlaceData autoMineData = ModuleManager.autoCrystal.getPlaceData(action.getPos(), null, mc.player.getEntityPos());
             if (selfDmg > ModuleManager.autoCrystal.maxSelfDamage.getValue())
                 continue;
 
@@ -347,7 +318,7 @@ public final class SpeedMine extends Module {
     public boolean isBlockDrop(Entity ent) {
         if (ent instanceof ItemEntity && isOn() && ent.age < 3)
             for (MineAction a : actions)
-                if (a.getPos().toCenterPos().squaredDistanceTo(ent.getPos()) <= 1f)
+                if (a.getPos().toCenterPos().squaredDistanceTo(ent.getEntityPos()) <= 1f)
                     return true;
 
         return false;
@@ -406,7 +377,7 @@ public final class SpeedMine extends Module {
             }
 
             int pickSlot = getTool(pos);
-            int prevSlot = mc.player.getInventory().selectedSlot;
+            int prevSlot = mc.player.getInventory().getSelectedSlot();
 
             if (pickSlot == -1)
                 return false;
@@ -461,9 +432,9 @@ public final class SpeedMine extends Module {
         private void switchTo(int slot, int from) {
             if (switchMode.getValue() == SwitchMode.Alternative || slot >= 9) {
                 if (from == -1)
-                    clickSlot(slot < 9 ? slot + 36 : slot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+                    clickSlot(slot < 9 ? slot + 36 : slot, mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
                 else
-                    clickSlot(from < 9 ? from + 36 : from, mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+                    clickSlot(from < 9 ? from + 36 : from, mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
                 closeScreen();
             } else if (switchMode.is(SwitchMode.Silent)) InventoryUtility.switchToSilent(slot);
             else InventoryUtility.switchTo(slot);

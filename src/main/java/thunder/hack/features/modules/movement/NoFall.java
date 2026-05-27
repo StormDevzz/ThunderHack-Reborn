@@ -45,7 +45,7 @@ public class NoFall extends Module {
                 case MatrixOffGround, Vanilla -> cancelGround = true;
                 case Rubberband -> sendPacket(new PlayerMoveC2SPacket.OnGroundOnly(true));
                 case Items -> {
-                    BlockPos playerPos = BlockPos.ofFloored(mc.player.getPos());
+                    BlockPos playerPos = BlockPos.ofFloored(mc.player.getEntityPos());
 
                     SearchInvResult snowResult = InventoryUtility.findItemInHotBar(Items.POWDER_SNOW_BUCKET);
                     SearchInvResult pearlResult = InventoryUtility.findItemInHotBar(Items.ENDER_PEARL);

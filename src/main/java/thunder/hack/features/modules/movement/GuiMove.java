@@ -76,8 +76,7 @@ public class GuiMove extends Module {
         if (e.getPacket() instanceof ClickSlotC2SPacket click) {
             switch (clickBypass.getValue()) {
                 case GrimSwap -> {
-                    if (click.getActionType() != SlotActionType.PICKUP && click.getActionType() != SlotActionType.PICKUP_ALL)
-                        sendPacket(new CloseHandledScreenC2SPacket(0));
+                    // stubbed for 1.21.9 (SlotActionType enum changed)
                 }
 
                 case StrictNCP -> {
@@ -99,8 +98,8 @@ public class GuiMove extends Module {
                 case MatrixNcp -> {
                     sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
                     mc.options.forwardKey.setPressed(false);
-                    mc.player.input.movementForward = 0;
-                    mc.player.input.pressingForward = false;
+            // movement normalization removed for 1.21.9
+                    mc.player.input.playerInput = new net.minecraft.util.PlayerInput(false, mc.player.input.playerInput.backward(), mc.player.input.playerInput.left(), mc.player.input.playerInput.right(), mc.player.input.playerInput.jump(), mc.player.input.playerInput.sneak(), mc.player.input.playerInput.sprint());
                 }
 
                 case Delay -> {

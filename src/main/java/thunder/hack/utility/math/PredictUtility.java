@@ -1,11 +1,12 @@
 package thunder.hack.utility.math;
 
 import com.mojang.authlib.GameProfile;
+import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.UUID;
@@ -57,23 +58,13 @@ public class PredictUtility {
     }
 
     public static PlayerEntity equipAndReturn(PlayerEntity original, Vec3d posVec) {
-        PlayerEntity copyEntity = new PlayerEntity(mc.world, original.getBlockPos(), original.getYaw(), new GameProfile(UUID.fromString("66123666-1234-5432-6666-667563866600"), "PredictEntity339")) {
-            @Override
-            public boolean isSpectator() {
-                return false;
-            }
-
-            @Override
-            public boolean isCreative() {
-                return false;
-            }
-        };
+        OtherClientPlayerEntity copyEntity = new OtherClientPlayerEntity(mc.world, new GameProfile(UUID.fromString("66123666-1234-5432-6666-667563866600"), "PredictEntity339"));
 
         copyEntity.setPosition(posVec);
         copyEntity.setHealth(original.getHealth());
-        copyEntity.prevX = original.prevX;
-        copyEntity.prevZ = original.prevZ;
-        copyEntity.prevY = original.prevY;
+        copyEntity.lastX = original.lastX;
+        copyEntity.lastZ = original.lastZ;
+        copyEntity.lastY = original.lastY;
         copyEntity.getInventory().clone(original.getInventory());
         for (StatusEffectInstance se : original.getStatusEffects()) {
             copyEntity.addStatusEffect(se);
@@ -83,6 +74,6 @@ public class PredictUtility {
     }
 
     public static Box createBox(Vec3d vec, Entity entity) {
-        return entity.getBoundingBox().offset(entity.getPos().relativize(vec));
+        return entity.getBoundingBox().offset(entity.getEntityPos().relativize(vec));
     }
 }

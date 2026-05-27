@@ -68,11 +68,11 @@ public class Blink extends Module {
         }
 
         storedTransactions.clear();
-        lastPos = mc.player.getPos();
+        lastPos = mc.player.getEntityPos();
         prevVelocity = mc.player.getVelocity();
         prevYaw = mc.player.getYaw();
         prevSprinting = mc.player.isSprinting();
-        mc.world.spawnEntity(new ClientPlayerEntity(mc, mc.world, mc.getNetworkHandler(), mc.player.getStatHandler(), mc.player.getRecipeBook(), mc.player.lastSprinting, mc.player.isSneaking()));
+        mc.world.spawnEntity(new ClientPlayerEntity(mc, mc.world, mc.getNetworkHandler(), mc.player.getStatHandler(), mc.player.getRecipeBook(), mc.player.input.playerInput, mc.player.isSneaking()));
         sending.set(false);
         storedPackets.clear();
     }

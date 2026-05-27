@@ -1,11 +1,14 @@
 package thunder.hack.injection;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.render.*;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.model.ParrotEntityModel;
+import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
@@ -59,16 +62,13 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, M extend
             originalPrevHeadPitch = livingEntity.prevPitch;
             originalHeadPitch = livingEntity.getPitch();
 
-            livingEntity.setPitch(((IClientPlayerEntity) MinecraftClient.getInstance().player).getLastPitch());
-            livingEntity.prevPitch = Managers.PLAYER.lastPitch;
-            livingEntity.headYaw = ((IClientPlayerEntity) MinecraftClient.getInstance().player).getLastYaw();
-            livingEntity.bodyYaw = Render2DEngine.interpolateFloat(Managers.PLAYER.prevBodyYaw, Managers.PLAYER.bodyYaw, Render3DEngine.getTickDelta());
-            livingEntity.prevHeadYaw = Managers.PLAYER.lastYaw;
-            livingEntity.prevBodyYaw = Render2DEngine.interpolateFloat(Managers.PLAYER.prevBodyYaw, Managers.PLAYER.bodyYaw, Render3DEngine.getTickDelta());
-        }
+    @Inject(method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V", at = @At("HEAD"), cancellable = true)
+    public void onRenderPre(net.minecraft.client.render.entity.state.LivingEntityRenderState state, MatrixStack matrixStack, OrderedRenderCommandQueue commandQueue, CameraRenderState cameraState, CallbackInfo ci) {
+        if (Module.fullNullCheck()) return;
 
         if (livingEntity != mc.player && ModuleManager.freeCam.isEnabled() && ModuleManager.freeCam.track.getValue() && ModuleManager.freeCam.trackEntity != null && ModuleManager.freeCam.trackEntity == livingEntity) {
             ci.cancel();
+            ModuleManager.chams.renderPlayer(state, matrixStack, 0, model, pl);
             return;
         }
 
@@ -138,11 +138,15 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, M extend
     @Unique
     public void postRender(T livingEntity) {
         if (Module.fullNullCheck()) return;
-        if (mc.player != null && livingEntity == mc.player && mc.player.getControllingVehicle() == null && ClientSettings.renderRotations.getValue() && !ThunderHack.isFuturePresent()) {
-            livingEntity.prevPitch = originalPrevHeadPitch;
-            livingEntity.setPitch(originalHeadPitch);
-            livingEntity.headYaw = originalHeadYaw;
-            livingEntity.prevHeadYaw = originalPrevHeadYaw;
+    }
+
+    @Inject(method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V", at = @At("TAIL"))
+    public void onRenderPost(net.minecraft.client.render.entity.state.LivingEntityRenderState state, MatrixStack matrixStack, OrderedRenderCommandQueue commandQueue, CameraRenderState cameraState, CallbackInfo ci) {
+        if (Module.fullNullCheck()) return;
+
+        if (matrixPushed) {
+            matrixStack.pop();
+            matrixPushed = false;
         }
     }
 
@@ -159,7 +163,7 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, M extend
         float alpha = -1f;
 
         if (ModuleManager.noRender.isEnabled() && ModuleManager.noRender.antiPlayerCollision.getValue() && lastEntity != mc.player && lastEntity instanceof PlayerEntity pl && !pl.isInvisible())
-            alpha = MathUtility.clamp((float) (mc.player.squaredDistanceTo(lastEntity.getPos()) / 3f) + 0.2f, 0f, 1f);
+            alpha = MathUtility.clamp((float) (mc.player.squaredDistanceTo(lastEntity.getEntityPos()) / 3f) + 0.2f, 0f, 1f);
 
         if (lastEntity != mc.player && lastEntity instanceof PlayerEntity pl && pl.isInvisible() && ModuleManager.serverHelper.isEnabled() && ModuleManager.serverHelper.trueSight.getValue())
             alpha = 0.3f;

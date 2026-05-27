@@ -1,8 +1,11 @@
 package thunder.hack.gui.hud;
 
 import com.google.common.collect.Lists;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.CharInput;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
@@ -12,12 +15,17 @@ import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.hud.HudElement;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.client.ClickGui;
+import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.gui.clickui.AbstractCategory;
 import thunder.hack.gui.clickui.Category;
 import thunder.hack.gui.clickui.ClickGUI;
+import thunder.hack.gui.font.FontRenderers;
+import thunder.hack.utility.render.Render2DEngine;
 
+import java.awt.*;
 import java.util.List;
 
+import static thunder.hack.features.modules.client.ClientSettings.isRu;
 import static thunder.hack.features.modules.Module.mc;
 
 public class HudEditorGui extends Screen {
@@ -56,27 +64,36 @@ public class HudEditorGui extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         ClickGUI.anyHovered = false;
 
-        if (ModuleManager.clickGui.scrollMode.getValue() == ClickGui.scrollModeEn.Old) {
-            for (AbstractCategory window : windows) {
-                if (InputUtil.isKeyPressed(mc.getWindow(), 264))
-                    window.setY(window.getY() + 2);
-                if (InputUtil.isKeyPressed(mc.getWindow(), 265))
-                    window.setY(window.getY() - 2);
-                if (InputUtil.isKeyPressed(mc.getWindow(), 262))
-                    window.setX(window.getX() + 2);
-                if (InputUtil.isKeyPressed(mc.getWindow(), 263))
-                    window.setX(window.getX() - 2);
+        Render2DEngine.begin(context);
+        try {
+            Render2DEngine.drawRect(context.getMatrices(), 0, 0, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight(), new Color(0x40000000, true));
+
+            if (ModuleManager.clickGui.scrollMode.getValue() == ClickGui.scrollModeEn.Old) {
+                for (AbstractCategory window : windows) {
+                    if (InputUtil.isKeyPressed(mc.getWindow(), 264))
+                        window.setY(window.getY() + 2);
+                    if (InputUtil.isKeyPressed(mc.getWindow(), 265))
+                        window.setY(window.getY() - 2);
+                    if (InputUtil.isKeyPressed(mc.getWindow(), 262))
+                        window.setX(window.getX() + 2);
+                    if (InputUtil.isKeyPressed(mc.getWindow(), 263))
+                        window.setX(window.getX() - 2);
+                    if (dWheel != 0)
+                        window.setY((float) (window.getY() + dWheel));
+                }
+            } else for (AbstractCategory window : windows)
                 if (dWheel != 0)
-                    window.setY((float) (window.getY() + dWheel));
+                    window.setModuleOffset((float) dWheel, mouseX, mouseY);
+
+            dWheel = 0;
+
+            for (AbstractCategory window : windows) {
+                window.render(context, mouseX, mouseY, delta);
             }
-        } else for (AbstractCategory window : windows)
-            if (dWheel != 0)
-                window.setModuleOffset((float) dWheel, mouseX, mouseY);
 
-        dWheel = 0;
-
-        for (AbstractCategory window : windows) {
-            window.render(context, mouseX, mouseY, delta);
+            // Removed title and hint texts as requested
+        } finally {
+            Render2DEngine.end();
         }
     }
 
@@ -87,31 +104,31 @@ public class HudEditorGui extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean something) {
         windows.forEach(w -> {
-            w.mouseClicked((int) mouseX, (int) mouseY, button);
+            w.mouseClicked((int) click.x(), (int) click.y(), click.button());
 
             windows.forEach(w1 -> {
                 if (w.dragging && w != w1)
                     w1.dragging = false;
             });
         });
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, something);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        windows.forEach(w -> w.mouseReleased((int) mouseX, (int) mouseY, button));
-        return super.mouseReleased(mouseX, mouseY, button);
+    public boolean mouseReleased(Click click) {
+        windows.forEach(w -> w.mouseReleased((int) click.x(), (int) click.y(), click.button()));
+        return super.mouseReleased(click);
     }
 
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        windows.forEach(w -> w.keyTyped(keyCode));
+    public boolean keyPressed(KeyInput key) {
+        windows.forEach(w -> w.keyTyped(key.key()));
 
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-            super.keyPressed(keyCode, scanCode, modifiers);
+        if (key.key() == GLFW.GLFW_KEY_ESCAPE) {
+            super.keyPressed(key);
             return true;
         }
 

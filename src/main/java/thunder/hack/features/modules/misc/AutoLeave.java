@@ -58,19 +58,102 @@ public class AutoLeave extends Module {
             }
 
 
-            if (pl != mc.player && !Managers.FRIEND.isFriend(pl) && players.getValue() != LeaveMode.None && mc.player.squaredDistanceTo(pl.getPos()) <= distance.getPow2Value()) {
-                switch (players.getValue()) {
-                    case Command -> {
-                        if (autoDisable.getValue()) disable();
-                        sendMessage(isRu() ? "Ливнул т.к. рядом появился игрок!" : "Logged out because there was a player!");
-                        mc.player.networkHandler.sendChatCommand(command.getValue());
-                        return;
-                    }
-                    case Leave -> {
-                        leave(isRu() ? "Ливнул т.к. рядом появился игрок" : "Logged out because there was a player");
-                        return;
-                    }
-                }
+        boolean moved =
+                (afkCheckPosition.getValue() && (cx != lastX || cy != lastY || cz != lastZ)) ||
+                (afkCheckRotation.getValue() && (cYaw != lastYaw || cPitch != lastPitch));
+
+        if (moved) {
+            afkTimer.reset();
+            lastX = cx; lastY = cy; lastZ = cz; lastYaw = cYaw; lastPitch = cPitch;
+        }
+
+        long remaining = afkSeconds.getValue() * 1000L - (System.currentTimeMillis() - afkTimer.getTimeMs());
+        tryWarn(remaining);
+        if (remaining <= 0) leave("AFK");
+    }
+
+    // ────── Health ──────
+    private void checkHealth() {
+        float hp = mc.player.getHealth();
+        float total = hpIncludeAbsorb.getValue() ? hp + mc.player.getAbsorptionAmount() : hp;
+
+        if (hpOnlyOnDamage.getValue() && total >= lastHealth) { lastHealth = total; return; }
+        lastHealth = total;
+
+        boolean trigger = total <= hpThreshold.getValue();
+        if (hpOnFire.getValue()   && mc.player.isOnFire())                                     trigger = true;
+        if (hpOnPoison.getValue() && (mc.player.hasStatusEffect(StatusEffects.POISON)
+                                   || mc.player.hasStatusEffect(StatusEffects.WITHER)))        trigger = true;
+
+        if (trigger) leave("Low HP");
+    }
+
+    // ────── Timer ──────
+    private void checkTimer() {
+        long totalMs   = timerMinutes.getValue() * 60_000L;
+        long remaining = totalMs - (System.currentTimeMillis() - sessionTimer.getTimeMs());
+
+        if (timerShowInChat.getValue() && hudTimer.passedMs(timerChatInterval.getValue() * 60_000L)) {
+            sendMessage(String.format("[AutoLeave] Time left: %d:%02d", remaining / 60_000, (remaining % 60_000) / 1000));
+            hudTimer.reset();
+        }
+
+        tryWarn(remaining);
+        if (remaining <= 0) leave("Timer");
+    }
+
+    // ────── Players ──────
+    private void checkPlayers() {
+        float range = playersRange.getValue();
+        int count = 0;
+
+        for (AbstractClientPlayerEntity p : mc.world.getPlayers()) {
+            if (p == mc.player) continue;
+            if (p.distanceTo(mc.player) > range) continue;
+            String name = p.getName().getString();
+            if (playersIgnoreFriends.getValue() && Managers.FRIEND.isFriend(name)) continue;
+            if (playersOnlyFriends.getValue()   && !Managers.FRIEND.isFriend(name)) continue;
+            if (playersIgnoreTeam.getValue() && mc.player.getScoreboardTeam() != null
+                    && mc.player.getScoreboardTeam().equals(p.getScoreboardTeam())) continue;
+            if (playersCheckLoS.getValue() && !mc.player.canSee(p)) continue;
+            count++;
+        }
+
+        if (count >= playersMinCount.getValue()) {
+            if (++playerTicks >= playersTriggerDelay.getValue()) leave("Player Nearby");
+        } else {
+            playerTicks = 0;
+        }
+    }
+
+    // ────── Crystals ──────
+    private void checkCrystals() {
+        float range = crystalsRange.getValue();
+        long count = mc.world.getEntitiesByType(
+                EntityType.END_CRYSTAL,
+                mc.player.getBoundingBox().expand(range),
+                e -> e.distanceTo(mc.player) <= range
+        ).size();
+
+        if (count >= crystalsMinCount.getValue()) {
+            if (++crystalTicks >= crystalsTriggerDelay.getValue()) leave("Crystals Nearby (" + count + ")");
+        } else {
+            crystalTicks = 0;
+        }
+    }
+
+    // ────── Totems ──────
+    private void checkTotems() {
+        int count = 0;
+
+        if (totemsCheckOffhand.getValue()
+                && mc.player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING) {
+            count++;
+        }
+
+        if (totemsCheckInventory.getValue()) {
+            for (var stack : mc.player.getInventory().getMainStacks()) {
+                if (stack.getItem() == Items.TOTEM_OF_UNDYING) count++;
             }
         }
 

@@ -1,6 +1,7 @@
 package thunder.hack.gui.mainmenu;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gui.Click;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
@@ -111,14 +112,10 @@ public class MainMenuScreen extends Screen {
         }
 
         Render2DEngine.drawHudBase(context.getMatrices(), mc.getWindow().getScaledWidth() - 40, mc.getWindow().getScaledHeight() - 40, 30, 30, 5, Render2DEngine.isHovered(mouseX, mouseY, mc.getWindow().getScaledWidth() - 40, mc.getWindow().getScaledHeight() - 40, 30, 30) ? 0.7f : 1f);
-        RenderSystem.setShaderColor(1f, 1f, 1f, Render2DEngine.isHovered(mouseX, mouseY, mc.getWindow().getScaledWidth() - 40, mc.getWindow().getScaledHeight() - 40, 30, 30) ? 0.7f : 1f);
-        context.drawTexture(TextureStorage.thTeam, mc.getWindow().getScaledWidth() - 40, mc.getWindow().getScaledHeight() - 40, 30, 30, 0, 0, 30, 30, 30, 30);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, TextureStorage.thTeam, mc.getWindow().getScaledWidth() - 40, mc.getWindow().getScaledHeight() - 40, 30, 30, 0, 0, 30, 30, 30, 30);
 
         Render2DEngine.drawHudBase(context.getMatrices(), mc.getWindow().getScaledWidth() - 80, mc.getWindow().getScaledHeight() - 40, 30, 30, 5, Render2DEngine.isHovered(mouseX, mouseY, mc.getWindow().getScaledWidth() - 80, mc.getWindow().getScaledHeight() - 40, 30, 30) ? 0.7f : 1f);
-        RenderSystem.setShaderColor(1f, 1f, 1f, Render2DEngine.isHovered(mouseX, mouseY, mc.getWindow().getScaledWidth() - 80, mc.getWindow().getScaledHeight() - 40, 30, 30) ? 0.7f : 1f);
-        context.drawTexture(TextureStorage.donation, mc.getWindow().getScaledWidth() - 79, mc.getWindow().getScaledHeight() - 39, 28, 28, 0, 0, 30, 30, 30, 30);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, TextureStorage.donation, mc.getWindow().getScaledWidth() - 79, mc.getWindow().getScaledHeight() - 39, 28, 28, 0, 0, 30, 30, 30, 30);
 
         int offsetY = 10;
         for (String change : ThunderUtility.changeLog) {
@@ -163,7 +160,9 @@ public class MainMenuScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean focused) {
+        double mouseX = click.x();
+        double mouseY = click.y();
         float halfOfWidth = mc.getWindow().getScaledWidth() / 2f;
         float halfOfHeight = mc.getWindow().getScaledHeight() / 2f;
         buttons.forEach(b -> b.onClick((int) mouseX, (int) mouseY));
@@ -183,6 +182,6 @@ public class MainMenuScreen extends Screen {
         if (Render2DEngine.isHovered(mouseX, mouseY, (int) (halfOfWidth - 157), (int) (halfOfHeight - 140), 300, 70))
             Util.getOperatingSystem().open(URI.create("https://thunderhack-site.vercel.app/"));
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, focused);
     }
 }

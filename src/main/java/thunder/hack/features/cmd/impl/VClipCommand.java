@@ -26,12 +26,12 @@ public class VClipCommand extends Command {
             float y = 0.0f;
 
             for (i = 1; i < 255; ++i) {
-                if (mc.world.getBlockState(BlockPos.ofFloored(mc.player.getPos()).add(0, -i, 0)) == Blocks.AIR.getDefaultState()) {
+                if (mc.world.getBlockState(BlockPos.ofFloored(mc.player.getEntityPos()).add(0, -i, 0)) == Blocks.AIR.getDefaultState()) {
                     y = -i - 1;
                     break;
                 }
 
-                if (mc.world.getBlockState(BlockPos.ofFloored(mc.player.getPos()).add(0, -i, 0)) != Blocks.BEDROCK.getDefaultState())
+                if (mc.world.getBlockState(BlockPos.ofFloored(mc.player.getEntityPos()).add(0, -i, 0)) != Blocks.BEDROCK.getDefaultState())
                     continue;
 
                 sendMessage(Formatting.RED + (isRu() ? "Некуда клипать!" : "There's nowhere to clip!"));
@@ -47,7 +47,7 @@ public class VClipCommand extends Command {
             float y = 0.0f;
 
             for (i = 4; i < 255; ++i) {
-                if (mc.world.getBlockState(BlockPos.ofFloored(mc.player.getPos()).add(0, i, 0)) != Blocks.AIR.getDefaultState())
+                if (mc.world.getBlockState(BlockPos.ofFloored(mc.player.getEntityPos()).add(0, i, 0)) != Blocks.AIR.getDefaultState())
                     continue;
                 y = i + 1;
                 break;

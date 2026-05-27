@@ -5,6 +5,7 @@ import thunder.hack.core.manager.IManager;
 import thunder.hack.core.manager.client.*;
 import thunder.hack.core.manager.player.CombatManager;
 import thunder.hack.core.manager.player.FriendManager;
+import thunder.hack.core.manager.player.InventoryManager;
 import thunder.hack.core.manager.player.PlayerManager;
 import thunder.hack.core.manager.world.HoleManager;
 import thunder.hack.core.manager.world.WayPointManager;
@@ -24,6 +25,7 @@ public class Managers {
     // Player
     public static final CombatManager COMBAT = new CombatManager();
     public static final FriendManager FRIEND = new FriendManager();
+    public static final InventoryManager INVENTORY = new InventoryManager();
     public static final PlayerManager PLAYER = new PlayerManager();
 
     // World

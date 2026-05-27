@@ -5,6 +5,9 @@ import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.DamageUtil;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffects;
@@ -24,6 +27,7 @@ import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.injection.accesors.IExplosion;
 import thunder.hack.utility.math.PredictUtility;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import static thunder.hack.features.modules.Module.mc;
@@ -105,7 +109,7 @@ public final class ExplosionUtility {
 
                 if (toDamage <= 0f) toDamage = 0f;
                 else {
-                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(target.getArmorItems());
+                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(getArmorItems(target));
 
                     if (protAmount > 0)
                         toDamage = DamageUtil.getInflictedDamage(toDamage, protAmount);
@@ -164,7 +168,7 @@ public final class ExplosionUtility {
 
                 if (toDamage <= 0f) toDamage = 0f;
                 else {
-                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(target.getArmorItems());
+                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(getArmorItems(target));
 
                     if (protAmount > 0) toDamage = DamageUtil.getInflictedDamage(toDamage, protAmount);
                 }
@@ -257,7 +261,7 @@ public final class ExplosionUtility {
 
                 if (toDamage <= 0f) toDamage = 0f;
                 else {
-                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(target.getArmorItems());
+                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(getArmorItems(target));
 
                     if (protAmount > 0) toDamage = DamageUtil.getInflictedDamage(toDamage, protAmount);
                 }
@@ -375,6 +379,15 @@ public final class ExplosionUtility {
         }, (innerContext) -> HitResult.Type.MISS);
     }
 
+
+    private static Iterable<ItemStack> getArmorItems(LivingEntity entity) {
+        return Arrays.asList(
+                entity.getEquippedStack(EquipmentSlot.FEET),
+                entity.getEquippedStack(EquipmentSlot.LEGS),
+                entity.getEquippedStack(EquipmentSlot.CHEST),
+                entity.getEquippedStack(EquipmentSlot.HEAD)
+        );
+    }
 
     public static int getProtectionAmount(Iterable<ItemStack> equipment) {
         MutableInt mutableInt = new MutableInt();

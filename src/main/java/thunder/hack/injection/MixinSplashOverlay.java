@@ -55,19 +55,17 @@ public abstract class MixinSplashOverlay {
         float h;
         int k;
         if (f >= 1.0F) {
-            if (mc.currentScreen != null)
+            // fade-out phase — render current screen underneath, draw our overlay fading out
+            if (mc.currentScreen != null) {
                 mc.currentScreen.render(context, 0, 0, delta);
-
-            k = MathHelper.ceil((1.0F - MathHelper.clamp(f - 1.0F, 0.0F, 1.0F)) * 255.0F);
-            context.fill(0, 0, i, j, withAlpha(new Color(0x070015).getRGB(), k));
-            h = 1.0F - MathHelper.clamp(f - 1.0F, 0.0F, 1.0F);
+            }
+            fade = 1.0F - MathHelper.clamp(f - 1.0F, 0f, 1f);
         } else if (reloading) {
-            if (mc.currentScreen != null && g < 1.0F)
+            // loading phase — fade in from 0 to 1, render current screen behind
+            if (mc.currentScreen != null && g < 1.0F) {
                 mc.currentScreen.render(context, mouseX, mouseY, delta);
-
-            k = MathHelper.ceil(MathHelper.clamp((double) g, 0.15, 1.0) * 255.0);
-            context.fill(0, 0, i, j, withAlpha(new Color(0x070015).getRGB(), k));
-            h = MathHelper.clamp(g, 0.0F, 1.0F);
+            }
+            fade = MathHelper.clamp(g, 0f, 1f);
         } else {
             k = new Color(0x070015).getRGB();
             float m = (float) (k >> 16 & 255) / 255.0F;

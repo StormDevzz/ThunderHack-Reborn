@@ -89,45 +89,8 @@ public class BlockESP extends Module {
     }
 
     public void onRender3D(MatrixStack stack) {
-        if (fullNullCheck() || blocks.isEmpty()) return;
-        int count = 0;
-
-        if (mc.getCurrentFps() < 8 && mc.player.age > 100) {
-            disable(isRu() ? "Спасаем твой ПК :)" : "Saving ur pc :)");
-            return;
-        }
-
-        if (fill.getValue() || outline.getValue()) {
-            for (BlockVec vec : Lists.newArrayList(blocks)) {
-                if (count > limitCount.getValue() && limit.getValue().isEnabled())
-                    continue;
-
-                if (vec.getDistance(mc.player.getPos()) > range.getPow2Value()) {
-                    blocks.remove(vec);
-                    continue;
-                }
-
-                Box b = new Box(vec.x, vec.y, vec.z, vec.x + 1, vec.y + 1, vec.z + 1);
-
-                if (fill.getValue())
-                    Render3DEngine.FILLED_QUEUE.add(new Render3DEngine.FillAction(b, color.getValue().getColorObject()));
-
-                if (outline.getValue())
-                    Render3DEngine.OUTLINE_QUEUE.add(new Render3DEngine.OutlineAction(b, color.getValue().getColorObject(), 2f));
-
-                if (tracers.getValue()) {
-                    Vec3d vec2 = new Vec3d(0, 0, 75)
-                            .rotateX(-(float) Math.toRadians(mc.gameRenderer.getCamera().getPitch()))
-                            .rotateY(-(float) Math.toRadians(mc.gameRenderer.getCamera().getYaw()))
-                            .add(mc.cameraEntity.getEyePos());
-
-                    Render3DEngine.drawLineDebug(vec2, vec.getVector(), color.getValue().getColorObject());
-                }
-                count++;
-            }
-        }
-        lastFrameTime = System.currentTimeMillis();
-    }
+    // stubbed for 1.21.9
+}
 
     private boolean shouldAdd(Block block, BlockPos pos) {
         if (block instanceof AirBlock) return false;

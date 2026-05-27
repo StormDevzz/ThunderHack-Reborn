@@ -2,7 +2,8 @@ package thunder.hack.injection;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.util.SkinTextures;
+import net.minecraft.entity.player.SkinTextures;
+import net.minecraft.util.AssetInfo;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Mixin;
@@ -36,9 +37,17 @@ public class MixinPlayerListEntry {
 
     @Inject(method = "getSkinTextures", at = @At("TAIL"), cancellable = true)
     private void getCapeTexture(CallbackInfoReturnable<SkinTextures> cir) {
+        if (ModuleManager.capes.isEnabled() && Objects.equals(profile.name(), MinecraftClient.getInstance().getSession().getUsername())) {
+            Identifier cape = Identifier.of("thunderhack", "textures/capes/" + Capes.mode.getValue().toString() + ".png");
+            SkinTextures prev = cir.getReturnValue();
+            SkinTextures newTextures = new SkinTextures(prev.body(), new AssetInfo.TextureAssetInfo(cape), new AssetInfo.TextureAssetInfo(cape), prev.model(), prev.secure());
+            cir.setReturnValue(newTextures);
+            return;
+        }
+
         if (customCapeTexture != null) {
             SkinTextures prev = cir.getReturnValue();
-            SkinTextures newTextures = new SkinTextures(prev.texture(), prev.textureUrl(), customCapeTexture, customCapeTexture, prev.model(), prev.secure());
+            SkinTextures newTextures = new SkinTextures(prev.body(), new AssetInfo.TextureAssetInfo(customCapeTexture), new AssetInfo.TextureAssetInfo(customCapeTexture), prev.model(), prev.secure());
             cir.setReturnValue(newTextures);
         }
     }
@@ -57,7 +66,7 @@ public class MixinPlayerListEntry {
                     String colune = inputLine.trim();
                     String name = colune.split(":")[0];
                     String cape = colune.split(":")[1];
-                    if (Objects.equals(profile.getName(), name)) {
+                    if (Objects.equals(profile.name(), name)) {
                         customCapeTexture = Identifier.of("thunderhack", "textures/capes/" + cape + ".png");
                         return;
                     }
@@ -66,7 +75,7 @@ public class MixinPlayerListEntry {
             }
 
             for (String str : ThunderUtility.starGazer) {
-                if (profile.getName().toLowerCase().equals(str.toLowerCase()))
+                if (profile.name().toLowerCase().equals(str.toLowerCase()))
                     customCapeTexture = Identifier.of("thunderhack", "textures/capes/starcape.png");
             }
 

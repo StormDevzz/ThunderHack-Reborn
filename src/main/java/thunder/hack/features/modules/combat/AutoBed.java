@@ -140,7 +140,7 @@ public final class AutoBed extends Module {
             } else if (switchToHotbar.getValue()) {
                 SearchInvResult invResult = InventoryUtility.findBed();
                 if (invResult.found() && !(mc.currentScreen instanceof CraftingScreen)) {
-                    mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, invResult.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
+                    mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, invResult.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP, mc.player);
                     sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
                 }
             }
@@ -160,8 +160,8 @@ public final class AutoBed extends Module {
             sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(angle2, 0, mc.player.isOnGround()));
             float prevYaw = mc.player.getYaw();
             mc.player.setYaw(angle2);
-            mc.player.prevYaw = angle2;
-            ((IClientPlayerEntity) mc.player).setLastYaw(angle2);
+            mc.player.lastYaw = angle2;
+             mc.player.lastYaw =(angle2);
             sendSequencedPacket(id -> new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, bestPos.hitResult(), id));
             mc.player.swingHand(Hand.MAIN_HAND);
             placeTimer.reset();
@@ -171,21 +171,8 @@ public final class AutoBed extends Module {
 
     @Override
     public void onRender3D(MatrixStack stack) {
-        if (bestPos != null && render.getValue()) {
-            Box box = new Box(bestPos.hitResult.getBlockPos().up());
-            Box box2 = new Box(bestPos.hitResult.getBlockPos().up().offset(bestPos.dir));
-
-            Box finalBox = box.union(box2).withMaxY(box.maxY - 0.45f);
-
-            String dmg = MathUtility.round2(bestPos.damage()) + (rselfDamage.getValue() ? " / " + MathUtility.round2(bestPos.selfDamage()) : "");
-
-            Render3DEngine.OUTLINE_QUEUE.add(new Render3DEngine.OutlineAction(finalBox, lineColor.getValue().getColorObject(), 2f));
-            Render3DEngine.FILLED_QUEUE.add(new Render3DEngine.FillAction(finalBox, fillColor.getValue().getColorObject()));
-
-            if (drawDamage.getValue())
-                Render3DEngine.drawTextIn3D(dmg, finalBox.getCenter(), 0, 0.1, 0, textColor.getValue().getColorObject());
-        }
-    }
+    // stubbed for 1.21.9
+}
 
     private PlayerEntity findTarget() {
         return Managers.COMBAT.getNearestTarget(12f);
@@ -193,7 +180,7 @@ public final class AutoBed extends Module {
 
     private BedData findBedToExplode() {
         int intRange = (int) (Math.floor(range.getValue()) + 1);
-        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getPos()).up()), intRange, intRange, intRange);
+        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getEntityPos()).up()), intRange, intRange, intRange);
 
         BedData bestData = null;
 
@@ -230,7 +217,7 @@ public final class AutoBed extends Module {
 
     private BedData findBlockToPlace() {
         int intRange = (int) (Math.floor(range.getValue()) + 1);
-        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getPos()).up()), intRange, intRange, intRange);
+        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getEntityPos()).up()), intRange, intRange, intRange);
 
         BedData bestData = null;
 
@@ -299,7 +286,7 @@ public final class AutoBed extends Module {
 
     public void craftBed() {
         int intRange = (int) (Math.floor(range.getValue()) + 1);
-        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getPos()).up()), intRange, intRange, intRange);
+        Iterable<BlockPos> blocks_ = BlockPos.iterateOutwards(new BlockPos(BlockPos.ofFloored(mc.player.getEntityPos()).up()), intRange, intRange, intRange);
 
         for (BlockPos b : blocks_) {
             BlockState state = mc.world.getBlockState(b);

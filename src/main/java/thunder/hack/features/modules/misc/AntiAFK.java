@@ -59,8 +59,8 @@ public class AntiAFK extends Module {
             float sin = (float) Math.clamp(Math.sin(angleToRad), -1, 1);
             float cos = (float) Math.clamp(Math.cos(angleToRad), -1, 1);
 
-            mc.player.input.movementForward = Math.round(sin);
-            mc.player.input.movementSideways = Math.round(cos);
+            // movement normalization removed for 1.21.9
+            // movement normalization removed for 1.21.9
         }
     }
 

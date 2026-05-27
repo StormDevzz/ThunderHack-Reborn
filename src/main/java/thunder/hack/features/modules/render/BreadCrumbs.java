@@ -1,6 +1,8 @@
 package thunder.hack.features.modules.render;
+import net.minecraft.client.gl.RenderPipelines;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -36,12 +38,12 @@ public class BreadCrumbs extends Module {
         Render3DEngine.setupRender();
 
         if (throughWalls.getValue())
-            RenderSystem.disableDepthTest();
+            GlStateManager._disableDepthTest();
 
-        RenderSystem.disableCull();
-        RenderSystem.lineWidth(1f);
-        RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+        GlStateManager._disableCull();
+        //RenderSystem.lineWidth(1f);
+        //RenderSystem.setShader(RenderPipelines.RENDERTYPE_LINES);
+        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR_NORMAL);
 
         for (int i = 0; i < positions.size(); i++) {
             Vec3d vec1 = null;
@@ -60,9 +62,9 @@ public class BreadCrumbs extends Module {
 
         Render2DEngine.endBuilding(buffer);
 
-        RenderSystem.enableCull();
+        GlStateManager._enableCull();
         if (throughWalls.getValue())
-            RenderSystem.enableDepthTest();
+            GlStateManager._enableDepthTest();
         Render3DEngine.endRender();
     }
 

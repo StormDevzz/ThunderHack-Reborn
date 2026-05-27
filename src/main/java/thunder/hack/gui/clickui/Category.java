@@ -1,9 +1,7 @@
 package thunder.hack.gui.clickui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.*;
 import net.minecraft.util.Identifier;
 import thunder.hack.ThunderHack;
 import thunder.hack.core.manager.client.ModuleManager;
@@ -55,7 +53,7 @@ public class Category extends AbstractCategory {
 
         scrollHover = Render2DEngine.isHovered(mouseX, mouseY, getX(), getY() + height, width, catHeight + 20);
 
-        context.getMatrices().push();
+        context.getMatrices().pushMatrix();
 
         boolean popStack = false;
 
@@ -76,7 +74,7 @@ public class Category extends AbstractCategory {
             Render2DEngine.drawHudBase(context.getMatrices(), getX() + 3, getY() + height - 6, width - 6, catHeight, 1, false);
 
             if (!(ModuleManager.clickGui.scrollMode.getValue() == ClickGui.scrollModeEn.Old || getButtonsHeight() < ModuleManager.clickGui.catHeight.getValue())) {
-                Render2DEngine.addWindow(context.getMatrices(), getX() + 3, getY() + height - 6, getX() + 3 + width - 6, (getY() + height - 6) + (float) ((ModuleManager.clickGui.catHeight.getValue())), 1f);
+                Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(getX() + 3, getY() + height - 6, getX() + 3 + width - 6, (getY() + height - 6) + (float) ((ModuleManager.clickGui.catHeight.getValue()))));
                 popStack = true;
             }
 
@@ -103,32 +101,15 @@ public class Category extends AbstractCategory {
 
         Render2DEngine.drawHudBase(context.getMatrices(), getX() + 2, getY() - 5, width - 4, height, 1, false);
 
-        {
-            RenderSystem.setShaderTexture(0, ICON);
-            RenderSystem.enableBlend();
-            RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-            Render2DEngine.addWindow(context.getMatrices(), getX() + 2, getY() - 4, getX() + 2 + width - 4, getY() - 5 + height, 1);
-            RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-            BufferBuilder b = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-            Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 85, (getY() + (height - 24) / 2), 12, 12, 0, 0, 12, 12, 12, 12, m1.darker(), m2.darker(), m3.darker(), m4.darker());
-            Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 75, (getY() + (height - 34) / 2), 16, 16, 0, 0, 16, 16, 16, 16, m1, m2, m3, m4);
-            Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 65, (getY() + (height - 20) / 2), 12, 12, 0, 0, 12, 12, 12, 12, m1.darker().darker(), m2.darker().darker(), m3.darker().darker(), m4.darker().darker());
-            Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 55, (getY() + (height - 28) / 2), 6, 6, 0, 0, 6, 6, 6, 6, m1, m2, m3, m4);
-            Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 45, (getY() + (height - 17) / 2), 17, 17, 0, 0, 17, 17, 17, 17, m1, m2, m3, m4);
-            Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 35, (getY() + (height - 30) / 2), 15, 15, 0, 0, 15, 15, 15, 15, m1.darker().darker().darker(), m2.darker().darker().darker(), m3.darker().darker().darker(), m4.darker().darker().darker());
-            Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 25, (getY() + (height - 21) / 2), 8, 8, 0, 0, 8, 8, 8, 8, m1, m2, m3, m4);
-            Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 15, (getY() + (height - 22) / 2), 12, 12, 0, 0, 12, 12, 12, 12, m1.darker().darker().darker(), m2.darker().darker().darker(), m3.darker().darker().darker(), m4.darker().darker().darker());
-            Render2DEngine.renderGradientTextureInternal(b, context.getMatrices(), getX() + 5, (getY() + (height - 28) / 2), 20, 20, 0, 0, 20, 20, 20, 20, m1, m2, m3, m4);
-            BufferRenderer.drawWithGlobalProgram(b.end());
-            RenderSystem.disableBlend();
-            Render2DEngine.popWindow();
-        }
+        int iconSize = 14;
+        int iconX = (int) getX() + 5;
+        int iconY = (int) getY() - 4;
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, Render2DEngine.getCleanedTexture(ICON), iconX, iconY, 0f, 0f, iconSize, iconSize, iconSize, iconSize, 256, 256, -1);
 
-        Render2DEngine.drawBlurredShadow(context.getMatrices(),
-                ((int) getX() + (width - 4) / 2) - FontRenderers.categories.getStringWidth(getName()) / 2f, (int) getY() + (int) height / 2f - 10, FontRenderers.categories.getStringWidth(getName()) + 6, 13, 20, Render2DEngine.injectAlpha(Color.black, 170));
-
-        FontRenderers.categories.drawCenteredString(context.getMatrices(), getName(), ((int) getX() + 2 + (width - 4) / 2), (int) getY() + (int) height / 2f - 7, new Color(-1).getRGB());
-        context.getMatrices().pop();
+        int textX = iconX + iconSize + 3;
+        int textY = (int) getY() + (int) (height / 2f) - 7;
+        FontRenderers.categories.drawString(context.getMatrices(), getName(), textX, textY, new Color(-1).getRGB());
+        context.getMatrices().popMatrix();
         updatePosition();
     }
 
@@ -195,6 +176,7 @@ public class Category extends AbstractCategory {
                         if (element.isVisible())
                             offsetY += element.getHeight();
                     }
+                    offsetY += mbutton.getDescriptionOffset();
                     offsetY += 2f;
                 }
             }

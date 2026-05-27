@@ -120,7 +120,7 @@ public class TNTAura extends Module {
         }
 
         if (targetedPlayer != null) {
-            BlockPos headBlock = BlockPos.ofFloored(targetedPlayer.getPos()).up(2);
+            BlockPos headBlock = BlockPos.ofFloored(targetedPlayer.getEntityPos()).up(2);
             InventoryUtility.saveSlot();
             InteractionUtility.placeBlock(headBlock, rotate.getValue(), InteractionUtility.Interact.Vanilla, placeMode.getValue(), getTntSlot(), false, false);
             BlockHitResult igniteResult = getIgniteResult(headBlock);
@@ -176,7 +176,7 @@ public class TNTAura extends Module {
 
     private int getObbySlot() {
         if (mc.player.getMainHandStack().getItem() == Items.OBSIDIAN)
-            return mc.player.getInventory().selectedSlot;
+            return mc.player.getInventory().getSelectedSlot();
 
         int slot = -1;
 
@@ -191,7 +191,7 @@ public class TNTAura extends Module {
 
     private int getTntSlot() {
         if (mc.player.getMainHandStack().getItem() == Items.TNT)
-            return mc.player.getInventory().selectedSlot;
+            return mc.player.getInventory().getSelectedSlot();
 
         int slot = -1;
 
@@ -206,7 +206,7 @@ public class TNTAura extends Module {
 
     private int getFlintSlot() {
         if (mc.player.getMainHandStack().getItem() == Items.FLINT_AND_STEEL)
-            return mc.player.getInventory().selectedSlot;
+            return mc.player.getInventory().getSelectedSlot();
 
         int slot = -1;
 

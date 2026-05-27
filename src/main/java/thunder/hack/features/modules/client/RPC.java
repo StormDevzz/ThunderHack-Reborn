@@ -8,7 +8,6 @@ import thunder.hack.core.Managers;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
 import thunder.hack.utility.Timer;
-import thunder.hack.utility.discord.DiscordEventHandlers;
 import thunder.hack.utility.discord.DiscordRPC;
 import thunder.hack.utility.discord.DiscordRichPresence;
 
@@ -19,11 +18,29 @@ import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 public final class RPC extends Module {
     private static final DiscordRPC rpc = DiscordRPC.INSTANCE;
-    public static Setting<Mode> mode = new Setting<>("Picture", Mode.Recode);
-    public static Setting<Boolean> showIP = new Setting<>("ShowIP", true);
-    public static Setting<sMode> smode = new Setting<>("StateMode", sMode.Stats);
-    public static Setting<String> state = new Setting<>("State", "Beta? Recode? NextGen?");
-    public static Setting<Boolean> nickname = new Setting<>("Nickname", true);
+
+    public static Setting<RPCMode> rpcMode = new Setting<>("RPC Mode", RPCMode.Old);
+
+    public static Setting<Mode> mode = new Setting<>("Picture", Mode.Reborn, v -> rpcMode.getValue() == RPCMode.Old);
+    public static Setting<Boolean> showIP = new Setting<>("ShowIP", true, v -> rpcMode.getValue() == RPCMode.Old);
+    public static Setting<sMode> smode = new Setting<>("StateMode", sMode.Stats, v -> rpcMode.getValue() == RPCMode.Old);
+    public static Setting<String> state = new Setting<>("State", "Beta? Reborn? NextGen?", v -> rpcMode.getValue() == RPCMode.Old);
+    public static Setting<Boolean> nickname = new Setting<>("Nickname", true, v -> rpcMode.getValue() == RPCMode.Old);
+
+    public static Setting<Boolean> nServer = new Setting<>("ShowServer", true, v -> rpcMode.getValue() == RPCMode.New);
+    public static Setting<Boolean> nNick = new Setting<>("ShowNick", true, v -> rpcMode.getValue() == RPCMode.New);
+    public static Setting<Boolean> nBuild = new Setting<>("ShowBuild", true, v -> rpcMode.getValue() == RPCMode.New);
+    public static Setting<Boolean> nVersion = new Setting<>("ShowVersion", true, v -> rpcMode.getValue() == RPCMode.New);
+    public static Setting<Boolean> nHandshake = new Setting<>("ShowHandshake", true, v -> rpcMode.getValue() == RPCMode.New);
+    public static Setting<String> nDesc = new Setting<>("CustomDesc", "ThunderHack Reborn", v -> rpcMode.getValue() == RPCMode.New);
+    public static Setting<Boolean> nAutoState = new Setting<>("AutoStatus", true, v -> rpcMode.getValue() == RPCMode.New);
+    public static Setting<String> nState = new Setting<>("CustomStatus", "Pasting...", v -> rpcMode.getValue() == RPCMode.New && !nAutoState.getValue());
+    public static Setting<Boolean> nUseCustomRotation = new Setting<>("UseCustomRotation", false, v -> rpcMode.getValue() == RPCMode.New && nAutoState.getValue());
+    public static Setting<String> nCustomStatuses = new Setting<>("CustomStatuses", "pasting;coding;chilling", v -> rpcMode.getValue() == RPCMode.New && nAutoState.getValue() && nUseCustomRotation.getValue());
+    public static Setting<NewImageType> nImageType = new Setting<>("Image Type", NewImageType.Asset, v -> rpcMode.getValue() == RPCMode.New);
+    public static Setting<NewImage> nImage = new Setting<>("Image", NewImage.Default, v -> rpcMode.getValue() == RPCMode.New && nImageType.getValue() == NewImageType.Asset);
+    public static Setting<GifChoice> nGif = new Setting<>("GIF", GifChoice.Reborn, v -> rpcMode.getValue() == RPCMode.New && nImageType.getValue() == NewImageType.Gif);
+
     public static DiscordRichPresence presence = new DiscordRichPresence();
     public static boolean started;
     static String String1 = "none";
@@ -82,8 +99,8 @@ public final class RPC extends Module {
         if (isDisabled()) return;
         if (!started) {
             started = true;
-            DiscordEventHandlers handlers = new DiscordEventHandlers();
-            rpc.Discord_Initialize("1093053626198523935", handlers, true, "");
+            currentId = targetId;
+            rpc.Discord_Initialize(targetId, true, "");
             presence.startTimestamp = (System.currentTimeMillis() / 1000L);
             presence.largeImageText = "v" + ThunderHack.VERSION + " [" + ThunderHack.GITHUB_HASH + "]";
             rpc.Discord_UpdatePresence(presence);
@@ -104,6 +121,74 @@ public final class RPC extends Module {
                         presence.smallImageText = "logged as - " + mc.getSession().getUsername();
                         presence.smallImageKey = "https://minotar.net/helm/" + mc.getSession().getUsername() + "/100.png";
                     } else {
+                        String status;
+                        if (nAutoState.getValue()) {
+                            if (nTimer.passedMs(60 * 1000) || nSlov == null) {
+                                if (nUseCustomRotation.getValue()) {
+                                    String[] customList = nCustomStatuses.getValue().split(";");
+                                    nSlov = customList.length > 0
+                                        ? customList[(int) (Math.random() * customList.length)]
+                                        : "ThunderHack";
+                                } else {
+                                    nRandomInt = (int) (Math.random() * rpc_new_en.length);
+                                    nSlov = isRu() ? rpc_new_ru[nRandomInt] : rpc_new_en[nRandomInt];
+                                }
+                                nTimer.reset();
+                            }
+                            status = nSlov;
+                        } else {
+                            status = nState.getValue();
+                        }
+
+                        String server = mc.isInSingleplayer()
+                            ? "SinglePlayer"
+                            : mc.getCurrentServerEntry() != null ? mc.getCurrentServerEntry().address : "Menu";
+
+                        StringBuilder detailsBuilder = new StringBuilder(status);
+                        if (nServer.getValue()) {
+                            detailsBuilder.append("  |  ").append(server);
+                        }
+                        presence.details = detailsBuilder.toString();
+
+                        StringBuilder stateBuilder = new StringBuilder(nDesc.getValue());
+                        if (nHandshake.getValue()) {
+                            String brand = ModuleManager.clientSpoof.getClientName();
+                            if (brand != null)
+                                stateBuilder.append("  ·  ").append(brand);
+                        }
+                        presence.state = stateBuilder.toString();
+
+                        StringBuilder hoverBuilder = new StringBuilder();
+                        if (nVersion.getValue())
+                            hoverBuilder.append("v").append(BUILD_VERSION);
+                        if (nBuild.getValue())
+                            hoverBuilder.append(hoverBuilder.length() > 0 ? "  ·  " : "").append(ThunderHack.GITHUB_HASH);
+                        if (nNick.getValue())
+                            hoverBuilder.append(hoverBuilder.length() > 0 ? "  ·  " : "").append(mc.getSession().getUsername());
+
+                        presence.largeImageText = hoverBuilder.length() > 0 ? hoverBuilder.toString() : "ThunderHack";
+
+                        if (nImageType.getValue() == NewImageType.Asset) {
+                            if (nImage.getValue() == NewImage.Default)
+                                presence.largeImageKey = "logo";
+                            else
+                                presence.largeImageKey = nImage.getValue().getName();
+                        } else {
+                            switch (nGif.getValue()) {
+                                case Reborn -> presence.largeImageKey = "https://i.imgur.com/yY0z2Uq.gif";
+                                case MegaCute -> presence.largeImageKey = "https://media1.tenor.com/images/6bcbfcc0be97d029613b54f97845bc59/tenor.gif?itemid=26823781";
+                                case CPvP -> presence.largeImageKey = "https://media1.tenor.com/m/32pzMbItFo0AAAAd/2b2t-virgin.gif";
+                                case Bald -> presence.largeImageKey = "https://media1.tenor.com/m/LAsK1qXceVwAAAAC/7zqs-fitmc.gif";
+                                case FuckingHell -> presence.largeImageKey = "https://media1.tenor.com/m/1gTUDBhsOQoAAAAd/hell-sent-to-hell.gif";
+                                case Jocker -> presence.largeImageKey = "https://media1.tenor.com/m/YVP1R3hLzIMAAAAC/bachibachbach-2b2t.gif";
+                                case Femboy -> presence.largeImageKey = "https://media.tenor.com/jbWSVDF4jD0AAAAM/2b2t-femboy.gif";
+                                case Zdarova -> presence.largeImageKey = "https://media1.tenor.com/m/2UjViO0RunsAAAAC/arwyx-2b2t.gif";
+                                case Secret -> presence.largeImageKey = "https://media1.tenor.com/m/a2RLe4oaCuMAAAAC/wynncraft-skyblock.gif";
+                                case PoopBoob -> presence.largeImageKey = "https://media.tenor.com/yKpYBTEnPakAAAAi/popbob-2b2t.gif";
+                            }
+                        }
+
+                        presence.smallImageKey = "";
                         presence.smallImageText = "";
                         presence.smallImageKey = "";
                     }
@@ -155,4 +240,46 @@ public final class RPC extends Module {
     public enum Mode {Custom, MegaCute, Recode}
 
     public enum sMode {Custom, Stats, Version}
+
+    public enum NewImage {
+        Default("default"),
+        Kotost("kotost"),
+        Cuute("cuute"),
+        Cutefurry("cutefurry"),
+        Forreal("forreal"),
+        Furry1("furry1"),
+        Furry2("furry2"),
+        Ebat("ebat"),
+        Oooh("oooh"),
+        Pivo("pivo"),
+        Whenmem("whenmem"),
+        Ninja("ninja"),
+        Navalniylexa("navalniylexa"),
+        Depression("depression"),
+        Zeleboba("zeleboba"),
+        Akrien("akrien"),
+        Zeleboba1("zeleboba1"),
+        Nihua("nihua"),
+        Kotost1("kotost1"),
+        Vanya("vanya"),
+        Pyramids("pyramids"),
+        Vozduhan("vozduhan"),
+        Hvh("hvh"),
+        Standoff2("standoff2"),
+        Dog("dog"),
+        Tree("tree"),
+        Vitya("vitya"),
+        Fuck("fuck"),
+        Wypher("wypher"),
+        Wypher1("wypher1"),
+        Pretty("pretty");
+
+        private final String name;
+        NewImage(String name) { this.name = name; }
+        public String getName() { return name; }
+    }
+
+    public enum NewImageType {Asset, Gif}
+
+    public enum GifChoice {Reborn, MegaCute, CPvP, Bald, FuckingHell, Jocker, Femboy, Zdarova, Secret, PoopBoob}
 }

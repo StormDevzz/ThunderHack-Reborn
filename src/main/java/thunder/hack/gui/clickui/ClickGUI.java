@@ -2,8 +2,11 @@ package thunder.hack.gui.clickui;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.CharInput;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
@@ -140,15 +143,17 @@ public class ClickGUI extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        if (ModuleManager.clickGui.blur.getValue())
-            applyBlur(delta);
+        Render2DEngine.begin(context);
+        try {
+        // if (ModuleManager.clickGui.blur.getValue())
+        //    applyBlur(delta);
 
         anyHovered = false;
 
         ClickGui.Image image = ModuleManager.clickGui.image.getValue();
 
         if (image != ClickGui.Image.None) {
-            RenderSystem.setShaderTexture(0, image.file);
+            RenderSystem.setShaderTexture(0, mc.getTextureManager().getTexture(image.file).getGlTextureView());
 
             Render2DEngine.renderTexture(context.getMatrices(),
 
@@ -196,8 +201,23 @@ public class ClickGUI extends Screen {
         windows.forEach(w -> w.render(context, mouseX, mouseY, delta));
 
         if (!Objects.equals(currentDescription, "") && ModuleManager.clickGui.descriptions.getValue()) {
-            Render2DEngine.drawHudBase(context.getMatrices(), mouseX + 7, mouseY + 5, FontRenderers.sf_medium.getStringWidth(currentDescription) + 6, 11, 1f, false);
-            FontRenderers.sf_medium.drawString(context.getMatrices(), currentDescription, mouseX + 10, mouseY + 8, HudEditor.getColor(0).getRGB());
+            float textWidth = FontRenderers.sf_medium.getStringWidth(currentDescription);
+            float textHeight = FontRenderers.sf_medium.getStringHeight(currentDescription);
+
+            float hPadding = 4f;
+            float vPadding = 3f;
+
+            float boxWidth = textWidth + hPadding * 2f;
+            float boxHeight = textHeight + vPadding * 2f;
+
+            float boxX = mouseX + 7f;
+            float boxY = mouseY + 5f;
+
+            float textX = boxX + hPadding;
+            float textY = boxY + vPadding;
+
+            Render2DEngine.drawHudBase(context.getMatrices(), boxX, boxY, boxWidth, boxHeight, 1.5f, false);
+            FontRenderers.sf_medium.drawString(context.getMatrices(), currentDescription, textX, textY, HudEditor.getColor(0).getRGB());
             currentDescription = "";
         }
 
@@ -210,7 +230,11 @@ public class ClickGUI extends Screen {
                             "\nПерекиньте конфиг в окошко майна, чтобы загрузить его" +
                             "\nShift + Left Mouse Click, чтобы изменить отображение модуля в Array list" +
                             "\nЩелкните колёсиком мыши по слайдеру, чтобы ввести значение с клавиатуры." +
-                            "\nDelete + Left Mouse Click по модулю, чтобы сбросить его настройки"
+                            "\nDelete + Left Mouse Click по модулю, чтобы сбросить его настройки" +
+                            "\nПКМ по модулю, чтобы открыть настройки и увидеть описание" +
+                            "\nПеретащите заголовок категории, чтобы переместить её" +
+                            "\nПКМ по ползунку сбрасывает на значение по умолчанию" +
+                            "\nПрокручивайте колёсиком по настройке, чтобы изменить её значение"
                             :
                             "Left Mouse Click to enable module" +
                                     "\nRight Mouse Click to open module settings" +
@@ -219,14 +243,20 @@ public class ClickGUI extends Screen {
                                     "\nDrag n Drop config there to load" +
                                     "\nShift + Left Mouse Click to change module visibility in Array list" +
                                     "\nMiddle Mouse Click on slider to enter value from keyboard" +
-                                    "\nDelete + Left Mouse Click on module to reset",
-                    5, mc.getWindow().getScaledHeight() - 80, HudEditor.getColor(0).getRGB());
+                                    "\nDelete + Left Mouse Click on module to reset" +
+                                    "\nRight-click module to see its description in settings" +
+                                    "\nDrag the category header to move it" +
+                                    "\nRight Click on a slider to reset to default" +
+                                    "\nScroll on a setting to change its value",
+                    5, mc.getWindow().getScaledHeight() - 140, HudEditor.getColor(0).getRGB());
 
         if (!HudElement.anyHovered && !ClickGUI.anyHovered)
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
                 GLFW.glfwSetCursor(mc.getWindow().getHandle(), GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR));
             }
-
+        } finally {
+            Render2DEngine.end();
+        }
     }
 
     @Override
@@ -236,38 +266,38 @@ public class ClickGUI extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean something) {
         windows.forEach(w -> {
-            w.mouseClicked((int) mouseX, (int) mouseY, button);
+            w.mouseClicked((int) click.x(), (int) click.y(), click.button());
             windows.forEach(w1 -> {
                 if (w.dragging && w != w1) w1.dragging = false;
             });
         });
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, something);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
         //   if (!setup && ConfigManager.firstLaunch) return false;
-        windows.forEach(w -> w.mouseReleased((int) mouseX, (int) mouseY, button));
-        return super.mouseReleased(mouseX, mouseY, button);
+        windows.forEach(w -> w.mouseReleased((int) click.x(), (int) click.y(), click.button()));
+        return super.mouseReleased(click);
     }
 
     @Override
-    public boolean charTyped(char key, int modifier) {
-        windows.forEach(w -> w.charTyped(key, modifier));
+    public boolean charTyped(CharInput charInput) {
+        windows.forEach(w -> w.charTyped((char) charInput.codepoint(), charInput.modifiers()));
         return true;
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        windows.forEach(w -> w.keyTyped(keyCode));
+    public boolean keyPressed(KeyInput key) {
+        windows.forEach(w -> w.keyTyped(key.key()));
 
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+        if (key.key() == GLFW.GLFW_KEY_ESCAPE) {
             if (mc.player == null || !ModuleManager.clickGui.closeAnimation.getValue()) {
                 imageDirection = false;
                 imageAnimation.reset();
-                super.keyPressed(keyCode, scanCode, modifiers);
+                super.keyPressed(key);
                 return true;
             }
 

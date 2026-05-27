@@ -9,6 +9,7 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import thunder.hack.core.Core;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.*;
@@ -179,7 +180,7 @@ public class Strafe extends Module {
 
     @EventHandler
     public void onSync(EventSync e) {
-        oldSpeed = Math.hypot(mc.player.getX() - mc.player.prevX, mc.player.getZ() - mc.player.prevZ) * contextFriction;
+        oldSpeed = Math.hypot(mc.player.getX() - mc.player.lastX, mc.player.getZ() - mc.player.lastZ) * contextFriction;
     }
 
 
@@ -193,8 +194,9 @@ public class Strafe extends Module {
         if (e.getPacket() instanceof EntityVelocityUpdateS2CPacket && (velocity = e.getPacket()).getId() == mc.player.getId() && boost.getValue() == Boost.Damage) {
             if (mc.player.isOnGround()) return;
 
-            double vX = velocity.getVelocityX();
-            double vZ = velocity.getVelocityZ();
+            Vec3d vel = velocity.getVelocity();
+            double vX = vel.x;
+            double vZ = vel.z;
 
             if (vX < 0) vX *= -1;
             if (vZ < 0) vZ *= -1;
@@ -202,9 +204,7 @@ public class Strafe extends Module {
             oldSpeed = (vX + vZ) / (velReduction.getValue() * 1000f);
             oldSpeed = Math.min(oldSpeed, maxVelocitySpeed.getValue());
 
-            ((ISPacketEntityVelocity) velocity).setMotionX(0);
-            ((ISPacketEntityVelocity) velocity).setMotionY(0);
-            ((ISPacketEntityVelocity) velocity).setMotionZ(0);
+            ((ISPacketEntityVelocity) velocity).setVelocity(Vec3d.ZERO);
         }
     }
 

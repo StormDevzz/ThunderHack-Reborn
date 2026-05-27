@@ -1,7 +1,8 @@
 package thunder.hack.features.modules.render;
 
+
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.DrawContext;
@@ -56,7 +57,7 @@ public class LogoutSpots extends Module {
             if (pac.getActions().contains(PlayerListS2CPacket.Action.ADD_PLAYER)) {
                 for (PlayerListS2CPacket.Entry ple : pac.getPlayerAdditionEntries()) {
                     for (UUID uuid : logoutCache.keySet()) {
-                        if (!uuid.equals(ple.profile().getId())) continue;
+                        if (!uuid.equals(ple.profile().id())) continue;
                         PlayerEntity pl = logoutCache.get(uuid);
                         if (ignoreBots.getValue() && isABot(pl)) continue;
                         if (notifications.getValue())
@@ -96,15 +97,13 @@ public class LogoutSpots extends Module {
     public void onUpdate() {
         for (PlayerEntity player : mc.world.getPlayers()) {
             if (player == null || player.equals(mc.player)) continue;
-            playerCache.put(player.getGameProfile().getId(), player);
+            playerCache.put(player.getGameProfile().id(), player);
         }
     }
 
     public void onRender3D(MatrixStack s) {
-        RenderSystem.enableBlend();
-        RenderSystem.disableDepthTest();
-        if (renderMode.is(RenderMode.Box)) RenderSystem.defaultBlendFunc();
-        else RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
+        GlStateManager._enableBlend();
+        GlStateManager._disableDepthTest();
         for (UUID uuid : logoutCache.keySet()) {
             final PlayerEntity data = logoutCache.get(uuid);
             if (data != null) {
@@ -117,12 +116,13 @@ public class LogoutSpots extends Module {
                             mc.getResourceManager(), mc.getEntityModelLoader(), mc.textRenderer).getPart(EntityModelLayers.PLAYER), false);
                     modelPlayer.getHead().scale(new Vector3f(-0.3f, -0.3f, -0.3f));
 
-                    renderEntity(s, data, modelPlayer, ((OtherClientPlayerEntity)data).getSkinTextures().texture(), color.getValue().getAlpha());
+                    Identifier skinTex = mc.getNetworkHandler().getPlayerListEntry(data.getUuid()) != null ? mc.getNetworkHandler().getPlayerListEntry(data.getUuid()).getSkinTextures().body().texturePath() : Identifier.of("textures/entity/steve.png");
+                    renderEntity(s, data, modelPlayer, skinTex, color.getValue().getAlpha());
                 }
             }
         }
-        RenderSystem.enableDepthTest();
-        RenderSystem.disableBlend();
+        GlStateManager._enableDepthTest();
+        GlStateManager._disableBlend();
     }
 
     public void onRender2D(DrawContext context) {
@@ -165,28 +165,7 @@ public class LogoutSpots extends Module {
         double x = entity.getX() - mc.getEntityRenderDispatcher().camera.getPos().getX();
         double y = entity.getY() - mc.getEntityRenderDispatcher().camera.getPos().getY();
         double z = entity.getZ() - mc.getEntityRenderDispatcher().camera.getPos().getZ();
-        ((IEntity) entity).setPos(entity.getPos());
-        matrices.push();
-        matrices.translate((float) x, (float) y, (float) z);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotation(MathUtility.rad(180 - entity.bodyYaw)));
-        prepareScale(matrices);
-        modelBase.animateModel((PlayerEntity) entity, entity.limbAnimator.getPos(), entity.limbAnimator.getSpeed(), Render3DEngine.getTickDelta());
-        float limbSpeed = Math.min(entity.limbAnimator.getSpeed(), 1f);
-        modelBase.setAngles((PlayerEntity) entity, entity.limbAnimator.getPos(), limbSpeed, entity.age, entity.headYaw - entity.bodyYaw, entity.getPitch());
-        BufferBuilder buffer;
-        if (renderMode.is(RenderMode.TexturedChams)) {
-            RenderSystem.setShaderTexture(0, texture);
-            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-            buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        } else {
-            RenderSystem.setShader(GameRenderer::getPositionProgram);
-            buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
-        }
-        RenderSystem.setShaderColor(color.getValue().getGlRed(), color.getValue().getGlGreen(), color.getValue().getGlBlue(), alpha / 255f);
-        modelBase.render(matrices, buffer, 10, 0);
-        Render2DEngine.endBuilding(buffer);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        matrices.pop();
+        // TODO: fix for MC 1.21.9 rendering
     }
 
     private static void prepareScale(@NotNull MatrixStack matrixStack) {

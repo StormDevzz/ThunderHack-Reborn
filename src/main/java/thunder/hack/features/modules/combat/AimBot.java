@@ -79,8 +79,8 @@ public final class AimBot extends Module {
             if (Float.isNaN(pitch)) return;
 
             PlayerEntity predictedEntity = PredictUtility.predictPlayer(nearestTarget, predictTicks.getValue());
-            double iX = predictedEntity.getX() - predictedEntity.prevX;
-            double iZ = predictedEntity.getZ() - predictedEntity.prevZ;
+            double iX = predictedEntity.getX() - predictedEntity.lastX;
+            double iZ = predictedEntity.getZ() - predictedEntity.lastZ;
             double distance = mc.player.distanceTo(predictedEntity);
             distance -= distance % 2.0;
             iX = distance / 2.0 * iX * (mc.player.isSprinting() ? 1.3 : 1.1);
@@ -171,8 +171,8 @@ public final class AimBot extends Module {
 
         if (target != null && (mc.player.canSee(target) || ignoreWalls.getValue())) {
             if (rotation.getValue() == Rotation.Client) {
-                mc.player.setYaw((float) Render2DEngine.interpolate(mc.player.prevYaw, rotationYaw, Render3DEngine.getTickDelta()));
-                mc.player.setPitch((float) Render2DEngine.interpolate(mc.player.prevPitch, rotationPitch, Render3DEngine.getTickDelta()));
+                mc.player.setYaw((float) Render2DEngine.interpolate(mc.player.getYaw(), rotationYaw, Render3DEngine.getTickDelta()));
+                mc.player.setPitch((float) Render2DEngine.interpolate(mc.player.getPitch(), rotationPitch, Render3DEngine.getTickDelta()));
             }
         } else {
             if (mode.getValue() == Mode.CSAim) {
@@ -182,8 +182,8 @@ public final class AimBot extends Module {
         }
 
         if (rotation.getValue() == Rotation.Client && mode.getValue() == Mode.BowAim && mc.player.getActiveItem().getItem() instanceof BowItem) {
-            mc.player.setYaw((float) Render2DEngine.interpolate(mc.player.prevYaw, rotationYaw, Render3DEngine.getTickDelta()));
-            mc.player.setPitch((float) Render2DEngine.interpolate(mc.player.prevPitch, rotationPitch, Render3DEngine.getTickDelta()));
+            mc.player.setYaw((float) Render2DEngine.interpolate(mc.player.getYaw(), rotationYaw, Render3DEngine.getTickDelta()));
+            mc.player.setPitch((float) Render2DEngine.interpolate(mc.player.getPitch(), rotationPitch, Render3DEngine.getTickDelta()));
         }
     }
 
@@ -221,7 +221,7 @@ public final class AimBot extends Module {
             return;
 
         float delta_yaw = wrapDegrees((float) wrapDegrees(Math.toDegrees(Math.atan2(targetVec.z - mc.player.getZ(), (targetVec.x - mc.player.getX()))) - 90) - rotationYaw);
-        float delta_pitch = ((float) (-Math.toDegrees(Math.atan2(targetVec.y - (mc.player.getPos().y + mc.player.getEyeHeight(mc.player.getPose())), Math.sqrt(Math.pow((targetVec.x - mc.player.getX()), 2) + Math.pow(targetVec.z - mc.player.getZ(), 2))))) - rotationPitch);
+        float delta_pitch = ((float) (-Math.toDegrees(Math.atan2(targetVec.y - (mc.player.getEntityPos().y + mc.player.getEyeHeight(mc.player.getPose())), Math.sqrt(Math.pow((targetVec.x - mc.player.getX()), 2) + Math.pow(targetVec.z - mc.player.getZ(), 2))))) - rotationPitch);
 
         if (delta_yaw > 180)
             delta_yaw = delta_yaw - 180;
@@ -284,7 +284,7 @@ public final class AimBot extends Module {
     }
 
     private Vec3d getResolvedPos(@NotNull Entity pl) {
-        return new Vec3d(pl.getX() + (pl.getX() - pl.prevX) * predict.getValue(), pl.getY(), pl.getZ() + (pl.getZ() - pl.prevZ) * predict.getValue());
+        return new Vec3d(pl.getX() + (pl.getX() - pl.lastX) * predict.getValue(), pl.getY(), pl.getZ() + (pl.getZ() - pl.lastZ) * predict.getValue());
     }
 
     private enum Bone {

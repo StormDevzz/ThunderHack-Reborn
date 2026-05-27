@@ -141,7 +141,7 @@ public class WaypointWindow extends WindowBase {
         FontRenderers.sf_medium.drawCenteredString(context.getMatrices(), "Server", serverX + serverWidth / 2f, getY() + 40, textColor);
         FontRenderers.sf_medium.drawCenteredString(context.getMatrices(), "Dimension", dimensionX + dimensionWidth / 2f, getY() + 40, textColor);
 
-        Render2DEngine.addWindow(context.getMatrices(), getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1, 1f);
+        Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1));
 
         int id = 0;
         for (WaypointPlate waypointPlate : waypointPlates) {

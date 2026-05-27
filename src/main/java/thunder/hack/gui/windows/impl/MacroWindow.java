@@ -115,7 +115,7 @@ public class MacroWindow extends WindowBase {
         FontRenderers.sf_medium.drawCenteredString(context.getMatrices(), "Text", textX + textWidth / 2f, getY() + 40, textColor);
 
 
-        Render2DEngine.addWindow(context.getMatrices(), getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1, 1f);
+        Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(getX(), getY() + 50, getX() + getWidth(), getY() + getHeight() - 1));
 
         int id = 0;
         for (MacroPlate macroPlate : macroPlates) {

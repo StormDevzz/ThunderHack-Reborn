@@ -104,7 +104,7 @@ public class BoatFly extends Module {
     }
 
     private void teleportToGround(Entity boat) {
-        BlockPos blockPos = BlockPos.ofFloored(boat.getPos());
+        BlockPos blockPos = BlockPos.ofFloored(boat.getEntityPos());
         for (int i = 0; i < 255; ++i) {
             if (!mc.world.getBlockState(blockPos).isReplaceable() || mc.world.getBlockState(blockPos).getBlock() == Blocks.WATER) {
                 boat.setPosition(boat.getX(), blockPos.getY() + 1, boat.getZ());
@@ -165,7 +165,7 @@ public class BoatFly extends Module {
         Entity entity = mc.player.getControllingVehicle();
 
 
-        if ((!mc.world.isChunkLoaded((int) entity.getPos().getX() >> 4, (int) entity.getPos().getZ() >> 4) || entity.getPos().getY() < -60) && stopunloaded.getValue()) {
+        if ((!mc.world.isChunkLoaded((int) entity.getEntityPos().getX() >> 4, (int) entity.getEntityPos().getZ() >> 4) || entity.getEntityPos().getY() < -60) && stopunloaded.getValue()) {
             returnGravity = true;
             return;
         }
@@ -179,7 +179,7 @@ public class BoatFly extends Module {
         double predictedZ = entity.getZ() + boatMotion[1];
         double predictedY = entity.getY();
 
-        if ((!mc.world.isChunkLoaded((int) predictedX >> 4, (int) predictedZ >> 4) || entity.getPos().getY() < -60) && stopunloaded.getValue()) {
+        if ((!mc.world.isChunkLoaded((int) predictedX >> 4, (int) predictedZ >> 4) || entity.getEntityPos().getY() < -60) && stopunloaded.getValue()) {
             returnGravity = true;
             return;
         }
@@ -214,8 +214,9 @@ public class BoatFly extends Module {
             mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, 0, 0, SlotActionType.CLONE, mc.player);
 
         if (spoofpackets.getValue()) {
-            Vec3d vec3d = entity.getPos().add(0.0, randomizeYOffset(), 0.0);
-            BoatEntity entityBoat = new BoatEntity(mc.world, vec3d.x, vec3d.y, vec3d.z);
+            Vec3d vec3d = entity.getEntityPos().add(0.0, randomizeYOffset(), 0.0);
+            BoatEntity entityBoat = new BoatEntity(net.minecraft.entity.EntityType.OAK_BOAT, mc.world, () -> net.minecraft.item.Items.OAK_BOAT);
+            entityBoat.setPosition(vec3d.x, vec3d.y, vec3d.z);
             entityBoat.setYaw(entity.getYaw());
             entityBoat.setPitch(entity.getPitch());
             sendMovePacket(new VehicleMoveC2SPacket(entityBoat));
@@ -257,7 +258,7 @@ public class BoatFly extends Module {
         if (mc.player.getControllingVehicle() == null || returnGravity || waitedCooldown)
             return;
 
-        Vec3d boatPos = mc.player.getControllingVehicle().getPos();
+        Vec3d boatPos = mc.player.getControllingVehicle().getEntityPos();
         if ((!mc.world.isChunkLoaded((int) boatPos.getX() >> 4, (int) boatPos.getZ() >> 4) || boatPos.getY() < -60) && stopunloaded.getValue())
             return;
 

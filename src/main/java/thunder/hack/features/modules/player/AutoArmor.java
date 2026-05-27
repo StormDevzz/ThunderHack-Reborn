@@ -1,12 +1,13 @@
 package thunder.hack.features.modules.player;
 
 import net.minecraft.client.gui.screen.ChatScreen;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ElytraItem;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
@@ -103,7 +104,7 @@ public class AutoArmor extends Module {
     }
 
     private int getProtection(ItemStack is) {
-        if (is.getItem() instanceof ArmorItem || is.getItem() instanceof ElytraItem) {
+        if (is.get(DataComponentTypes.EQUIPPABLE) != null || is.isOf(Items.ELYTRA)) {
             int prot = 0;
 
             EquipmentSlot slot = is.getItem() instanceof ArmorItem ai ? ai.getSlotType() : EquipmentSlot.BODY;
@@ -155,7 +156,19 @@ public class AutoArmor extends Module {
                     prot = -999;
             }
 
-            return (is.getItem() instanceof ArmorItem armorItem ? (armorItem.getProtection() + (int) Math.ceil(armorItem.getToughness())) * 10 : 0) + prot;
+            double armor = 0;
+            double toughness = 0;
+            final double[] armorValues = new double[2];
+            is.applyAttributeModifiers(slot, (attribute, modifier) -> {
+                if (attribute.equals(EntityAttributes.ARMOR)) {
+                    armorValues[0] += modifier.value();
+                } else if (attribute.equals(EntityAttributes.ARMOR_TOUGHNESS)) {
+                    armorValues[1] += modifier.value();
+                }
+            });
+            armor = armorValues[0];
+            toughness = armorValues[1];
+            return (int) ((armor + Math.ceil(toughness)) * 10) + prot;
         } else if (!is.isEmpty()) return 0;
         return -1;
     }

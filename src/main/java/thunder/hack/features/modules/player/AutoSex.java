@@ -1,6 +1,7 @@
 package thunder.hack.features.modules.player;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.Vec3d;
 import thunder.hack.core.Managers;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
@@ -48,7 +49,7 @@ public class AutoSex extends Module {
             target = Managers.COMBAT.getNearestTarget(targetRange.getValue());
             return;
         }
-        if (target.getPos().squaredDistanceTo(mc.player.getPos()) >= targetRange.getPow2Value()) {
+        if (target.getEntityPos().squaredDistanceTo(mc.player.getEntityPos()) >= targetRange.getPow2Value()) {
             target = null;
             return;
         }

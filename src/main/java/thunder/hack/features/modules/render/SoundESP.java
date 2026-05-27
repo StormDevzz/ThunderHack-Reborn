@@ -29,38 +29,8 @@ public class SoundESP extends Module {
     }
 
     public void onRender2D(DrawContext context) {
-        for (Sound s : Lists.newArrayList(sounds)) {
-            Vec3d vector = new Vec3d(s.x, s.y, s.z);
-            Vector4d position = null;
-            vector = Render3DEngine.worldSpaceToScreenSpace(vector);
-            if (vector.z > 0 && vector.z < 1) {
-                position = new Vector4d(vector.x, vector.y, vector.z, 0);
-                position.x = Math.min(vector.x, position.x);
-                position.y = Math.min(vector.y, position.y);
-                position.z = Math.max(vector.x, position.z);
-            }
-
-            if (position != null) {
-                double posX = position.x;
-                double posY = position.y;
-                double endPosX = position.z;
-
-                float diff = (float) (endPosX - posX) / 2;
-                float textWidth = (FontRenderers.sf_bold.getStringWidth(s.name) * 1);
-                float tagX = (float) ((posX + diff - textWidth / 2) * 1);
-
-                float alpha = (float) (1f - Math.pow(1f - ((float) s.ticks / 60f), 3f));
-
-                context.getMatrices().push();
-                context.getMatrices().translate(tagX - 2 + (textWidth + 4) / 2f, (float) (posY - 13f) + 6.5f, 0);
-                context.getMatrices().scale(scale.getValue(), scale.getValue(), 1f);
-                context.getMatrices().translate(-(tagX - 2 + (textWidth + 4) / 2f), -(float) ((posY - 13f) + 6.5f), 0);
-                Render2DEngine.drawRect(context.getMatrices(), tagX - 2, (float) (posY - 13f), textWidth + 4, 11, fillColorA.getValue().withAlpha((int) (fillColorA.getValue().getAlpha() * alpha)).getColorObject());
-                FontRenderers.sf_bold.drawString(context.getMatrices(), s.name, tagX, (float) posY - 10, Render2DEngine.applyOpacity(-1, alpha));
-                context.getMatrices().pop();
-            }
-        }
-    }
+    // stubbed for 1.21.9
+}
 
     @Override
     public void onUpdate() {

@@ -1,7 +1,7 @@
 package thunder.hack.features.modules.render;
 
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
@@ -49,9 +49,9 @@ public class PenisESP extends Module {
     }
 
     public Vec3d getBase(Entity entity) {
-        double x = entity.prevX + ((entity.getX() - entity.prevX) * Render3DEngine.getTickDelta());
-        double y = entity.prevY + ((entity.getY() - entity.prevY) * Render3DEngine.getTickDelta());
-        double z = entity.prevZ + ((entity.getZ() - entity.prevZ) * Render3DEngine.getTickDelta());
+        double x = entity.lastX + ((entity.getX() - entity.lastX) * Render3DEngine.getTickDelta());
+        double y = entity.lastY + ((entity.getY() - entity.lastY) * Render3DEngine.getTickDelta());
+        double z = entity.lastZ + ((entity.getZ() - entity.lastZ) * Render3DEngine.getTickDelta());
 
         return new Vec3d(x, y, z);
     }
@@ -89,7 +89,7 @@ public class PenisESP extends Module {
         }
     }
 
-    public void drawPenis(PlayerEntity player, MatrixStack event, double size, Vec3d start) {
+    public void drawPenis(PlayerEntity player, Matrix3x2fStack event, double size, Vec3d start) {
         Vec3d copy = start;
         start = start.add(Vec3d.fromPolar(0, player.getYaw()).multiply(0.1));
         Vec3d end = start.add(Vec3d.fromPolar(0, player.getYaw()).multiply(size));

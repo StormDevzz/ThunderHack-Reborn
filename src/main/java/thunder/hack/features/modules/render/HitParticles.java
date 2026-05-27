@@ -1,7 +1,8 @@
 package thunder.hack.features.modules.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import net.minecraft.block.AirBlock;
+import org.lwjgl.opengl.GL11;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.util.math.MatrixStack;
@@ -81,13 +82,15 @@ public class HitParticles extends Module {
     }
 
     public void onRender3D(MatrixStack stack) {
-        RenderSystem.disableDepthTest();
+        GlStateManager._enableBlend();
+        GlStateManager._blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE, GL11.GL_SRC_ALPHA, GL11.GL_ONE);
+        GlStateManager._disableDepthTest();
         if (mc.player != null && mc.world != null) {
             for (Particle particle : particles) {
                 particle.render(stack);
             }
         }
-        RenderSystem.enableDepthTest();
+        GlStateManager._enableDepthTest();
     }
 
     public class Particle {
@@ -174,9 +177,9 @@ public class HitParticles extends Module {
             float size = starsScale.getValue();
             float scale = mode.is(Mode.Text) ? 0.025f * size : 0.07f;
 
-            final double posX = Render2DEngine.interpolate(px, x, Render3DEngine.getTickDelta()) - mc.getEntityRenderDispatcher().camera.getPos().getX();
-            final double posY = Render2DEngine.interpolate(py, y, Render3DEngine.getTickDelta()) + 0.1 - mc.getEntityRenderDispatcher().camera.getPos().getY();
-            final double posZ = Render2DEngine.interpolate(pz, z, Render3DEngine.getTickDelta()) - mc.getEntityRenderDispatcher().camera.getPos().getZ();
+            final double posX = Render2DEngine.interpolate(px, x, Render3DEngine.getTickDelta()) - mc.gameRenderer.getCamera().getPos().getX();
+            final double posY = Render2DEngine.interpolate(py, y, Render3DEngine.getTickDelta()) + 0.1 - mc.gameRenderer.getCamera().getPos().getY();
+            final double posZ = Render2DEngine.interpolate(pz, z, Render3DEngine.getTickDelta()) - mc.gameRenderer.getCamera().getPos().getZ();
 
             matrixStack.push();
             matrixStack.translate(posX, posY, posZ);

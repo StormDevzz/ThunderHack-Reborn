@@ -44,34 +44,29 @@ public class Radar extends HudElement {
         if (mode.getValue() == Mode.Rect) {
             Render2DEngine.drawHudBase(context.getMatrices(), getPosX(), getPosY(), size.getValue(), size.getValue(), HudEditor.hudRound.getValue());
 
-            if (HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-                Render2DEngine.drawRectDumbWay(context.getMatrices(), getPosX(), getPosY() + (size.getValue() / 2F + 0.25f), getPosX() + size.getValue(), getPosY() + (size.getValue() / 2F) - 0.25f, new Color(0x54FFFFFF, true));
-                Render2DEngine.drawRectDumbWay(context.getMatrices(),getPosX() + (size.getValue() / 2F - 0.25f), getPosY() - 0.5f, getPosX() + (size.getValue() / 2F) + 0.25f, getPosY() + size.getValue() - 1, new Color(0x54FFFFFF, true));
-            } else {
-                Render2DEngine.draw2DGradientRect(context.getMatrices(),
-                        (float) (getPosX() + (size.getValue() / 2F - 0.5)),
-                        (float) (getPosY() + 3.5),
-                        (float) (getPosX() + (size.getValue() / 2F + 0.2)),
-                        (float) ((getPosY() + size.getValue()) - 3.5),
-                        color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject()
-                );
+            Render2DEngine.draw2DGradientRect(context.getMatrices(),
+                    (float) (getPosX() + (size.getValue() / 2F - 0.5)),
+                    (float) (getPosY() + 3.5),
+                    (float) (getPosX() + (size.getValue() / 2F + 0.2)),
+                    (float) ((getPosY() + size.getValue()) - 3.5),
+                    color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject()
+            );
 
-                Render2DEngine.draw2DGradientRect(
-                        context.getMatrices(),
-                        getPosX() + 3.5f,
-                        getPosY() + (size.getValue() / 2F - 0.2f),
-                        (getPosX() + size.getValue()) - 3.5f,
-                        getPosY() + (size.getValue() / 2F + 0.5f),
-                        color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject()
-                );
-            }
+            Render2DEngine.draw2DGradientRect(
+                    context.getMatrices(),
+                    getPosX() + 3.5f,
+                    getPosY() + (size.getValue() / 2F - 0.2f),
+                    (getPosX() + size.getValue()) - 3.5f,
+                    getPosY() + (size.getValue() / 2F + 0.5f),
+                    color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject(), color2.getValue().getColorObject()
+            );
 
             for (PlayerEntity entityPlayer : Managers.ASYNC.getAsyncPlayers()) {
                 if (entityPlayer == mc.player)
                     continue;
 
-                float posX = (float) (entityPlayer.prevX + (entityPlayer.prevX - entityPlayer.getX()) * Render3DEngine.getTickDelta() - mc.player.getX()) * 2;
-                float posZ = (float) (entityPlayer.prevZ + (entityPlayer.prevZ - entityPlayer.getZ()) * Render3DEngine.getTickDelta() - mc.player.getZ()) * 2;
+                float posX = (float) (entityPlayer.lastX + (entityPlayer.lastX - entityPlayer.getX()) * Render3DEngine.getTickDelta() - mc.player.getX()) * 2;
+                float posZ = (float) (entityPlayer.lastZ + (entityPlayer.lastZ - entityPlayer.getZ()) * Render3DEngine.getTickDelta() - mc.player.getZ()) * 2;
                 float cos = (float) Math.cos(mc.player.getYaw(Render3DEngine.getTickDelta()) * 0.017453292);
                 float sin = (float) Math.sin(mc.player.getYaw(Render3DEngine.getTickDelta()) * 0.017453292);
                 float rotY = -(posZ * cos - posX * sin);

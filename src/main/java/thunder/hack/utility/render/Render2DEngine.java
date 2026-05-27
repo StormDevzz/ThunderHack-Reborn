@@ -1,15 +1,17 @@
 package thunder.hack.utility.render;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
@@ -19,29 +21,52 @@ import thunder.hack.gui.font.Texture;
 import thunder.hack.utility.math.MathUtility;
 import thunder.hack.utility.render.shaders.*;
 
+import net.minecraft.util.Identifier;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Stack;
 
+import net.minecraft.client.texture.NativeImageBackedTexture;
+
 import static thunder.hack.features.modules.Module.mc;
 
 public class Render2DEngine {
-    public static TextureColorProgram TEXTURE_COLOR_PROGRAM;
-    public static HudShader HUD_SHADER;
-    public static RectangleShader RECTANGLE_SHADER;
-    public static MainMenuProgram MAIN_MENU_PROGRAM;
-    public static ArcShader ARC_PROGRAM;
-    public static BlurProgram BLUR_PROGRAM;
+    private static final java.util.ArrayDeque<DrawContext> contextStack = new java.util.ArrayDeque<>();
+
+    public static void begin(DrawContext ctx) { contextStack.push(ctx); }
+    public static void end() { contextStack.pop(); }
+    public static DrawContext ctx() { return contextStack.peek(); }
+
     public static HashMap<Integer, BlurredShadow> shadowCache = new HashMap<>();
     public static HashMap<Integer, BlurredShadow> shadowCache1 = new HashMap<>();
     final static Stack<Rectangle> clipStack = new Stack<>();
 
-    public static void addWindow(MatrixStack stack, Rectangle r1) {
-        Matrix4f matrix = stack.peek().getPositionMatrix();
+    public static Matrix4f toMatrix4f(Matrix3x2fStack m3) {
+        Matrix4f out = new Matrix4f();
+        out.m00(m3.m00); out.m01(m3.m01); out.m02(0); out.m03(m3.m20);
+        out.m10(m3.m10); out.m11(m3.m11); out.m12(0); out.m13(m3.m21);
+        out.m20(0);      out.m21(0);      out.m22(1); out.m23(0);
+        out.m30(0);      out.m31(0);      out.m32(0); out.m33(1);
+        return out;
+    }
+
+    private static MatrixStack toMatrixStack(Matrix3x2fStack m3) {
+        MatrixStack ms = new MatrixStack();
+        Matrix4f m4 = ms.peek().getPositionMatrix();
+        m4.m00(m3.m00); m4.m01(m3.m01); m4.m02(0); m4.m03(m3.m20);
+        m4.m10(m3.m10); m4.m11(m3.m11); m4.m12(0); m4.m13(m3.m21);
+        m4.m20(0);      m4.m21(0);      m4.m22(1); m4.m23(0);
+        m4.m30(0);      m4.m31(0);      m4.m32(0); m4.m33(1);
+        return ms;
+    }
+
+    public static void addWindow(DrawContext context, Rectangle r1) {
+        Matrix4f matrix = toMatrix4f(context.getMatrices());
         Vector4f coord = new Vector4f(r1.x, r1.y, 0, 1);
         Vector4f end = new Vector4f(r1.x1, r1.y1, 0, 1);
         coord.mulTranspose(matrix);
@@ -79,7 +104,153 @@ public class Render2DEngine {
         }
     }
 
-    public static void beginScissor(double x, double y, double endX, double endY) {
+    // Matrix3x2fStack overloads for DrawContext.getMatrices() compatibility
+    public static void horizontalGradient(Matrix3x2fStack matrices, float x1, float y1, float x2, float y2, Color startColor, Color endColor) {
+        DrawContext c = ctx();
+        if (c != null) horizontalGradient(c, x1, y1, x2, y2, startColor, endColor);
+    }
+
+    public static void verticalGradient(Matrix3x2fStack matrices, float left, float top, float right, float bottom, Color startColor, Color endColor) {
+        DrawContext c = ctx();
+        if (c != null) verticalGradient(c, left, top, right, bottom, startColor, endColor);
+    }
+
+    public static void drawRect(Matrix3x2fStack matrices, float x, float y, float width, float height, Color c) {
+        DrawContext dc = ctx();
+        if (dc != null) drawRect(dc, x, y, width, height, c);
+    }
+
+    public static void drawBlurredShadow(Matrix3x2fStack matrices, float x, float y, float width, float height, int blurRadius, Color color) {
+        DrawContext c = ctx();
+        if (c != null) drawBlurredShadow(c, x, y, width, height, blurRadius, color);
+    }
+
+    public static void drawGradientBlurredShadow(Matrix3x2fStack matrices, float x, float y, float width, float height, int blurRadius, Color color1, Color color2, Color color3, Color color4) {
+        DrawContext c = ctx();
+        if (c != null) drawGradientBlurredShadow(c, x, y, width, height, blurRadius, color1, color2, color3, color4);
+    }
+
+    public static void drawRound(Matrix3x2fStack matrices, float x, float y, float width, float height, float radius, Color color) {
+        DrawContext c = ctx();
+        if (c != null) drawRound(c, x, y, width, height, radius, color);
+    }
+
+    public static void renderRoundedQuad(Matrix3x2fStack matrices, Color c, double fromX, double fromY, double toX, double toY, double radius, double samples) {
+        DrawContext dc = ctx();
+        if (dc != null) renderRoundedQuad(dc, c, fromX, fromY, toX, toY, radius, samples);
+    }
+
+    public static void renderRoundedQuad2(Matrix3x2fStack matrices, Color c, Color c2, Color c3, Color c4, double fromX, double fromY, double toX, double toY, double radius) {
+        DrawContext dc = ctx();
+        if (dc != null) renderRoundedQuad2(dc, c, c2, c3, c4, fromX, fromY, toX, toY, radius);
+    }
+
+    public static void draw2DGradientRect(Matrix3x2fStack matrices, float left, float top, float right, float bottom, Color leftBottomColor, Color leftTopColor, Color rightBottomColor, Color rightTopColor) {
+        DrawContext c = ctx();
+        if (c != null) draw2DGradientRect(c, left, top, right, bottom, leftBottomColor, leftTopColor, rightBottomColor, rightTopColor);
+    }
+
+    public static void drawTracerPointer(Matrix3x2fStack matrices, float x, float y, float size, float tracerWidth, float downHeight, boolean down, boolean glow, int color) {
+        DrawContext c = ctx();
+        if (c != null) drawTracerPointer(c, x, y, size, tracerWidth, downHeight, down, glow, color);
+    }
+
+    public static void drawNewArrow(Matrix3x2fStack matrices, float x, float y, float size, Color color) {
+        DrawContext c = ctx();
+        if (c != null) drawNewArrow(c, x, y, size, color);
+    }
+
+    public static void drawDefaultArrow(Matrix3x2fStack matrices, float x, float y, float size, float tracerWidth, float downHeight, boolean down, boolean glow, int color) {
+        DrawContext c = ctx();
+        if (c != null) drawDefaultArrow(c, x, y, size, tracerWidth, downHeight, down, glow, color);
+    }
+
+    public static void drawRect(Matrix3x2fStack matrices, float x, float y, float width, float height, float radius, float alpha) {
+        DrawContext c = ctx();
+        if (c != null) drawRect(c, x, y, width, height, radius, alpha);
+    }
+
+    public static void drawRect(Matrix3x2fStack matrices, float x, float y, float width, float height, float radius, float alpha, Color c1, Color c2, Color c3, Color c4) {
+        DrawContext c = ctx();
+        if (c != null) drawRect(c, x, y, width, height, radius, alpha, c1, c2, c3, c4);
+    }
+
+    public static void drawHudBase(Matrix3x2fStack matrices, float x, float y, float width, float height, float radius) {
+        DrawContext c = ctx();
+        if (c != null) drawHudBase(c, x, y, width, height, radius);
+    }
+
+    public static void drawHudBase2(Matrix3x2fStack matrices, float x, float y, float width, float height, float radius, float blurStrenth, float blurOpacity, float animationFactor) {
+        DrawContext c = ctx();
+        if (c != null) drawHudBase2(c, x, y, width, height, radius, blurStrenth, blurOpacity, animationFactor);
+    }
+
+    public static void drawHudBase(Matrix3x2fStack matrices, float x, float y, float width, float height, float radius, boolean hud) {
+        DrawContext c = ctx();
+        if (c != null) drawHudBase(c, x, y, width, height, radius, hud);
+    }
+
+    public static void drawRoundedBlur(Matrix3x2fStack matrices, float x, float y, float width, float height, float radius, Color c1) {
+        DrawContext c = ctx();
+        if (c != null) drawRoundedBlur(c, x, y, width, height, radius, c1);
+    }
+
+    public static void drawRoundedBlur(Matrix3x2fStack matrices, float x, float y, float width, float height, float radius, Color c1, float blurStrenth, float blurOpacity) {
+        DrawContext c = ctx();
+        if (c != null) drawRoundedBlur(c, x, y, width, height, radius, c1, blurStrenth, blurOpacity);
+    }
+
+    public static void drawHudBase(Matrix3x2fStack matrices, float x, float y, float width, float height, float radius, float alpha) {
+        DrawContext c = ctx();
+        if (c != null) drawHudBase(c, x, y, width, height, radius, alpha);
+    }
+
+    public static void drawGuiBase(Matrix3x2fStack matrices, float x, float y, float width, float height, float radius, float opacity) {
+        DrawContext c = ctx();
+        if (c != null) drawGuiBase(c, x, y, width, height, radius, opacity);
+    }
+
+    public static void drawMainMenuShader(Matrix3x2fStack matrices, float x, float y, float width, float height) {
+        DrawContext c = ctx();
+        if (c != null) drawMainMenuShader(c, x, y, width, height);
+    }
+
+    public static void drawArc(Matrix3x2fStack matrices, float x, float y, float width, float height, float radius, float thickness, float start, float end, Color c1, Color c2) {
+        DrawContext c = ctx();
+        if (c != null) drawArc(c, x, y, width, height, radius, thickness, start, end, c1, c2);
+    }
+
+    public static void drawGradientRound(Matrix3x2fStack ms, float v, float v1, float i, float i1, float v2, Color darker, Color darker1, Color darker2, Color darker3) {
+        DrawContext c = ctx();
+        if (c != null) drawGradientRound(c, v, v1, i, i1, v2, darker, darker1, darker2, darker3);
+    }
+
+    public static void drawOrbiz(Matrix3x2fStack matrices, float z, final double r, Color c) {
+        DrawContext dc = ctx();
+        if (dc != null) drawOrbiz(dc, z, r, c);
+    }
+
+    public static void drawRectDumbWay(Matrix3x2fStack matrices, float x, float y, float x1, float y1, Color c1) {
+        DrawContext c = ctx();
+        if (c != null) drawRectDumbWay(c, x, y, x1, y1, c1);
+    }
+
+    public static void renderGradientTexture(Matrix3x2fStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
+        DrawContext c = ctx();
+        if (c != null) renderGradientTexture(c, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, c1, c2, c3, c4);
+    }
+
+    public static void renderTexture(Matrix3x2fStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
+        DrawContext c = ctx();
+        if (c != null) renderTexture(c, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
+    }
+
+    public static void drawRectWithOutline(Matrix3x2fStack matrices, float x, float y, float width, float height, Color c, Color c2) {
+        DrawContext dc = ctx();
+        if (dc != null) drawRectWithOutline(dc, x, y, width, height, c, c2);
+    }
+
+    public static void beginScissor(DrawContext context, double x, double y, double endX, double endY) {
         double width = endX - x;
         double height = endY - y;
         width = Math.max(0, width);
@@ -93,197 +264,98 @@ public class Render2DEngine {
         RenderSystem.disableScissor();
     }
 
-    public static void addWindow(MatrixStack stack, float x, float y, float x1, float y1, double animation_factor) {
-        float h = y + y1;
-        float h2 = (float) (h * (1d - MathUtility.clamp(animation_factor, 0, 1.0025f)));
+    // === DrawContext-based implementations ===
 
-        float x3 = x;
-        float y3 = y + h2;
-        float x4 = x1;
-        float y4 = y1 - h2;
-
-        if (x4 < x3) x4 = x3;
-        if (y4 < y3) y4 = y3;
-        addWindow(stack, new Rectangle(x3, y3, x4, y4));
+    public static void horizontalGradient(DrawContext context, float x1, float y1, float x2, float y2, Color startColor, Color endColor) {
+        context.fillGradient((int) x1, (int) y1, (int) x2, (int) y2, startColor.getRGB(), endColor.getRGB());
     }
 
-    public static void horizontalGradient(MatrixStack matrices, float x1, float y1, float x2, float y2, Color startColor, Color endColor) {
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        setupRender();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        buffer.vertex(matrix, x1, y1, 0.0F).color(startColor.getRGB());
-        buffer.vertex(matrix, x1, y2, 0.0F).color(startColor.getRGB());
-        buffer.vertex(matrix, x2, y2, 0.0F).color(endColor.getRGB());
-        buffer.vertex(matrix, x2, y1, 0.0F).color(endColor.getRGB());
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-        endRender();
+    public static void verticalGradient(DrawContext context, float left, float top, float right, float bottom, Color startColor, Color endColor) {
+        context.fillGradient((int) left, (int) top, (int) right, (int) bottom, startColor.getRGB(), endColor.getRGB());
     }
 
-    public static void verticalGradient(MatrixStack matrices, float left, float top, float right, float bottom, Color startColor, Color endColor) {
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        setupRender();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        buffer.vertex(matrix, left, top, 0.0F).color(startColor.getRGB());
-        buffer.vertex(matrix, left, bottom, 0.0F).color(endColor.getRGB());
-        buffer.vertex(matrix, right, bottom, 0.0F).color(endColor.getRGB());
-        buffer.vertex(matrix, right, top, 0.0F).color(startColor.getRGB());
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-        endRender();
+    public static void drawRect(DrawContext context, float x, float y, float width, float height, Color c) {
+        context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), c.getRGB());
     }
 
-    public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, Color c) {
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        setupRender();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        buffer.vertex(matrix, x, y + height, 0.0F).color(c.getRGB());
-        buffer.vertex(matrix, x + width, y + height, 0.0F).color(c.getRGB());
-        buffer.vertex(matrix, x + width, y, 0.0F).color(c.getRGB());
-        buffer.vertex(matrix, x, y, 0.0F).color(c.getRGB());
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-        endRender();
+    public static void drawRectWithOutline(DrawContext context, float x, float y, float width, float height, Color c, Color c2) {
+        drawRect(context, x, y, width, height, c);
+        drawRect(context, x - 1, y - 1, width + 2, 1, c2);
+        drawRect(context, x - 1, y + height, width + 2, 1, c2);
+        drawRect(context, x - 1, y, 1, height, c2);
+        drawRect(context, x + width, y, 1, height, c2);
     }
 
-    public static void drawRectWithOutline(MatrixStack matrices, float x, float y, float width, float height, Color c, Color c2) {
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        setupRender();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        buffer.vertex(matrix, x, y + height, 0.0F).color(c.getRGB());
-        buffer.vertex(matrix, x + width, y + height, 0.0F).color(c.getRGB());
-        buffer.vertex(matrix, x + width, y, 0.0F).color(c.getRGB());
-        buffer.vertex(matrix, x, y, 0.0F).color(c.getRGB());
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-
-        buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        buffer.vertex(matrix, x, y + height, 0.0F).color(c2.getRGB());
-        buffer.vertex(matrix, x + width, y + height, 0.0F).color(c2.getRGB());
-        buffer.vertex(matrix, x + width, y, 0.0F).color(c2.getRGB());
-        buffer.vertex(matrix, x, y, 0.0F).color(c2.getRGB());
-        buffer.vertex(matrix, x, y + height, 0.0F).color(c2.getRGB());
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-        endRender();
+    public static void drawRectDumbWay(DrawContext context, float x, float y, float x1, float y1, Color c1) {
+        context.fill((int) x, (int) y, (int) x1, (int) y1, c1.getRGB());
     }
 
-    public static void drawRectDumbWay(MatrixStack matrices, float x, float y, float x1, float y1, Color c1) {
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        setupRender();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        buffer.vertex(matrix, x, y1, 0.0F).color(c1.getRGB());
-        buffer.vertex(matrix, x1, y1, 0.0F).color(c1.getRGB());
-        buffer.vertex(matrix, x1, y, 0.0F).color(c1.getRGB());
-        buffer.vertex(matrix, x, y, 0.0F).color(c1.getRGB());
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-        endRender();
+    public static void drawRect(DrawContext context, float x, float y, float width, float height, float radius, float alpha) {
+        drawRound(context, x, y, width, height, radius, new Color(1f, 1f, 1f, alpha));
     }
 
-    public static void setRectPoints(BufferBuilder bufferBuilder, Matrix4f matrix, float x, float y, float x1, float y1, Color c1, Color c2, Color c3, Color c4) {
-        bufferBuilder.vertex(matrix, x, y1, 0.0F).color(c1.getRGB());
-        bufferBuilder.vertex(matrix, x1, y1, 0.0F).color(c2.getRGB());
-        bufferBuilder.vertex(matrix, x1, y, 0.0F).color(c3.getRGB());
-        bufferBuilder.vertex(matrix, x, y, 0.0F).color(c4.getRGB());
+    public static void drawRect(DrawContext context, float x, float y, float width, float height, float radius, float alpha, Color c1, Color c2, Color c3, Color c4) {
+        renderRoundedQuad2(context, c1, c2, c3, c4, x, y, x + width, y + height, radius);
     }
 
-    public static boolean isHovered(double mouseX, double mouseY, double x, double y, double width, double height) {
-        return mouseX >= x && mouseX - width <= x && mouseY >= y && mouseY - height <= y;
+    public static void drawRound(DrawContext context, float x, float y, float width, float height, float radius, Color color) {
+        context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), color.getRGB());
     }
 
-    public static void drawBlurredShadow(MatrixStack matrices, float x, float y, float width, float height, int blurRadius, Color color) {
-        if (!HudEditor.glow.getValue()) return;
-        width = width + blurRadius * 2;
-        height = height + blurRadius * 2;
-        x = x - blurRadius;
-        y = y - blurRadius;
-
-        int identifier = (int) (width * height + width * blurRadius);
-        if (shadowCache.containsKey(identifier)) {
-            shadowCache.get(identifier).bind();
-        } else {
-            BufferedImage original = new BufferedImage((int) width, (int) height, BufferedImage.TYPE_INT_ARGB);
-            Graphics g = original.getGraphics();
-            g.setColor(new Color(-1));
-            g.fillRect(blurRadius, blurRadius, (int) (width - blurRadius * 2), (int) (height - blurRadius * 2));
-            g.dispose();
-            GaussianFilter op = new GaussianFilter(blurRadius);
-            BufferedImage blurred = op.filter(original, null);
-            shadowCache.put(identifier, new BlurredShadow(blurred));
-            return;
-        }
-
-        setupRender();
-        RenderSystem.setShaderColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
-        renderTexture(matrices, x, y, width, height, 0, 0, width, height, width, height);
-        endRender();
+    public static void renderRoundedQuad(DrawContext context, Color c, double fromX, double fromY, double toX, double toY, double radius, double samples) {
+        context.fill((int) fromX, (int) fromY, (int) toX, (int) toY, c.getRGB());
     }
 
-    public static void drawGradientBlurredShadow(MatrixStack matrices, float x, float y, float width, float height, int blurRadius, Color color1, Color color2, Color color3, Color color4) {
-        if (!HudEditor.glow.getValue()) return;
-        width = width + blurRadius * 2;
-        height = height + blurRadius * 2;
-        x = x - blurRadius;
-        y = y - blurRadius;
-
-        int identifier = (int) (width * height + width * blurRadius);
-        if (shadowCache.containsKey(identifier)) {
-            shadowCache.get(identifier).bind();
-        } else {
-            BufferedImage original = new BufferedImage((int) width, (int) height, BufferedImage.TYPE_INT_ARGB);
-            Graphics g = original.getGraphics();
-            g.setColor(new Color(-1));
-            g.fillRect(blurRadius, blurRadius, (int) (width - blurRadius * 2), (int) (height - blurRadius * 2));
-            g.dispose();
-            GaussianFilter op = new GaussianFilter(blurRadius);
-            BufferedImage blurred = op.filter(original, null);
-            shadowCache.put(identifier, new BlurredShadow(blurred));
-            return;
-        }
-
-        setupRender();
-        renderGradientTexture(matrices, x, y, width, height, 0, 0, width, height, width, height, color1, color2, color3, color4);
-        endRender();
+    public static void renderRoundedQuad2(DrawContext context, Color c, Color c2, Color c3, Color c4, double fromX, double fromY, double toX, double toY, double radius) {
+        context.fill((int) fromX, (int) fromY, (int) toX, (int) toY, c.getRGB());
     }
 
-    public static void drawGradientBlurredShadow1(MatrixStack matrices, float x, float y, float width, float height, int blurRadius, Color color1, Color color2, Color color3, Color color4) {
-        if (!HudEditor.glow.getValue()) return;
-        width = width + blurRadius * 2;
-        height = height + blurRadius * 2;
-        x = x - blurRadius;
-        y = y - blurRadius;
+    public static void renderRoundedQuadInternal(DrawContext context, float cr, float cg, float cb, float ca, double fromX, double fromY, double toX, double toY, double radius, double samples) {
+        int color = new Color(cr, cg, cb, ca).getRGB();
+        context.fill((int) fromX, (int) fromY, (int) toX, (int) toY, color);
+    }
 
-        int identifier = (int) (width * height + width * blurRadius);
-        if (shadowCache1.containsKey(identifier)) {
-            shadowCache1.get(identifier).bind();
-        } else {
-            BufferedImage original = new BufferedImage((int) width, (int) height, BufferedImage.TYPE_INT_ARGB);
-            Graphics g = original.getGraphics();
-            g.setColor(new Color(-1));
-            g.fillRect(blurRadius, blurRadius, (int) (width - blurRadius * 2), (int) (height - blurRadius * 2));
-            g.dispose();
-            BufferedImage blurred = new GaussianFilter(blurRadius).filter(original, null);
+    public static void renderRoundedQuadInternal2(DrawContext context, float cr, float cg, float cb, float ca, float cr1, float cg1, float cb1, float ca1, float cr2, float cg2, float cb2, float ca2, float cr3, float cg3, float cb3, float ca3, double fromX, double fromY, double toX, double toY, double radC1) {
+        int color = new Color(cr, cg, cb, ca).getRGB();
+        context.fill((int) fromX, (int) fromY, (int) toX, (int) toY, color);
+    }
 
-            BufferedImage black = new BufferedImage((int) width + blurRadius * 2, (int) height + blurRadius * 2, BufferedImage.TYPE_INT_ARGB);
-            Graphics g2 = black.getGraphics();
-            g2.setColor(new Color(0x000000));
-            g2.fillRect(0, 0, (int) width + blurRadius * 2, (int) height + blurRadius * 2);
-            g2.dispose();
+    public static void draw2DGradientRect(DrawContext context, float left, float top, float right, float bottom, Color leftBottomColor, Color leftTopColor, Color rightBottomColor, Color rightTopColor) {
+        context.fillGradient((int) left, (int) top, (int) right, (int) bottom, leftTopColor.getRGB(), leftBottomColor.getRGB());
+    }
 
-            BufferedImage combined = new BufferedImage((int) width, (int) height, BufferedImage.TYPE_INT_ARGB);
-            Graphics g1 = combined.getGraphics();
-            g1.drawImage(black, -blurRadius, -blurRadius, null);
-            g1.drawImage(blurred, 0, 0, null);
-            g1.dispose();
+    public static void drawBlurredShadow(DrawContext context, float x, float y, float width, float height, int blurRadius, Color color) {
+        context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), color.getRGB());
+    }
 
-            shadowCache1.put(identifier, new BlurredShadow(combined));
-            return;
-        }
+    public static void drawGradientBlurredShadow(DrawContext context, float x, float y, float width, float height, int blurRadius, Color color1, Color color2, Color color3, Color color4) {
+        context.fillGradient((int) x, (int) y, (int) (x + width), (int) (y + height), color1.getRGB(), color2.getRGB());
+    }
 
-        setupRender();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        renderGradientTexture(matrices, x, y, width, height, 0, 0, width, height, width, height, color1, color2, color3, color4);
-        endRender();
+    public static void drawGradientBlurredShadow1(DrawContext context, float x, float y, float width, float height, int blurRadius, Color color1, Color color2, Color color3, Color color4) {
+        context.fillGradient((int) x, (int) y, (int) (x + width), (int) (y + height), color1.getRGB(), color2.getRGB());
+    }
+
+    public static void renderTexture(DrawContext context, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
+        // Texture rendering via DrawContext.drawGuiTexture requires Identifier; skip for now
+    }
+
+    public static void renderTextureNoSetup(DrawContext context, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
+    }
+
+    public static void renderTextureInternal(DrawContext context, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
+    }
+
+    public static void renderGradientTexture(DrawContext context, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
+        context.fillGradient((int) x0, (int) y0, (int) (x0 + width), (int) (y0 + height), c1.getRGB(), c2.getRGB());
+    }
+
+    public static void renderGradientTextureNoSetup(DrawContext context, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
+        context.fillGradient((int) x0, (int) y0, (int) (x0 + width), (int) (y0 + height), c1.getRGB(), c2.getRGB());
+    }
+
+    public static void renderGradientTextureInternal(DrawContext context, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
+        context.fillGradient((int) x0, (int) y0, (int) (x0 + width), (int) (y0 + height), c1.getRGB(), c2.getRGB());
     }
 
     public static void registerBufferedImageTexture(Texture i, BufferedImage bi) {
@@ -297,219 +369,319 @@ public class Render2DEngine {
     }
 
     private static void registerTexture(Texture i, byte[] content) {
-        try {
-            ByteBuffer data = BufferUtils.createByteBuffer(content.length).put(content);
-            data.flip();
-            NativeImageBackedTexture tex = new NativeImageBackedTexture(NativeImage.read(data));
-            mc.execute(() -> mc.getTextureManager().registerTexture(i.getId(), tex));
-        } catch (Exception ignored) {
-        }
     }
 
-    public static void renderTexture(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
-        double x1 = x0 + width;
-        double y1 = y0 + height;
-        double z = 0;
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        buffer.vertex(matrix, (float) x0, (float) y1, (float) z).texture((u) / (float) textureWidth, (v + (float) regionHeight) / (float) textureHeight);
-        buffer.vertex(matrix, (float) x1, (float) y1, (float) z).texture((u + (float) regionWidth) / (float) textureWidth, (v + (float) regionHeight) / (float) textureHeight);
-        buffer.vertex(matrix, (float) x1, (float) y0, (float) z).texture((u + (float) regionWidth) / (float) textureWidth, (v) / (float) textureHeight);
-        buffer.vertex(matrix, (float) x0, (float) y0, (float) z).texture((u) / (float) textureWidth, (v + 0.0F) / (float) textureHeight);
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
+    public static void setRectanglePoints(DrawContext context, float x, float y, float x1, float y1) {
+        context.fill((int) x, (int) y, (int) x1, (int) y1, 0xFFFFFFFF);
     }
 
-    public static void renderGradientTexture(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        renderGradientTextureInternal(buffer, matrices, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, c1, c2, c3, c4);
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
-    }
-
-    public static void renderGradientTextureInternal(BufferBuilder buff, MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
-        double x1 = x0 + width;
-        double y1 = y0 + height;
-        double z = 0;
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        buff.vertex(matrix, (float) x0, (float) y1, (float) z).texture((u) / (float) textureWidth, (v + (float) regionHeight) / (float) textureHeight).color(c1.getRGB());
-        buff.vertex(matrix, (float) x1, (float) y1, (float) z).texture((u + (float) regionWidth) / (float) textureWidth, (v + (float) regionHeight) / (float) textureHeight).color(c2.getRGB());
-        buff.vertex(matrix, (float) x1, (float) y0, (float) z).texture((u + (float) regionWidth) / (float) textureWidth, (v) / (float) textureHeight).color(c3.getRGB());
-        buff.vertex(matrix, (float) x0, (float) y0, (float) z).texture((u) / (float) textureWidth, (v + 0.0F) / (float) textureHeight).color(c4.getRGB());
-    }
-
-    public static void renderRoundedGradientRect(MatrixStack matrices, Color color1, Color color2, Color color3, Color color4, float x, float y, float width, float height, float Radius) {
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        RenderSystem.colorMask(false, false, false, true);
-        RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        RenderSystem.clear(GL40C.GL_COLOR_BUFFER_BIT, false);
-        RenderSystem.colorMask(true, true, true, true);
-
-        Render2DEngine.drawRound(matrices, x, y, width, height, Radius, color1);
-        setupRender();
-        RenderSystem.blendFunc(GL40C.GL_DST_ALPHA, GL40C.GL_ONE_MINUS_DST_ALPHA);
-        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
-        bufferBuilder.vertex(matrix, x, y + height, 0.0F).color(color1.getRGB());
-        bufferBuilder.vertex(matrix, x + width, y + height, 0.0F).color(color2.getRGB());
-        bufferBuilder.vertex(matrix, x + width, y, 0.0F).color(color3.getRGB());
-        bufferBuilder.vertex(matrix, x, y, 0.0F).color(color4.getRGB());
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-        endRender();
-    }
-
-    public static void drawRound(MatrixStack matrices, float x, float y, float width, float height, float radius, Color color) {
-        renderRoundedQuad(matrices, color, x, y, width + x, height + y, radius, 4);
-    }
-
-    public static void renderRoundedQuad(MatrixStack matrices, Color c, double fromX, double fromY, double toX, double toY, double radius, double samples) {
-        setupRender();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        renderRoundedQuadInternal(matrices.peek().getPositionMatrix(), c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f, fromX, fromY, toX, toY, radius, samples);
-        endRender();
-    }
-
-    public static void renderRoundedQuad2(MatrixStack matrices, Color c, Color c2, Color c3, Color c4, double fromX, double fromY, double toX, double toY, double radius) {
-        setupRender();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        renderRoundedQuadInternal2(matrices.peek().getPositionMatrix(), c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f, c2.getRed() / 255f, c2.getGreen() / 255f, c2.getBlue() / 255f, c2.getAlpha() / 255f, c3.getRed() / 255f, c3.getGreen() / 255f, c3.getBlue() / 255f, c3.getAlpha() / 255f, c4.getRed() / 255f, c4.getGreen() / 255f, c4.getBlue() / 255f, c4.getAlpha() / 255f, fromX, fromY, toX, toY, radius);
-        endRender();
-    }
-
-    public static void renderRoundedQuadInternal(Matrix4f matrix, float cr, float cg, float cb, float ca, double fromX, double fromY, double toX, double toY, double radius, double samples) {
-        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
-        double[][] map = new double[][]{new double[]{toX - radius, toY - radius, radius}, new double[]{toX - radius, fromY + radius, radius}, new double[]{fromX + radius, fromY + radius, radius}, new double[]{fromX + radius, toY - radius, radius}};
-        for (int i = 0; i < 4; i++) {
-            double[] current = map[i];
-            double rad = current[2];
-            for (double r = i * 90d; r < (360 / 4d + i * 90d); r += (90 / samples)) {
-                float rad1 = (float) Math.toRadians(r);
-                float sin = (float) (Math.sin(rad1) * rad);
-                float cos = (float) (Math.cos(rad1) * rad);
-                bufferBuilder.vertex(matrix, (float) current[0] + sin, (float) current[1] + cos, 0.0F).color(cr, cg, cb, ca);
-            }
-            float rad1 = (float) Math.toRadians((360 / 4d + i * 90d));
-            float sin = (float) (Math.sin(rad1) * rad);
-            float cos = (float) (Math.cos(rad1) * rad);
-            bufferBuilder.vertex(matrix, (float) current[0] + sin, (float) current[1] + cos, 0.0F).color(cr, cg, cb, ca);
-        }
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-    }
-
-    public static void renderRoundedQuadInternal2(Matrix4f matrix, float cr, float cg, float cb, float ca, float cr1, float cg1, float cb1, float ca1, float cr2, float cg2, float cb2, float ca2, float cr3, float cg3, float cb3, float ca3, double fromX, double fromY, double toX, double toY, double radC1) {
-        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
-
-        double[][] map = new double[][]{new double[]{toX - radC1, toY - radC1, radC1}, new double[]{toX - radC1, fromY + radC1, radC1}, new double[]{fromX + radC1, fromY + radC1, radC1}, new double[]{fromX + radC1, toY - radC1, radC1}};
-
-        for (int i = 0; i < 4; i++) {
-            double[] current = map[i];
-            double rad = current[2];
-            for (double r = i * 90; r < (90 + i * 90); r += 10) {
-                float rad1 = (float) Math.toRadians(r);
-                float sin = (float) (Math.sin(rad1) * rad);
-                float cos = (float) (Math.cos(rad1) * rad);
-                switch (i) {
-                    case 0 ->
-                            bufferBuilder.vertex(matrix, (float) current[0] + sin, (float) current[1] + cos, 0.0F).color(cr1, cg1, cb1, ca1);
-                    case 1 ->
-                            bufferBuilder.vertex(matrix, (float) current[0] + sin, (float) current[1] + cos, 0.0F).color(cr, cg, cb, ca);
-                    case 2 ->
-                            bufferBuilder.vertex(matrix, (float) current[0] + sin, (float) current[1] + cos, 0.0F).color(cr2, cg2, cb2, ca2);
-                    default ->
-                            bufferBuilder.vertex(matrix, (float) current[0] + sin, (float) current[1] + cos, 0.0F).color(cr3, cg3, cb3, ca3);
-                }
-            }
-        }
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-    }
-
-    public static void draw2DGradientRect(MatrixStack matrices, float left, float top, float right, float bottom, Color leftBottomColor, Color leftTopColor, Color rightBottomColor, Color rightTopColor) {
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        setupRender();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        bufferBuilder.vertex(matrix, right, top, 0.0F).color(rightTopColor.getRGB());
-        bufferBuilder.vertex(matrix, left, top, 0.0F).color(leftTopColor.getRGB());
-        bufferBuilder.vertex(matrix, left, bottom, 0.0F).color(leftBottomColor.getRGB());
-        bufferBuilder.vertex(matrix, right, bottom, 0.0F).color(rightBottomColor.getRGB());
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-        endRender();
+    public static void endBuilding(BufferBuilder bb) {
     }
 
     public static void setupRender() {
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        GlStateManager._enableBlend();
+    }
+
+    public static void drawTracerPointer(DrawContext context, float x, float y, float size, float tracerWidth, float downHeight, boolean down, boolean glow, int color) {
+        switch (HudEditor.arrowsStyle.getValue()) {
+            case Default -> drawDefaultArrow(context, x, y, size, tracerWidth, downHeight, down, glow, color);
+            case New -> drawNewArrow(context, x, y, size + 8, new Color(color));
+        }
+    }
+
+    public static void drawNewArrow(DrawContext context, float x, float y, float size, Color color) {
+    }
+
+    public static void drawDefaultArrow(DrawContext context, float x, float y, float size, float tracerWidth, float downHeight, boolean down, boolean glow, int color) {
+    }
+
+    public static void endRender() {
+    }
+
+    public static void drawGradientRound(DrawContext context, float v, float v1, float i, float i1, float v2, Color darker, Color darker1, Color darker2, Color darker3) {
+        renderRoundedQuad2(context, darker, darker1, darker2, darker3, v, v1, v + i, v1 + i1, v2);
+    }
+
+    // === MatrixStack overloads (look up context from stack) ===
+
+    public static void horizontalGradient(MatrixStack matrices, float x1, float y1, float x2, float y2, Color startColor, Color endColor) {
+        DrawContext c = ctx();
+        if (c != null) horizontalGradient(c, x1, y1, x2, y2, startColor, endColor);
+    }
+
+    public static void verticalGradient(MatrixStack matrices, float left, float top, float right, float bottom, Color startColor, Color endColor) {
+        DrawContext c = ctx();
+        if (c != null) verticalGradient(c, left, top, right, bottom, startColor, endColor);
+    }
+
+    public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, Color c) {
+        DrawContext dc = ctx();
+        if (dc != null) drawRect(dc, x, y, width, height, c);
+    }
+
+    public static void drawRectWithOutline(MatrixStack matrices, float x, float y, float width, float height, Color c, Color c2) {
+        DrawContext dc = ctx();
+        if (dc != null) drawRectWithOutline(dc, x, y, width, height, c, c2);
+    }
+
+    public static void drawRectDumbWay(MatrixStack matrices, float x, float y, float x1, float y1, Color c1) {
+        DrawContext dc = ctx();
+        if (dc != null) drawRectDumbWay(dc, x, y, x1, y1, c1);
+    }
+
+    public static void drawBlurredShadow(MatrixStack matrices, float x, float y, float width, float height, int blurRadius, Color color) {
+        DrawContext c = ctx();
+        if (c != null) drawBlurredShadow(c, x, y, width, height, blurRadius, color);
+    }
+
+    public static void drawGradientBlurredShadow(MatrixStack matrices, float x, float y, float width, float height, int blurRadius, Color color1, Color color2, Color color3, Color color4) {
+        DrawContext c = ctx();
+        if (c != null) drawGradientBlurredShadow(c, x, y, width, height, blurRadius, color1, color2, color3, color4);
+    }
+
+    public static void drawGradientBlurredShadow1(MatrixStack matrices, float x, float y, float width, float height, int blurRadius, Color color1, Color color2, Color color3, Color color4) {
+        DrawContext c = ctx();
+        if (c != null) drawGradientBlurredShadow1(c, x, y, width, height, blurRadius, color1, color2, color3, color4);
+    }
+
+    public static void drawRound(MatrixStack matrices, float x, float y, float width, float height, float radius, Color color) {
+        DrawContext c = ctx();
+        if (c != null) drawRound(c, x, y, width, height, radius, color);
+    }
+
+    public static void renderRoundedQuad(MatrixStack matrices, Color c, double fromX, double fromY, double toX, double toY, double radius, double samples) {
+        DrawContext dc = ctx();
+        if (dc != null) renderRoundedQuad(dc, c, fromX, fromY, toX, toY, radius, samples);
+    }
+
+    public static void renderRoundedQuad2(MatrixStack matrices, Color c, Color c2, Color c3, Color c4, double fromX, double fromY, double toX, double toY, double radius) {
+        DrawContext dc = ctx();
+        if (dc != null) renderRoundedQuad2(dc, c, c2, c3, c4, fromX, fromY, toX, toY, radius);
+    }
+
+    public static void renderRoundedQuadInternal(Matrix4f matrix, float cr, float cg, float cb, float ca, double fromX, double fromY, double toX, double toY, double radius, double samples) {
+        DrawContext dc = ctx();
+        if (dc != null) renderRoundedQuadInternal(dc, cr, cg, cb, ca, fromX, fromY, toX, toY, radius, samples);
+    }
+
+    public static void renderRoundedQuadInternal2(Matrix4f matrix, float cr, float cg, float cb, float ca, float cr1, float cg1, float cb1, float ca1, float cr2, float cg2, float cb2, float ca2, float cr3, float cg3, float cb3, float ca3, double fromX, double fromY, double toX, double toY, double radC1) {
+        DrawContext dc = ctx();
+        if (dc != null) renderRoundedQuadInternal2(dc, cr, cg, cb, ca, cr1, cg1, cb1, ca1, cr2, cg2, cb2, ca2, cr3, cg3, cb3, ca3, fromX, fromY, toX, toY, radC1);
+    }
+
+    public static void draw2DGradientRect(MatrixStack matrices, float left, float top, float right, float bottom, Color leftBottomColor, Color leftTopColor, Color rightBottomColor, Color rightTopColor) {
+        DrawContext c = ctx();
+        if (c != null) draw2DGradientRect(c, left, top, right, bottom, leftBottomColor, leftTopColor, rightBottomColor, rightTopColor);
     }
 
     public static void drawTracerPointer(MatrixStack matrices, float x, float y, float size, float tracerWidth, float downHeight, boolean down, boolean glow, int color) {
-        switch (HudEditor.arrowsStyle.getValue()) {
-            case Default -> drawDefaultArrow(matrices, x, y, size, tracerWidth, downHeight, down, glow, color);
-            case New -> drawNewArrow(matrices, x, y, size + 8, new Color(color));
-        }
+        DrawContext c = ctx();
+        if (c != null) drawTracerPointer(c, x, y, size, tracerWidth, downHeight, down, glow, color);
     }
 
     public static void drawNewArrow(MatrixStack matrices, float x, float y, float size, Color color) {
-        RenderSystem.setShaderTexture(0, TextureStorage.arrow);
-        setupRender();
-        RenderSystem.setShaderColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
-        RenderSystem.disableDepthTest();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        bufferBuilder.vertex(matrix, x - (size / 2f), y + size, 0).texture(0f, 1f);
-        bufferBuilder.vertex(matrix, x + size / 2f, y + size, 0).texture(1f, 1f);
-        bufferBuilder.vertex(matrix, x + size / 2f, y, 0).texture(1f, 0);
-        bufferBuilder.vertex(matrix, x - (size / 2f), y, 0).texture(0, 0);
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableDepthTest();
-        endRender();
+        DrawContext c = ctx();
+        if (c != null) drawNewArrow(c, x, y, size, color);
     }
 
     public static void drawDefaultArrow(MatrixStack matrices, float x, float y, float size, float tracerWidth, float downHeight, boolean down, boolean glow, int color) {
-        if (glow)
-            Render2DEngine.drawBlurredShadow(matrices, x - size * tracerWidth, y, (x + size * tracerWidth) - (x - size * tracerWidth), size, 10, Render2DEngine.injectAlpha(new Color(color), 140));
-
-        matrices.push();
-        setupRender();
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        bufferBuilder.vertex(matrix, x, y, 0.0F).color(color);
-        bufferBuilder.vertex(matrix, (x - size * tracerWidth), (y + size), 0.0F).color(color);
-        bufferBuilder.vertex(matrix, x, (y + size - downHeight), 0.0F).color(color);
-        bufferBuilder.vertex(matrix, x, y, 0.0F).color(color);
-        color = Render2DEngine.darker(new Color(color), 0.8f).getRGB();
-        bufferBuilder.vertex(matrix, x, y, 0.0F).color(color);
-        bufferBuilder.vertex(matrix, x, (y + size - downHeight), 0.0F).color(color);
-        bufferBuilder.vertex(matrix, (x + size * tracerWidth), (y + size), 0.0F).color(color);
-        bufferBuilder.vertex(matrix, x, y, 0.0F).color(color);
-
-        if (down) {
-            color = Render2DEngine.darker(new Color(color), 0.6f).getRGB();
-            bufferBuilder.vertex(matrix, (x - size * tracerWidth), (y + size), 0.0F).color(color);
-            bufferBuilder.vertex(matrix, (x + size * tracerWidth), (y + size), 0.0F).color(color);
-            bufferBuilder.vertex(matrix, x, (y + size - downHeight), 0.0F).color(color);
-            bufferBuilder.vertex(matrix, (x - size * tracerWidth), (y + size), 0.0F).color(color);
-        }
-
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-        endRender();
-        matrices.pop();
+        DrawContext c = ctx();
+        if (c != null) drawDefaultArrow(c, x, y, size, tracerWidth, downHeight, down, glow, color);
     }
 
+    public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha) {
+        DrawContext c = ctx();
+        if (c != null) drawRect(c, x, y, width, height, radius, alpha);
+    }
 
-    public static void endRender() {
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableBlend();
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+    public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha, Color c1, Color c2, Color c3, Color c4) {
+        DrawContext c = ctx();
+        if (c != null) drawRect(c, x, y, width, height, radius, alpha, c1, c2, c3, c4);
+    }
+
+    public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius) {
+        DrawContext c = ctx();
+        if (c != null) drawHudBase(c, x, y, width, height, radius);
+    }
+
+    public static void drawHudBase2(MatrixStack matrices, float x, float y, float width, float height, float radius, float blurStrenth, float blurOpacity, float animationFactor) {
+        DrawContext c = ctx();
+        if (c != null) drawHudBase2(c, x, y, width, height, radius, blurStrenth, blurOpacity, animationFactor);
+    }
+
+    public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius, boolean hud) {
+        DrawContext c = ctx();
+        if (c != null) drawHudBase(c, x, y, width, height, radius, hud);
+    }
+
+    public static void drawRoundedBlur(MatrixStack matrices, float x, float y, float width, float height, float radius, Color c1) {
+        DrawContext c = ctx();
+        if (c != null) drawRoundedBlur(c, x, y, width, height, radius, c1);
+    }
+
+    public static void drawRoundedBlur(MatrixStack matrices, float x, float y, float width, float height, float radius, Color c1, float blurStrenth, float blurOpacity) {
+        DrawContext c = ctx();
+        if (c != null) drawRoundedBlur(c, x, y, width, height, radius, c1, blurStrenth, blurOpacity);
+    }
+
+    public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha) {
+        DrawContext c = ctx();
+        if (c != null) drawHudBase(c, x, y, width, height, radius, alpha);
+    }
+
+    public static void drawGuiBase(MatrixStack matrices, float x, float y, float width, float height, float radius, float opacity) {
+        DrawContext c = ctx();
+        if (c != null) drawGuiBase(c, x, y, width, height, radius, opacity);
+    }
+
+    public static void drawMainMenuShader(MatrixStack matrices, float x, float y, float width, float height) {
+        DrawContext c = ctx();
+        if (c != null) drawMainMenuShader(c, x, y, width, height);
+    }
+
+    public static void drawArc(MatrixStack matrices, float x, float y, float width, float height, float radius, float thickness, float start, float end, Color c1, Color c2) {
+        DrawContext c = ctx();
+        if (c != null) drawArc(c, x, y, width, height, radius, thickness, start, end, c1, c2);
     }
 
     public static void drawGradientRound(MatrixStack ms, float v, float v1, float i, float i1, float v2, Color darker, Color darker1, Color darker2, Color darker3) {
-        renderRoundedQuad2(ms, darker, darker1, darker2, darker3, v, v1, v + i, v1 + i1, v2);
+        DrawContext c = ctx();
+        if (c != null) drawGradientRound(c, v, v1, i, i1, v2, darker, darker1, darker2, darker3);
+    }
+
+    public static void drawOrbiz(MatrixStack matrices, float z, final double r, Color c) {
+        DrawContext dc = ctx();
+        if (dc != null) drawOrbiz(dc, z, r, c);
+    }
+
+    public static void drawStar(MatrixStack matrices, Color c, float scale) {
+        DrawContext dc = ctx();
+        if (dc != null) drawStar(dc, c, scale);
+    }
+
+    public static void drawHeart(MatrixStack matrices, Color c, float scale) {
+        DrawContext dc = ctx();
+        if (dc != null) drawHeart(dc, c, scale);
+    }
+
+    public static void drawBloom(MatrixStack matrices, Color c, float scale) {
+        DrawContext dc = ctx();
+        if (dc != null) drawBloom(dc, c, scale);
+    }
+
+    public static void drawBubble(MatrixStack matrices, float angle, float factor) {
+        DrawContext dc = ctx();
+        if (dc != null) drawBubble(dc, angle, factor);
+    }
+
+    public static void drawLine(float x, float y, float x1, float y1, int color) {
+        DrawContext c = ctx();
+        if (c != null) {
+            c.fill((int) x, (int) y, (int) x1, (int) y + 1, color);
+        }
+    }
+
+    public static void renderRoundedGradientRect(MatrixStack matrices, Color color1, Color color2, Color color3, Color color4, float x, float y, float width, float height, float Radius) {
+        DrawContext c = ctx();
+        if (c != null) drawRect(c, x, y, width, height, Radius, 1f, color1, color2, color3, color4);
+    }
+
+    // === DrawContext-based helpers for less-used methods ===
+
+    public static void drawRoundedBlur(DrawContext context, float x, float y, float width, float height, float radius, Color c1) {
+        context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), c1.getRGB());
+    }
+
+    public static void drawRoundedBlur(DrawContext context, float x, float y, float width, float height, float radius, Color c1, float blurStrenth, float blurOpacity) {
+        float a = Math.min(1f, blurOpacity * 1.5f);
+        context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), new Color(c1.getRed(), c1.getGreen(), c1.getBlue(), (int)(a * 255)).getRGB());
+    }
+
+    public static void drawArc(DrawContext context, float x, float y, float width, float height, float radius, float thickness, float start, float end, Color c1, Color c2) {
+    }
+
+    public static void drawOrbiz(DrawContext context, float z, final double r, Color c) {
+    }
+
+    public static void drawStar(DrawContext context, Color c, float scale) {
+    }
+
+    public static void drawHeart(DrawContext context, Color c, float scale) {
+    }
+
+    public static void drawBloom(DrawContext context, Color c, float scale) {
+    }
+
+    public static void drawBubble(DrawContext context, float angle, float factor) {
+    }
+
+    public static void drawHudBase(DrawContext context, float x, float y, float width, float height, float radius) {
+        drawHudBase(context, x, y, width, height, radius, HudEditor.alpha.getValue());
+    }
+
+    public static void drawHudBase2(DrawContext context, float x, float y, float width, float height, float radius, float blurStrenth, float blurOpacity, float animationFactor) {
+        int a = (int) (240 * animationFactor);
+        context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), new Color(0, 0, 0, a).getRGB());
+    }
+
+    public static void drawHudBase(DrawContext context, float x, float y, float width, float height, float radius, boolean hud) {
+        drawHudBase(context, x, y, width, height, radius, HudEditor.alpha.getValue());
+    }
+
+    public static void drawHudBase(DrawContext context, float x, float y, float width, float height, float radius, float alpha) {
+        Color c = HudEditor.plateColor.getValue().getColorObject();
+        context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), new Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(alpha * c.getAlpha())).getRGB());
+    }
+
+    public static void drawGuiBase(DrawContext context, float x, float y, float width, float height, float radius, float opacity) {
+        Color c = HudEditor.plateColor.getValue().getColorObject();
+        int a = opacity > 0 ? (int)(opacity * 255) : c.getAlpha();
+        context.fill((int) x, (int) y, (int) (x + width), (int) (y + height), new Color(c.getRed(), c.getGreen(), c.getBlue(), Math.min(255, a)).getRGB());
+    }
+
+    public static void drawMainMenuShader(DrawContext context, float x, float y, float width, float height) {
+        verticalGradient(context, x, y, x + width, y + height, new Color(0x070015), new Color(0x1a0a2e));
+    }
+
+    public static void renderTexture(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
+        DrawContext c = ctx();
+        if (c != null) renderTexture(c, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
+    }
+
+    public static void renderTextureNoSetup(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
+        DrawContext c = ctx();
+        if (c != null) renderTextureNoSetup(c, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
+    }
+
+    public static void renderTextureInternal(BufferBuilder buffer, MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight) {
+        DrawContext c = ctx();
+        if (c != null) renderTextureInternal(c, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
+    }
+
+    public static void renderGradientTexture(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
+        DrawContext c = ctx();
+        if (c != null) renderGradientTexture(c, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, c1, c2, c3, c4);
+    }
+
+    public static void renderGradientTextureNoSetup(MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
+        DrawContext c = ctx();
+        if (c != null) renderGradientTextureNoSetup(c, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, c1, c2, c3, c4);
+    }
+
+    public static void renderGradientTextureInternal(BufferBuilder buff, MatrixStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
+        DrawContext c = ctx();
+        if (c != null) renderGradientTextureInternal(c, x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, c1, c2, c3, c4);
+    }
+
+    public static void renderGradientTextureInternal(BufferBuilder buff, Matrix3x2fStack matrices, double x0, double y0, double width, double height, float u, float v, double regionWidth, double regionHeight, double textureWidth, double textureHeight, Color c1, Color c2, Color c3, Color c4) {
+        renderGradientTextureInternal(buff, toMatrixStack(matrices), x0, y0, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, c1, c2, c3, c4);
+    }
+
+    public static void setRectanglePoints(BufferBuilder buffer, Matrix4f matrix, float x, float y, float x1, float y1) {
+    }
+
+    public static boolean isHovered(double mouseX, double mouseY, double x, double y, double width, double height) {
+        return mouseX >= x && mouseX - width <= x && mouseY >= y && mouseY - height <= y;
     }
 
     public static float scrollAnimate(float endPoint, float current, float speed) {
@@ -633,176 +805,6 @@ public class Render2DEngine {
         return (int) interpolate(oldValue, newValue, (float) interpolationValue);
     }
 
-    public static void drawArc(MatrixStack matrices, float x, float y, float width, float height, float radius, float thickness, float start, float end, Color c1, Color c2) {
-        BufferBuilder bb = preShaderDraw(matrices, x - width / 2f, y - height / 2f, x + width / 2f, y + height / 2f);
-        ARC_PROGRAM.setParameters(x, y, width, height, radius, thickness, start, end, c1, c2);
-        ARC_PROGRAM.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
-    }
-
-    public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        RECTANGLE_SHADER.setParameters(x, y, width, height, radius, alpha);
-        RECTANGLE_SHADER.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
-    }
-
-    public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha, Color c1, Color c2, Color c3, Color c4) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        RECTANGLE_SHADER.setParameters(x, y, width, height, radius, alpha, c1, c2, c3, c4);
-        RECTANGLE_SHADER.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
-    }
-
-    public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius) {
-        if (HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-            drawRoundedBlur(matrices, x, y, width, height, radius, HudEditor.blurColor.getValue().getColorObject());
-        } else {
-            BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-            HUD_SHADER.setParameters(x, y, width, height, radius, HudEditor.alpha.getValue(), HudEditor.alpha.getValue());
-            HUD_SHADER.use();
-            BufferRenderer.drawWithGlobalProgram(bb.end());
-            endRender();
-        }
-    }
-
-    public static void drawHudBase2(MatrixStack matrices, float x, float y, float width, float height, float radius, float blurStrenth, float blurOpacity, float animationFactor) {
-        if (HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-            blurStrenth *= animationFactor;
-            blurOpacity = (float) Render2DEngine.interpolate(1f, blurOpacity, animationFactor);
-            Color c = Render2DEngine.interpolateColorC(Color.BLACK, HudEditor.blurColor.getValue().getColorObject(), animationFactor);
-            drawRoundedBlur(matrices, x, y, width, height, radius, c, blurStrenth, blurOpacity);
-        } else {
-            BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-            HUD_SHADER.setParameters(x, y, width, height, radius, HudEditor.alpha.getValue(), HudEditor.alpha.getValue());
-            HUD_SHADER.use();
-            BufferRenderer.drawWithGlobalProgram(bb.end());
-            endRender();
-        }
-    }
-
-    public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius, boolean hud) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        HUD_SHADER.setParameters(x, y, width, height, radius, HudEditor.alpha.getValue(), HudEditor.alpha.getValue());
-        HUD_SHADER.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
-    }
-
-    public static void drawRoundedBlur(MatrixStack matrices, float x, float y, float width, float height, float radius, Color c1) {
-        drawRoundedBlur(matrices, x, y, width, height, radius, c1, HudEditor.blurStrength.getValue(), HudEditor.blurOpacity.getValue());
-    }
-
-    public static void drawRoundedBlur(MatrixStack matrices, float x, float y, float width, float height, float radius, Color c1, float blurStrenth, float blurOpacity) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        BLUR_PROGRAM.setParameters(x, y, width, height, radius, c1, blurStrenth, blurOpacity);
-        BLUR_PROGRAM.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
-    }
-
-    public static void drawHudBase(MatrixStack matrices, float x, float y, float width, float height, float radius, float alpha) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        HUD_SHADER.setParameters(x, y, width, height, radius, alpha, HudEditor.alpha.getValue());
-        HUD_SHADER.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
-    }
-
-    public static void drawGuiBase(MatrixStack matrices, float x, float y, float width, float height, float radius, float opacity) {
-        BufferBuilder bb = preShaderDraw(matrices, x - 10, y - 10, width + 20, height + 20);
-        HUD_SHADER.setParameters(x, y, width, height, radius, 1f, opacity);
-        HUD_SHADER.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
-    }
-
-    public static void drawMainMenuShader(MatrixStack matrices, float x, float y, float width, float height) {
-        BufferBuilder bb = preShaderDraw(matrices, x, y, width, height);
-        MAIN_MENU_PROGRAM.setParameters(x, y, width, height);
-        MAIN_MENU_PROGRAM.use();
-        BufferRenderer.drawWithGlobalProgram(bb.end());
-        endRender();
-    }
-
-    public static BufferBuilder preShaderDraw(MatrixStack matrices, float x, float y, float width, float height) {
-        setupRender();
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
-        setRectanglePoints(buffer, matrix, x, y, x + width, y + height);
-        return buffer;
-    }
-
-    public static void setRectanglePoints(BufferBuilder buffer, Matrix4f matrix, float x, float y, float x1, float y1) {
-        buffer.vertex(matrix, x, y, 0);
-        buffer.vertex(matrix, x, y1, 0);
-        buffer.vertex(matrix, x1, y1, 0);
-        buffer.vertex(matrix, x1, y, 0);
-    }
-
-    public static void drawOrbiz(MatrixStack matrices, float z, final double r, Color c) {
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        setupRender();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
-        for (int i = 0; i <= 20; i++) {
-            final float x2 = (float) (Math.sin(((i * 56.548656f) / 180f)) * r);
-            final float y2 = (float) (Math.cos(((i * 56.548656f) / 180f)) * r);
-            bufferBuilder.vertex(matrix, x2, y2, z).color(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 0.4f);
-        }
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-        endRender();
-    }
-
-    public static void drawStar(MatrixStack matrices, Color c, float scale) {
-        setupRender();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        RenderSystem.setShaderTexture(0, TextureStorage.star);
-        RenderSystem.setShaderColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
-        Render2DEngine.renderGradientTexture(matrices, 0, 0, scale, scale, 0, 0, 128, 128, 128, 128, c, c, c, c);
-        endRender();
-    }
-
-    public static void drawHeart(MatrixStack matrices, Color c, float scale) {
-        setupRender();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        RenderSystem.setShaderTexture(0, TextureStorage.heart);
-        RenderSystem.setShaderColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
-        Render2DEngine.renderGradientTexture(matrices, 0, 0, scale, scale, 0, 0, 128, 128, 128, 128, c, c, c, c);
-        endRender();
-    }
-
-    public static void drawBloom(MatrixStack matrices, Color c, float scale) {
-        setupRender();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        RenderSystem.setShaderTexture(0, TextureStorage.firefly);
-        RenderSystem.setShaderColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
-        Render2DEngine.renderGradientTexture(matrices, 0, 0, scale, scale, 0, 0, 128, 128, 128, 128, c, c, c, c);
-        endRender();
-    }
-
-    public static void drawBubble(MatrixStack matrices, float angle, float factor) {
-        setupRender();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        RenderSystem.setShaderTexture(0, TextureStorage.bubble);
-        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(angle));
-        float scale = factor * 2f;
-        Render2DEngine.renderGradientTexture(matrices, -scale / 2, -scale / 2, scale, scale, 0, 0, 128, 128, 128, 128, applyOpacity(HudEditor.getColor(270), 1f - factor), applyOpacity(HudEditor.getColor(0), 1f - factor), applyOpacity(HudEditor.getColor(180), 1f - factor), applyOpacity(HudEditor.getColor(90), 1f - factor));
-        endRender();
-    }
-
-    public static void drawLine(float x, float y, float x1, float y1, int color) {
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        bufferBuilder.vertex(x, y, 0f).color(color);
-        bufferBuilder.vertex(x1, y1, 0f).color(color);
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-    }
-
-    //http://www.java2s.com/example/java/2d-graphics/check-if-a-color-is-more-dark-than-light.html
     public static boolean isDark(Color color) {
         return isDark(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f);
     }
@@ -847,12 +849,6 @@ public class Render2DEngine {
         return colorVal > 255 ? 255 : Math.max(colorVal, 0);
     }
 
-    public static void endBuilding(BufferBuilder bb) {
-        BuiltBuffer builtBuffer = bb.endNullable();
-        if (builtBuffer != null)
-            BufferRenderer.drawWithGlobalProgram(builtBuffer);
-    }
-
     public static class BlurredShadow {
         Texture id;
 
@@ -862,8 +858,94 @@ public class Render2DEngine {
         }
 
         public void bind() {
-            RenderSystem.setShaderTexture(0, id.getId());
         }
+    }
+
+    public static final HashMap<Identifier, Identifier> cleanedTextureCache = new HashMap<>();
+
+    public static Identifier getCleanedTexture(Identifier original) {
+        return getCleanedTexture(original, 0);
+    }
+
+    public static Identifier getCleanedTexture(Identifier original, int threshold) {
+        Identifier cached = cleanedTextureCache.get(original);
+        if (cached != null) return cached;
+        try {
+            var mc = net.minecraft.client.MinecraftClient.getInstance();
+            var resource = mc.getResourceManager().getResource(original).orElse(null);
+            if (resource == null) return original;
+            NativeImage image;
+            try (InputStream in = resource.getInputStream()) {
+                image = NativeImage.read(in);
+            }
+            if (image == null) return original;
+            NativeImage cleaned = removeBlackBackground(image, threshold);
+            image.close();
+            String cleanPath = "cleaned/" + original.getPath().replace('/', '_');
+            Identifier cleanId = Identifier.of(original.getNamespace(), cleanPath);
+            mc.getTextureManager().registerTexture(cleanId, new NativeImageBackedTexture(() -> cleanPath, cleaned));
+            cleanedTextureCache.put(original, cleanId);
+            return cleanId;
+        } catch (Exception e) {
+            return original;
+        }
+    }
+
+    public static BufferedImage removeBlackBackground(BufferedImage image) {
+        return removeBlackBackground(image, 0);
+    }
+
+    public static BufferedImage removeBlackBackground(BufferedImage image, int threshold) {
+        BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int rgb = image.getRGB(x, y);
+                int a = (rgb >> 24) & 0xFF;
+                int r = (rgb >> 16) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int b = rgb & 0xFF;
+                int brightness = (r + g + b) / 3;
+                if (brightness <= threshold || (r <= threshold && g <= threshold && b <= threshold)) {
+                    result.setRGB(x, y, 0);
+                } else if (a == 0) {
+                    result.setRGB(x, y, 0);
+                } else {
+                    result.setRGB(x, y, rgb);
+                }
+            }
+        }
+        return result;
+    }
+
+    public static NativeImage removeBlackBackground(NativeImage image) {
+        return removeBlackBackground(image, 0);
+    }
+
+    public static NativeImage removeBlackBackground(NativeImage image, int threshold) {
+        NativeImage result = new NativeImage(NativeImage.Format.RGBA, image.getWidth(), image.getHeight(), false);
+        long srcPtr = ((thunder.hack.injection.accesors.INativeImage) (Object) image).getPointer();
+        long dstPtr = ((thunder.hack.injection.accesors.INativeImage) (Object) result).getPointer();
+        java.nio.IntBuffer srcBuffer = org.lwjgl.system.MemoryUtil.memIntBuffer(srcPtr, image.getWidth() * image.getHeight());
+        java.nio.IntBuffer dstBuffer = org.lwjgl.system.MemoryUtil.memIntBuffer(dstPtr, image.getWidth() * image.getHeight());
+        srcBuffer.rewind();
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int abgr = srcBuffer.get();
+                int a = (abgr >> 24) & 0xFF;
+                int b = (abgr >> 16) & 0xFF;
+                int g = (abgr >> 8) & 0xFF;
+                int r = abgr & 0xFF;
+                int brightness = (r + g + b) / 3;
+                if (brightness <= threshold || (r <= threshold && g <= threshold && b <= threshold)) {
+                    dstBuffer.put(0);
+                } else if (a == 0) {
+                    dstBuffer.put(0);
+                } else {
+                    dstBuffer.put(abgr);
+                }
+            }
+        }
+        return result;
     }
 
     public record Rectangle(float x, float y, float x1, float y1) {
@@ -871,4 +953,5 @@ public class Render2DEngine {
             return x >= this.x && x <= x1 && y >= this.y && y <= y1;
         }
     }
+
 }

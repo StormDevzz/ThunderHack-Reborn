@@ -39,12 +39,12 @@ public abstract class MixinScreen {
     @Shadow
     public abstract void init(MinecraftClient client, int width, int height);
 
-    @Inject(method = "handleTextClick", at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;error(Ljava/lang/String;Ljava/lang/Object;)V", ordinal = 1, remap = false), cancellable = true)
+    @Inject(method = "handleTextClick", at = @At("HEAD"), cancellable = true)
     private void onRunCommand(Style style, CallbackInfoReturnable<Boolean> cir) {
-        if (Objects.requireNonNull(style.getClickEvent()) instanceof ClientClickEvent clientClickEvent && clientClickEvent.getValue().startsWith(Managers.COMMAND.getPrefix()))
+        if (style.getClickEvent() instanceof ClientClickEvent clientClickEvent && clientClickEvent.getValue().startsWith(Managers.COMMAND.getPrefix()))
             try {
                 CommandManager manager = Managers.COMMAND;
-                manager.getDispatcher().execute(style.getClickEvent().getValue().substring(Managers.COMMAND.getPrefix().length()), manager.getSource());
+                manager.getDispatcher().execute(clientClickEvent.getValue().substring(Managers.COMMAND.getPrefix().length()), manager.getSource());
                 cir.setReturnValue(true);
             } catch (CommandSyntaxException ignored) {
             }
@@ -115,7 +115,12 @@ public abstract class MixinScreen {
     public void renderPanoramaBackgroundHook(DrawContext context, float delta, CallbackInfo ci) {
         if (ClientSettings.customPanorama.getValue() && mc.world == null) {
             ci.cancel();
-            Render2DEngine.drawMainMenuShader(context.getMatrices(), 0, 0, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
+            Render2DEngine.begin(context);
+            try {
+                Render2DEngine.drawMainMenuShader(context.getMatrices(), 0, 0, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
+            } finally {
+                Render2DEngine.end();
+            }
         }
     }
 

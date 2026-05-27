@@ -68,7 +68,7 @@ public final class Criticals extends Module {
         if (!full)
             sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY() + yDelta, mc.player.getZ(), false));
         else
-            sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY() + yDelta, mc.player.getZ(), ((IClientPlayerEntity) mc.player).getLastYaw(), ((IClientPlayerEntity) mc.player).getLastPitch(), false));
+            sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY() + yDelta, mc.player.getZ(), mc.player.lastYaw, mc.player.lastPitch, false, false));
     }
 
     public static Entity getEntity(@NotNull PlayerInteractEntityC2SPacket packet) {

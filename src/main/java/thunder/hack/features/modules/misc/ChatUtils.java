@@ -37,6 +37,11 @@ public class ChatUtils extends Module {
     private final Setting<Boolean> wavy = new Setting<>("wAvY", false);
     private final Setting<Boolean> translit = new Setting<>("Translit", false);
     private final Setting<Boolean> antiCoordLeak = new Setting<>("AntiCoordLeak", false);
+    private final Setting<Boolean> superZov = new Setting<>("SuperZOV", false);
+    private final Setting<Boolean> cute = new Setting<>("Cute", false);
+    private final Setting<Boolean> nya = new Setting<>("Nya", false);
+    private final Setting<Boolean> potuzhno = new Setting<>("Potuzhno", false);
+    private final Setting<Boolean> sleepy = new Setting<>("Sleepy", false);
 
     private final Timer timer = new Timer();
     private final Timer antiSpam = new Timer();
@@ -132,8 +137,8 @@ public class ChatUtils extends Module {
     public void onUpdate() {
         if (timer.passedMs(15000)) {
             for (PlayerListEntry b : mc.player.networkHandler.getPlayerList()) {
-                if (!nameMap.containsKey(b.getProfile().getId())) {
-                    nameMap.put(b.getProfile().getId(), b.getProfile().getName());
+                if (!nameMap.containsKey(b.getProfile().id())) {
+                    nameMap.put(b.getProfile().id(), b.getProfile().name());
                 }
             }
             timer.reset();
@@ -151,13 +156,13 @@ public class ChatUtils extends Module {
                 } else string1 = "server";
                 if (pck.getActions().contains(PlayerListS2CPacket.Action.ADD_PLAYER)) {
                     for (PlayerListS2CPacket.Entry ple : pck.getPlayerAdditionEntries()) {
-                        if (antiBot(ple.profile().getName())) return;
-                        if (Objects.equals(ple.profile().getName(), mc.player.getName().getString())) return;
+                        if (antiBot(ple.profile().name())) return;
+                        if (Objects.equals(ple.profile().name(), mc.player.getName().getString())) return;
                         if (welcomer.getValue() == Welcomer.Server) {
-                            mc.player.networkHandler.sendChatMessage(getPrefix() + string1 + ple.profile().getName());
+                            mc.player.networkHandler.sendChatMessage(getPrefix() + string1 + ple.profile().name());
                             antiSpam.reset();
-                        } else sendMessage(string1 + ple.profile().getName());
-                        nameMap.put(ple.profile().getId(), ple.profile().getName());
+                        } else sendMessage(string1 + ple.profile().name());
+                        nameMap.put(ple.profile().id(), ple.profile().name());
                     }
                 }
             }
@@ -279,9 +284,31 @@ public class ChatUtils extends Module {
             }
             if (translit.getValue())
                 message = transliterate(message);
-            skip = message;
-            mc.player.networkHandler.sendChatMessage(skip);
-            e.cancel();
+                changed = true;
+            }
+
+            if (cute.getValue()) {
+                message += " :3";
+                changed = true;
+            }
+
+            if (nya.getValue()) {
+                message += "~";
+                changed = true;
+            }
+
+            if (sleepy.getValue()) {
+                message += " ~~zzZ";
+                changed = true;
+            }
+
+            if (changed) {
+                skip = message;
+                mc.player.networkHandler.sendChatMessage(skip);
+                e.cancel();
+            }
+
+            messageTimer.reset();
         }
     }
 

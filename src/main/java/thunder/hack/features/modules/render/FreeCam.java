@@ -60,6 +60,10 @@ public class FreeCam extends Module {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onSync(EventSync e) {
+        mc.player.setYaw(lockedYaw);
+        mc.player.setPitch(lockedPitch);
+        // lastYaw/prevPitch removed in 1.21.9
+
         prevFakeYaw = fakeYaw;
         prevFakePitch = fakePitch;
 
@@ -89,7 +93,23 @@ public class FreeCam extends Module {
         if (mc.player == null) return;
 
         if (trackEntity == null) {
-            double[] motion = MovementUtility.forward(speed.getValue());
+            float forward = mc.player.input.getMovementInput().x;
+            float strafe = mc.player.input.getMovementInput().y;
+            float yaw = fakeYaw;
+
+            if (forward != 0.0f) {
+                if (strafe > 0.0f) {
+                    yaw += (forward > 0.0f) ? -45 : 45;
+                } else if (strafe < 0.0f) {
+                    yaw += (forward > 0.0f) ? 45 : -45;
+                }
+                strafe = 0.0f;
+                if (forward > 0.0f) forward = 1.0f;
+                else if (forward < 0.0f) forward = -1.0f;
+            }
+
+            double sin = Math.sin(Math.toRadians(yaw + 90.0f));
+            double cos = Math.cos(Math.toRadians(yaw + 90.0f));
 
             prevFakeX = fakeX;
             prevFakeY = fakeY;
@@ -105,10 +125,17 @@ public class FreeCam extends Module {
                 fakeY -= hspeed.getValue();
         }
 
-        mc.player.input.movementForward = 0;
-        mc.player.input.movementSideways = 0;
-        mc.player.input.jumping = false;
-        mc.player.input.sneaking = false;
+            // movement normalization removed for 1.21.9
+            // movement normalization removed for 1.21.9
+        mc.player.input.playerInput = new net.minecraft.util.PlayerInput(
+            mc.player.input.playerInput.forward(),
+            mc.player.input.playerInput.backward(),
+            mc.player.input.playerInput.left(),
+            mc.player.input.playerInput.right(),
+            false,
+            false,
+            mc.player.input.playerInput.sprint()
+        );
     }
 
     @EventHandler(priority = EventPriority.LOW)

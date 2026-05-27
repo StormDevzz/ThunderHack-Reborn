@@ -126,18 +126,18 @@ public class ServerHelper extends Module {
             }
             sendMessage(String.valueOf(log));
 
-            mc.player.networkHandler.sendCommand("back");
+            mc.player.networkHandler.sendChatMessage("/back");
             flag = false;
         }
 
         if (inviteTimer.passedS(clanInviteDelay.getValue()) && clanInvite.getValue()) {
             ArrayList<String> playersNames = new ArrayList<>();
             for (PlayerListEntry player : mc.player.networkHandler.getPlayerList()) {
-                playersNames.add(player.getProfile().getName());
+                playersNames.add(player.getProfile().name());
             }
             if (playersNames.size() > 1) {
                 int randomName = (int) Math.floor(Math.random() * playersNames.size());
-                mc.player.networkHandler.sendCommand("c invite " + playersNames.get(randomName));
+                mc.player.networkHandler.sendChatMessage("/c invite " + playersNames.get(randomName));
                 playersNames.clear();
                 inviteTimer.reset();
             }
@@ -198,6 +198,77 @@ public class ServerHelper extends Module {
                         result.add(new AucItem(itemStack.getItem(), price, itemMap.get(getKey(itemStack)), slot));
                     }
                     slot++;
+                }
+            }
+        }
+    }
+
+    private void updateAnarchy() {
+        boolean isDead = mc.player.getHealth() <= 0 || mc.player.isDead();
+        if (!isDead && wasDead) {
+            if (autoKit.getValue()) {
+                mc.player.networkHandler.sendChatCommand(kitCommand.getValue());
+                Managers.NOTIFICATION.publicity("AutoKit", "Kit claimed: " + kitCommand.getValue(), 3, Notification.Type.SUCCESS);
+            }
+            if (antiSpawnKill.getValue()) {
+                hasSpawned = true;
+                spawnTimer.reset();
+            }
+        }
+        wasDead = isDead;
+
+        if (hasSpawned && antiSpawnKill.getValue()) {
+            if (askGapple.getValue()) {
+                SearchInvResult gapple = InventoryUtility.findItemInHotBar(Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
+                SearchInvResult gappleInv = InventoryUtility.findItemInInventory(Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
+                if (gapple.found()) {
+                    InventoryUtility.saveAndSwitchTo(gapple.slot());
+                    sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
+                    InventoryUtility.returnSlot();
+                } else if (gappleInv.found()) {
+                    clickSlot(gappleInv.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
+                    sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
+                    clickSlot(gappleInv.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
+                    sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
+                }
+            }
+            hasSpawned = false;
+        }
+
+        if (askSafeMove.getValue() && antiSpawnKill.getValue() && !spawnTimer.passedS(askSafeTime.getValue())) {
+            mc.player.input.playerInput = new net.minecraft.util.PlayerInput(false, false, false, false, false, false, false);
+        }
+
+        if (autoMessage.getValue() && !hasSentMessage) {
+            if (messageTimer.passedS(messageDelay.getValue())) {
+                mc.player.networkHandler.sendChatMessage(messageText.getValue());
+                hasSentMessage = true;
+            }
+        }
+
+        if (coordLog.getValue() && coordTimer.every(coordLogInterval.getValue() * 1000L)) {
+            String coords = String.format("X: %.1f Y: %.1f Z: %.1f | %s",
+                    mc.player.getX(), mc.player.getY(), mc.player.getZ(),
+                    mc.world.getRegistryKey().getValue().toString());
+            sendMessage("[CoordLog] " + coords);
+        }
+
+        if (autoRocket.getValue() && mc.player.isGliding() && rocketTimer.every(rocketDelay.getValue().longValue())) {
+            if (rocketOnlyJump.getValue() && !mc.options.jumpKey.isPressed())
+                return;
+
+            SearchInvResult rocket = InventoryUtility.findItemInHotBar(Items.FIREWORK_ROCKET);
+            if (rocket.found()) {
+                InventoryUtility.saveAndSwitchTo(rocket.slot());
+                sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
+                InventoryUtility.returnSlot();
+            } else if (!rocketOnlyRockets.getValue()) {
+                SearchInvResult rocketInv = InventoryUtility.findItemInInventory(Items.FIREWORK_ROCKET);
+                if (rocketInv.found()) {
+                    clickSlot(rocketInv.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
+                    sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
+                    clickSlot(rocketInv.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
+                    sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
                 }
             }
         }
@@ -284,9 +355,9 @@ public class ServerHelper extends Module {
             sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
             InventoryUtility.returnSlot();
         } else if (invResult.found()) {
-            clickSlot(invResult.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+            clickSlot(invResult.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
             sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-            clickSlot(invResult.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+            clickSlot(invResult.slot(), mc.player.getInventory().getSelectedSlot(), SlotActionType.SWAP);
             sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
         }
         disorientTimer.reset();

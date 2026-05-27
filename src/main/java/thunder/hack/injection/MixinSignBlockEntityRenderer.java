@@ -1,8 +1,9 @@
 package thunder.hack.injection;
 
-import net.minecraft.block.entity.SignText;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.SignBlockEntityRenderer;
+import net.minecraft.client.render.block.entity.AbstractSignBlockEntityRenderer;
+import net.minecraft.client.render.block.entity.state.SignBlockEntityRenderState;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
+import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,8 +14,8 @@ import thunder.hack.core.manager.client.ModuleManager;
 
 @Mixin(SignBlockEntityRenderer.class)
 public class MixinSignBlockEntityRenderer {
-    @Inject(method = "renderText", at = {@At("HEAD")}, cancellable = true)
-    public final void renderTextHook(BlockPos pos, SignText signText, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int lineHeight, int lineWidth, boolean front, CallbackInfo ci) {
+    @Inject(method = "render(Lnet/minecraft/client/render/block/entity/state/SignBlockEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V", at = {@At("HEAD")}, cancellable = true)
+    public void renderHook(SignBlockEntityRenderState state, MatrixStack matrices, OrderedRenderCommandQueue commandQueue, CameraRenderState cameraState, CallbackInfo ci) {
         if (ModuleManager.noRender.isEnabled() && ModuleManager.noRender.signText.getValue())
             ci.cancel();
     }

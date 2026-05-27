@@ -50,7 +50,6 @@ public class ModuleManager implements IManager {
     public static PacketCanceler packetCanceler = new PacketCanceler();
     public static ClientSettings clientSettings = new ClientSettings();
     public static TimerIndicator timerIndicator = new TimerIndicator();
-    public static ThunderHackGui thunderHackGui = new ThunderHackGui();
     public static NoServerRotate noServerRotate = new NoServerRotate();
     public static BreakHighLight breakHighLight = new BreakHighLight();
     public static BlockHighLight blockHighLight = new BlockHighLight();
@@ -158,6 +157,7 @@ public class ModuleManager implements IManager {
     public static AutoLeave autoLeave = new AutoLeave();
     public static AutoFlyme autoFlyme = new AutoFlyme();
     public static AutoArmor autoArmor = new AutoArmor();
+    public static AutoBuild autoBuild = new AutoBuild();
     public static Cooldowns cooldowns = new Cooldowns();
     public static TapeMouse tapeMouse = new TapeMouse();
     public static Rotations rotations = new Rotations();
@@ -261,6 +261,11 @@ public class ModuleManager implements IManager {
     public static FOV fov = new FOV();
     public static ESP esp = new ESP();
     public static RPC rpc = new RPC();
+    public static CommitsList commitsList = new CommitsList();
+    public static Xiaomi xiaomi = new Xiaomi();
+    public static InventoryPreview inventoryPreview = new InventoryPreview();
+    public static MaceSwap maceSwap = new MaceSwap();
+    public static Weather weather = new Weather();
 
     public ModuleManager() {
         for (Field field : getClass().getDeclaredFields()) {
@@ -333,7 +338,9 @@ public class ModuleManager implements IManager {
     }
 
     public void onRender2D(DrawContext context) {
-        if (mc.getDebugHud().shouldShowDebugHud() || mc.options.hudHidden) return;
+        if (mc.getDebugHud().shouldShowDebugHud() || mc.options.hudHidden)
+            return;
+
         HudElement.anyHovered = false;
         modules.stream().filter(Module::isEnabled).forEach(module -> module.onRender2D(context));
         if (!HudElement.anyHovered && !ClickGUI.anyHovered)
