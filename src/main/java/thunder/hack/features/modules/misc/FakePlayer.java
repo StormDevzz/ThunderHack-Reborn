@@ -1,3 +1,4 @@
+// RaveX Team — code interaction (https://github.com/StormDevzz/RaveX)
 package thunder.hack.features.modules.misc;
 
 import com.mojang.authlib.GameProfile;
@@ -73,15 +74,12 @@ public class FakePlayer extends Module {
     public void onPacketReceive(PacketEvent.Receive e) {
         if (e.getPacket() instanceof ExplosionS2CPacket explosion && fakePlayer != null && fakePlayer.hurtTime == 0) {
             fakePlayer.onDamaged(mc.world.getDamageSources().generic());
-            fakePlayer.setHealth(fakePlayer.getHealth() + fakePlayer.getAbsorptionAmount() - ExplosionUtility.getAutoCrystalDamage(new Vec3d(explosion.getX(), explosion.getY(), explosion.getZ()), fakePlayer, 0, false));
+            fakePlayer.setHealth(fakePlayer.getHealth() + fakePlayer.getAbsorptionAmount() - ExplosionUtility.getAutoCrystalDamage(explosion.center(), fakePlayer, 0, false));
             if (fakePlayer.isDead()) {
-                if (fakePlayer.tryUseTotem(mc.world.getDamageSources().generic())) {
+                if (fakePlayer.clientDamage(mc.world.getDamageSources().generic())) {
                     fakePlayer.setHealth(10f);
 
-
                     ThunderHack.EVENT_BUS.post(new TotemPopEvent(fakePlayer, 1));
-
-                    //      new EntityStatusS2CPacket(fakePlayer, EntityStatuses.USE_TOTEM_OF_UNDYING).apply(mc.player.networkHandler);
                 }
             }
         }
@@ -120,37 +118,6 @@ public class FakePlayer extends Module {
         }
     }
 
-    @EventHandler
-    public void onAttack(EventAttack e) {
-        if (fakePlayer != null && e.getEntity() == fakePlayer && fakePlayer.hurtTime == 0 && !e.isPre()) {
-            mc.world.playSound(mc.player, fakePlayer.getX(), fakePlayer.getY(), fakePlayer.getZ(), SoundEvents.ENTITY_PLAYER_HURT, SoundCategory.PLAYERS, 1f, 1f);
-
-            if (mc.player.fallDistance > 0 || ModuleManager.criticals.isEnabled())
-                mc.world.playSound(mc.player, fakePlayer.getX(), fakePlayer.getY(), fakePlayer.getZ(), SoundEvents.ENTITY_PLAYER_ATTACK_CRIT, SoundCategory.PLAYERS, 1f, 1f);
-            fakePlayer.onDamaged(mc.world.getDamageSources().generic());
-            if (ModuleManager.aura.getAttackCooldown() >= 0.85)
-                fakePlayer.setHealth(fakePlayer.getHealth() + fakePlayer.getAbsorptionAmount() - InventoryUtility.getHitDamage(mc.player.getMainHandStack(), fakePlayer));
-            else fakePlayer.setHealth(fakePlayer.getHealth() + fakePlayer.getAbsorptionAmount() - 1f);
-            if (fakePlayer.isDead()) {
-                if (fakePlayer.tryUseTotem(mc.world.getDamageSources().generic())) {
-                    fakePlayer.setHealth(10f);
-                    new EntityStatusS2CPacket(fakePlayer, EntityStatuses.USE_TOTEM_OF_UNDYING).apply(mc.player.networkHandler);
-                }
-            }
-        }
-    }
-
-    @Override
-    public void onDisable() {
-        if (fakePlayer == null) return;
-        fakePlayer.kill();
-        fakePlayer.setRemoved(Entity.RemovalReason.KILLED);
-        fakePlayer.onRemoved();
-        fakePlayer = null;
-        positions.clear();
-        deathTime = 0;
-    }
-
-    private record PlayerState(double x, double y, double z, float yaw, float pitch) {
+    public record PlayerState(double x, double y, double z, float yaw, float pitch) {
     }
 }

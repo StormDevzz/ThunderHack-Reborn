@@ -66,7 +66,6 @@ public class ThunderHack implements ModInitializer {
         Managers.init();
         Managers.subscribe();
 
-        Render2DEngine.initShaders();
         ModuleManager.rpc.startRpc();
 
         LOGGER.info("[ThunderHack] Init time: {} ms.", System.currentTimeMillis() - initTime);

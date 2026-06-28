@@ -3,7 +3,7 @@ import net.minecraft.client.gl.RenderPipelines;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
@@ -144,7 +144,7 @@ public class RadarRewrite extends HudElement {
         }
 
         Render2DEngine.endBuilding(bufferBuilder);
-        RenderSystem.disableBlend();
+        GlStateManager._disableBlend();
 
         if (!Objects.equals(direction, ""))
             FontRenderers.getModulesRenderer().drawString(matrices, direction, (x - 2 + Math.cos((start - 15) * Math.PI / 180) * (radius / ry)), (y - 1 + Math.sin((start - 15) * Math.PI / 180) * (radius / rx)), -1);

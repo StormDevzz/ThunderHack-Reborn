@@ -116,9 +116,9 @@ public class Trails extends Module {
         }
 
         public Vec3d interpolate(float pt) {
-            double x = from.x + ((to.x - from.x) * pt) - mc.getEntityRenderDispatcher().camera.getPos().getX();
-            double y = from.y + ((to.y - from.y) * pt) - mc.getEntityRenderDispatcher().camera.getPos().getY();
-            double z = from.z + ((to.z - from.z) * pt) - mc.getEntityRenderDispatcher().camera.getPos().getZ();
+            double x = from.x + ((to.x - from.x) * pt) - mc.getEntityRenderDispatcher().camera.getCameraPos().getX();
+            double y = from.y + ((to.y - from.y) * pt) - mc.getEntityRenderDispatcher().camera.getCameraPos().getY();
+            double z = from.z + ((to.z - from.z) * pt) - mc.getEntityRenderDispatcher().camera.getCameraPos().getZ();
             return new Vec3d(x, y, z);
         }
 

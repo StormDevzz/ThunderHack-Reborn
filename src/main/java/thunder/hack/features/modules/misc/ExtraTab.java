@@ -1,6 +1,17 @@
+// RaveX Team — code interaction (https://github.com/StormDevzz/RaveX)
 package thunder.hack.features.modules.misc;
 
+import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.scoreboard.Team;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import thunder.hack.core.Managers;
+import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.modules.Module;
+import thunder.hack.setting.Setting;
+import thunder.hack.setting.impl.ColorSetting;
+
+import java.awt.*;
 
 public class ExtraTab extends Module {
     public ExtraTab() {

@@ -87,7 +87,7 @@ public final class Quiver extends Module {
     }
 
     private void releaseBow() {
-        sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), -90, mc.player.isOnGround()));
+        sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), -90, mc.player.isOnGround(), false));
         mc.options.useKey.setPressed(false);
         mc.interactionManager.stopUsingItem(mc.player);
         count++;
@@ -96,7 +96,7 @@ public final class Quiver extends Module {
     private SearchInvResult getArrow(String name) {
         return InventoryUtility.findInInventory(stack -> {
             if (stack.getItem() instanceof TippedArrowItem tai) {
-                String key = tai.getTranslationKey(stack);
+                String key = stack.getItem().getTranslationKey();
                 return key.contains("effect." + name);
             }
             return false;

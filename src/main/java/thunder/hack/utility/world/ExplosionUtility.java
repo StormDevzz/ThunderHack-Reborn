@@ -21,10 +21,11 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.RaycastContext;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.world.explosion.Explosion;
+import net.minecraft.world.explosion.Explosion.DestructionType;
 import org.apache.commons.lang3.mutable.MutableInt;
 import thunder.hack.core.manager.client.ModuleManager;
-import thunder.hack.injection.accesors.IExplosion;
 import thunder.hack.utility.math.PredictUtility;
 
 import java.util.Arrays;
@@ -35,7 +36,6 @@ import static thunder.hack.features.modules.Module.mc;
 public final class ExplosionUtility {
 
     public static boolean terrainIgnore = false;
-    public static Explosion explosion;
 
     /**
      * Calculate target damage based on crystal position and target. Uses AutoCrystal settings so use only in AutoCrystal
@@ -74,19 +74,10 @@ public final class ExplosionUtility {
     public static float getExplosionDamage(Vec3d explosionPos, PlayerEntity target, boolean optimized) {
         if (mc.world.getDifficulty() == Difficulty.PEACEFUL || target == null) return 0f;
 
-        if (explosion == null)
-            explosion = new Explosion(mc.world, mc.player, 1f, 33f, 7f, 6f, false, Explosion.DestructionType.DESTROY);
-
-        ((IExplosion) explosion).setX(explosionPos.x);
-        ((IExplosion) explosion).setY(explosionPos.y);
-        ((IExplosion) explosion).setZ(explosionPos.z);
-
-        if (((IExplosion) explosion).getWorld() != mc.world) ((IExplosion) explosion).setWorld(mc.world);
-
         if (!new Box(MathHelper.floor(explosionPos.x - 11), MathHelper.floor(explosionPos.y - 11), MathHelper.floor(explosionPos.z - 11), MathHelper.floor(explosionPos.x + 13), MathHelper.floor(explosionPos.y + 13), MathHelper.floor(explosionPos.z + 13)).intersects(target.getBoundingBox()))
             return 0f;
 
-        if (!target.isImmuneToExplosion(explosion) && !target.isInvulnerable()) {
+        if (!target.isInvulnerable()) {
             double distExposure = (float) target.squaredDistanceTo(explosionPos) / 144.;
             if (distExposure <= 1.0) {
                 terrainIgnore = ModuleManager.autoCrystal.ignoreTerrain.getValue();
@@ -99,7 +90,8 @@ public final class ExplosionUtility {
                 if (mc.world.getDifficulty() == Difficulty.EASY) toDamage = Math.min(toDamage / 2f + 1f, toDamage);
                 else if (mc.world.getDifficulty() == Difficulty.HARD) toDamage = toDamage * 3f / 2f;
 
-                toDamage = DamageUtil.getDamageLeft(target, toDamage, ((IExplosion) explosion).getDamageSource(), target.getArmor(), (float) target.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).getValue());
+                DamageSource damageSource = Explosion.createDamageSource(mc.world, mc.player);
+                toDamage = DamageUtil.getDamageLeft(target, toDamage, damageSource, target.getArmor(), (float) target.getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS).getValue());
 
                 if (target.hasStatusEffect(StatusEffects.RESISTANCE)) {
                     int resistance = 25 - (target.getStatusEffect(StatusEffects.RESISTANCE).getAmplifier() + 1) * 5;
@@ -133,19 +125,10 @@ public final class ExplosionUtility {
 
         if (target == null || predict == null) return 0f;
 
-        if (explosion == null)
-            explosion = new Explosion(mc.world, mc.player, 1f, 33f, 7f, 6f, false, Explosion.DestructionType.DESTROY);
-
-        ((IExplosion) explosion).setX(explosionPos.x);
-        ((IExplosion) explosion).setY(explosionPos.y);
-        ((IExplosion) explosion).setZ(explosionPos.z);
-
-        if (((IExplosion) explosion).getWorld() != mc.world) ((IExplosion) explosion).setWorld(mc.world);
-
         if (!new Box(MathHelper.floor(explosionPos.x - 11d), MathHelper.floor(explosionPos.y - 11d), MathHelper.floor(explosionPos.z - 11d), MathHelper.floor(explosionPos.x + 13d), MathHelper.floor(explosionPos.y + 13d), MathHelper.floor(explosionPos.z + 13d)).intersects(predict))
             return 0f;
 
-        if (!target.isImmuneToExplosion(explosion) && !target.isInvulnerable()) {
+        if (!target.isInvulnerable()) {
             double distExposure = predict.getCenter().add(0, -0.9, 0).squaredDistanceTo(explosionPos) / 144.;
             if (distExposure <= 1.0) {
                 terrainIgnore = ModuleManager.autoCrystal.ignoreTerrain.getValue();
@@ -158,7 +141,8 @@ public final class ExplosionUtility {
                 if (mc.world.getDifficulty() == Difficulty.EASY) toDamage = Math.min(toDamage / 2f + 1f, toDamage);
                 else if (mc.world.getDifficulty() == Difficulty.HARD) toDamage = toDamage * 3f / 2f;
 
-                toDamage = DamageUtil.getDamageLeft(target, toDamage, ((IExplosion) explosion).getDamageSource(), target.getArmor(), (float) Objects.requireNonNull(target.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS)).getValue());
+                DamageSource damageSource = Explosion.createDamageSource(mc.world, mc.player);
+                toDamage = DamageUtil.getDamageLeft(target, toDamage, damageSource, target.getArmor(), (float) Objects.requireNonNull(target.getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS)).getValue());
 
                 if (target.hasStatusEffect(StatusEffects.RESISTANCE)) {
                     int resistance = 25 - (Objects.requireNonNull(target.getStatusEffect(StatusEffects.RESISTANCE)).getAmplifier() + 1) * 5;
@@ -221,21 +205,12 @@ public final class ExplosionUtility {
 
         if (mc.world.getDifficulty() == Difficulty.PEACEFUL) return 0f;
 
-        if (explosion == null)
-            explosion = new Explosion(mc.world, mc.player, 1f, 33f, 7f, 6f, false, Explosion.DestructionType.DESTROY);
-
-        ((IExplosion) explosion).setX(explosionPos.x);
-        ((IExplosion) explosion).setY(explosionPos.y);
-        ((IExplosion) explosion).setZ(explosionPos.z);
-
-        if (((IExplosion) explosion).getWorld() != mc.world) ((IExplosion) explosion).setWorld(mc.world);
-
         double maxDist = 12;
         if (!new Box(MathHelper.floor(explosionPos.x - maxDist - 1.0), MathHelper.floor(explosionPos.y - maxDist - 1.0), MathHelper.floor(explosionPos.z - maxDist - 1.0), MathHelper.floor(explosionPos.x + maxDist + 1.0), MathHelper.floor(explosionPos.y + maxDist + 1.0), MathHelper.floor(explosionPos.z + maxDist + 1.0)).intersects(target.getBoundingBox())) {
             return 0f;
         }
 
-        if (!target.isImmuneToExplosion(explosion) && !target.isInvulnerable()) {
+        if (!target.isInvulnerable()) {
             double distExposure = target.squaredDistanceTo(explosionPos) / 144.;
             if (distExposure <= 1.0) {
                 terrainIgnore = ModuleManager.autoCrystal.ignoreTerrain.getValue();
@@ -251,7 +226,8 @@ public final class ExplosionUtility {
                     toDamage = toDamage * 3f / 2f;
                 }
 
-                toDamage = DamageUtil.getDamageLeft(target, toDamage, ((IExplosion) explosion).getDamageSource(), target.getArmor(), (float) target.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).getValue());
+                DamageSource damageSource = Explosion.createDamageSource(mc.world, mc.player);
+                toDamage = DamageUtil.getDamageLeft(target, toDamage, damageSource, target.getArmor(), (float) target.getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS).getValue());
 
                 if (target.hasStatusEffect(StatusEffects.RESISTANCE)) {
                     int resistance = 25 - (target.getStatusEffect(StatusEffects.RESISTANCE).getAmplifier() + 1) * 5;
@@ -396,8 +372,8 @@ public final class ExplosionUtility {
     }
 
     public static int getProtectionAmount(ItemStack stack) {
-        int modifierBlast = EnchantmentHelper.getLevel(mc.world.getRegistryManager().get(Enchantments.BLAST_PROTECTION.getRegistryRef()).getEntry(Enchantments.BLAST_PROTECTION).get(), stack);
-        int modifier = EnchantmentHelper.getLevel(mc.world.getRegistryManager().get(Enchantments.PROTECTION.getRegistryRef()).getEntry(Enchantments.PROTECTION).get(), stack);
+        int modifierBlast = EnchantmentHelper.getLevel(mc.world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.BLAST_PROTECTION), stack);
+        int modifier = EnchantmentHelper.getLevel(mc.world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.PROTECTION), stack);
         return modifierBlast * 2 + modifier;
     }
 }

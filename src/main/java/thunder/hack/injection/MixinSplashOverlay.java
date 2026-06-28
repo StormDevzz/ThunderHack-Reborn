@@ -1,7 +1,6 @@
 package thunder.hack.injection;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.SplashOverlay;
@@ -52,7 +51,7 @@ public abstract class MixinSplashOverlay {
 
         float f = reloadCompleteTime > -1L ? (float) (l - reloadCompleteTime) / 1000.0F : -1.0F;
         float g = reloadStartTime > -1L ? (float) (l - reloadStartTime) / 500.0F : -1.0F;
-        float h;
+        float fade;
         int k;
         if (f >= 1.0F) {
             // fade-out phase — render current screen underneath, draw our overlay fading out
@@ -68,33 +67,22 @@ public abstract class MixinSplashOverlay {
             fade = MathHelper.clamp(g, 0f, 1f);
         } else {
             k = new Color(0x070015).getRGB();
-            float m = (float) (k >> 16 & 255) / 255.0F;
-            float n = (float) (k >> 8 & 255) / 255.0F;
-            float o = (float) (k & 255) / 255.0F;
-            GlStateManager._clearColor(m, n, o, 1.0F);
-            GlStateManager._clear(16384, MinecraftClient.IS_SYSTEM_MAC);
-            h = 1.0F;
         }
 
         k = (int) ((double) context.getScaledWindowWidth() * 0.5);
         int p = (int) ((double) context.getScaledWindowHeight() * 0.5);
 
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(770, 1);
-
-        RenderSystem.setShaderColor(0.1F, 0.1F, 0.1F, h);
-        context.drawTexture(TextureStorage.thLogo, k - 150, p - 35, 0, 0, 300, 70, 300, 70);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, h);
-        Render2DEngine.addWindow(context.getMatrices(),k - 150, p - 35, k - 150 + (300 * progress), p + 35, 1f);
-        context.drawTexture(TextureStorage.thLogo, k - 150, p - 35, 0, 0, 300, 70, 300, 70);
+        GlStateManager._enableBlend();
+        GlStateManager._blendFuncSeparate(770, 0, 770, 0);
+        context.drawTexture(net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED, TextureStorage.thLogo, k - 150, p - 35, 0, 0, 300, 70, 300, 70);
+        Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(k - 150, p - 35, k - 150 + (int)(300 * progress), p + 35));
+        context.drawTexture(net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED, TextureStorage.thLogo, k - 150, p - 35, 0, 0, 300, 70, 300, 70);
         Render2DEngine.popWindow();
 
         float t = this.reload.getProgress();
         this.progress = MathHelper.clamp(this.progress * 0.95F + t * 0.050000012F, 0.0F, 1.0F);
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableBlend();
+        GlStateManager._disableBlend();
 
         if (f >= 2.0F) {
             mc.setOverlay(null);
@@ -110,7 +98,7 @@ public abstract class MixinSplashOverlay {
 
             reloadCompleteTime = Util.getMeasuringTimeMs();
             if (mc.currentScreen != null) {
-                mc.currentScreen.init(mc, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
+                mc.currentScreen.init(mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
             }
         }
     }

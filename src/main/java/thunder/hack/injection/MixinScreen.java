@@ -1,23 +1,16 @@
 package thunder.hack.injection;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Style;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import thunder.hack.ThunderHack;
 import thunder.hack.core.Managers;
-import thunder.hack.core.manager.client.CommandManager;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.core.manager.client.ProxyManager;
-import thunder.hack.events.impl.ClientClickEvent;
 import thunder.hack.gui.misc.DialogScreen;
 import thunder.hack.features.modules.client.ClientSettings;
 import thunder.hack.utility.math.MathUtility;
@@ -29,29 +22,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
 
 import static thunder.hack.features.modules.Module.mc;
 import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 @Mixin(Screen.class)
 public abstract class MixinScreen {
-    @Shadow
-    public abstract void init(MinecraftClient client, int width, int height);
-
-    @Inject(method = "handleTextClick", at = @At("HEAD"), cancellable = true)
-    private void onRunCommand(Style style, CallbackInfoReturnable<Boolean> cir) {
-        if (style.getClickEvent() instanceof ClientClickEvent clientClickEvent && clientClickEvent.getValue().startsWith(Managers.COMMAND.getPrefix()))
-            try {
-                CommandManager manager = Managers.COMMAND;
-                manager.getDispatcher().execute(clientClickEvent.getValue().substring(Managers.COMMAND.getPrefix().length()), manager.getSource());
-                cir.setReturnValue(true);
-            } catch (CommandSyntaxException ignored) {
-            }
-    }
-
-    @Inject(method = "filesDragged", at = @At("HEAD"))
-    public void filesDragged(List<Path> paths, CallbackInfo ci) {
+    @Inject(method = "onFilesDropped", at = @At("HEAD"))
+    public void filesDragged(List<java.nio.file.Path> paths, CallbackInfo ci) {
         String configPath = paths.get(0).toString();
         File cfgFile = new File(configPath);
         String fileName = cfgFile.getName();

@@ -1,6 +1,7 @@
+// RaveX Team — code interaction (https://github.com/StormDevzz/RaveX)
 package thunder.hack.injection;
 
-import net.minecraft.client.render.block.entity.AbstractSignBlockEntityRenderer;
+import net.minecraft.client.render.block.entity.SignBlockEntityRenderer;
 import net.minecraft.client.render.block.entity.state.SignBlockEntityRenderState;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.state.CameraRenderState;

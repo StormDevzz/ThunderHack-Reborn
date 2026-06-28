@@ -43,7 +43,7 @@ public class NoSlow extends Module {
             returnSneak = false;
         }
 
-        if (mc.player.isUsingItem() && !mc.player.isRiding() && !mc.player.isFallFlying()) {
+        if (mc.player.isUsingItem() && !mc.player.isRiding() && !mc.player.isGliding()) {
             switch (mode.getValue()) {
                 case StrictNCP -> sendPacket(new UpdateSelectedSlotC2SPacket(mc.player.getInventory().getSelectedSlot()));
                 case MusteryGrief -> {

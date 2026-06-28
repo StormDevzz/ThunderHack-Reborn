@@ -108,7 +108,7 @@ public class ModuleButton extends AbstractButton {
             Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(x + 1, y + height - 2, width + x - 2, (float) (height + y + 1f + getElementsHeight())));
 
             if (mc.player != null && ModuleManager.clickGui.gear.getValue().isEnabled()) {
-                Render2DEngine.addWindow(context.getMatrices(), new Render2DEngine.Rectangle(x, y + height + 1, (width) + x + 6, (float) ((height) + y + 1f + getElementsHeight())));
+                Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(x, y + height + 1, (width) + x + 6, (float) ((height) + y + 1f + getElementsHeight())));
                 float px = x + 4 + (width - 8) / 2f;
                 float py = y + 12f + (height + (float) getElementsHeight()) / 2f;
                 int gScale = ModuleManager.clickGui.gearScale.getValue();
@@ -116,13 +116,12 @@ public class ModuleButton extends AbstractButton {
                 context.getMatrices().translate(px, py);
                 context.getMatrices().rotate((float) Math.toRadians(gearAnimation.getValue()));
                 context.getMatrices().translate(-px, -py);
-                // TODO: 1.21.9 - manual buffer drawing removed; drawTexture used instead (no per-vertex colors)
                 context.drawTexture(RenderPipelines.GUI_TEXTURED, TextureStorage.Gear,
                         Math.round(px - gScale / 2f), Math.round(py - gScale / 2f),
                         0f, 0f, gScale, gScale, gScale, gScale, -1);
 
                 context.getMatrices().popMatrix();
-                Render2DEngine.popWindow(context);
+                Render2DEngine.popWindow();
             }
 
             if (Render2DEngine.isHovered(mouseX, mouseY, x + 4, y + height - 12f, width - 8, height + (float) getElementsHeight())) {
@@ -172,7 +171,7 @@ public class ModuleButton extends AbstractButton {
             Render2DEngine.popWindow();
         } else {
             if (hovered) {
-                Render2DEngine.addWindow(context.getMatrices(), x + 1, y, x + width - 2, y + height, 1.);
+                Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(x + 1, y, x + width - 2, y + height));
                 Render2DEngine.drawBlurredShadow(context.getMatrices(), mouseX - 10, mouseY - 10, 20, 20, 35, HudEditor.getColor(270));
                 Render2DEngine.popWindow();
             }

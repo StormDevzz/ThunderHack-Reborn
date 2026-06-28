@@ -21,7 +21,7 @@ import static thunder.hack.core.manager.IManager.mc;
 @Mixin(CobwebBlock.class)
 public class MixinCobwebBlock {
     @Inject(method = "onEntityCollision", at = @At("HEAD"), cancellable = true)
-    public void onEntityCollisionHook(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler collisionHandler, CallbackInfo ci) {
+    public void onEntityCollisionHook(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler collisionHandler, boolean moved, CallbackInfo ci) {
         if (ModuleManager.antiWeb.isEnabled() && AntiWeb.mode.getValue() == AntiWeb.Mode.Ignore && entity == mc.player) {
             ci.cancel();
             if (AntiWeb.grim.getValue())

@@ -177,9 +177,9 @@ public class HitParticles extends Module {
             float size = starsScale.getValue();
             float scale = mode.is(Mode.Text) ? 0.025f * size : 0.07f;
 
-            final double posX = Render2DEngine.interpolate(px, x, Render3DEngine.getTickDelta()) - mc.gameRenderer.getCamera().getPos().getX();
-            final double posY = Render2DEngine.interpolate(py, y, Render3DEngine.getTickDelta()) + 0.1 - mc.gameRenderer.getCamera().getPos().getY();
-            final double posZ = Render2DEngine.interpolate(pz, z, Render3DEngine.getTickDelta()) - mc.gameRenderer.getCamera().getPos().getZ();
+            final double posX = Render2DEngine.interpolate(px, x, Render3DEngine.getTickDelta()) - mc.gameRenderer.getCamera().getCameraPos().getX();
+            final double posY = Render2DEngine.interpolate(py, y, Render3DEngine.getTickDelta()) + 0.1 - mc.gameRenderer.getCamera().getCameraPos().getY();
+            final double posZ = Render2DEngine.interpolate(pz, z, Render3DEngine.getTickDelta()) - mc.gameRenderer.getCamera().getCameraPos().getZ();
 
             matrixStack.push();
             matrixStack.translate(posX, posY, posZ);

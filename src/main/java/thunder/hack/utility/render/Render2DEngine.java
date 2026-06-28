@@ -78,7 +78,6 @@ public class Render2DEngine {
         Rectangle r = new Rectangle(x, y, endX, endY);
         if (clipStack.empty()) {
             clipStack.push(r);
-            beginScissor(r.x, r.y, r.x1, r.y1);
         } else {
             Rectangle lastClip = clipStack.peek();
             float lsx = lastClip.x;
@@ -90,18 +89,11 @@ public class Render2DEngine {
             float nstx = MathHelper.clamp(r.x1, nsx, lstx);
             float nsty = MathHelper.clamp(r.y1, nsy, lsty);
             clipStack.push(new Rectangle(nsx, nsy, nstx, nsty));
-            beginScissor(nsx, nsy, nstx, nsty);
         }
     }
 
     public static void popWindow() {
         clipStack.pop();
-        if (clipStack.empty()) {
-            endScissor();
-        } else {
-            Rectangle r = clipStack.peek();
-            beginScissor(r.x, r.y, r.x1, r.y1);
-        }
     }
 
     // Matrix3x2fStack overloads for DrawContext.getMatrices() compatibility
@@ -257,11 +249,11 @@ public class Render2DEngine {
         height = Math.max(0, height);
         float d = (float) Render3DEngine.getScaleFactor();
         int ay = (int) ((mc.getWindow().getScaledHeight() - (y + height)) * d);
-        RenderSystem.enableScissor((int) (x * d), ay, (int) (width * d), (int) (height * d));
+        context.enableScissor((int) (x * d), ay, (int) (width * d), (int) (height * d));
     }
 
-    public static void endScissor() {
-        RenderSystem.disableScissor();
+    public static void endScissor(DrawContext context) {
+        context.disableScissor();
     }
 
     // === DrawContext-based implementations ===
@@ -820,6 +812,7 @@ public class Render2DEngine {
         return (float) Math.sqrt(a * a + b * b + c * c);
     }
 
+    /*
     public static void initShaders() {
         HUD_SHADER = new HudShader();
         MAIN_MENU_PROGRAM = new MainMenuProgram();
@@ -828,6 +821,7 @@ public class Render2DEngine {
         RECTANGLE_SHADER = new RectangleShader();
         BLUR_PROGRAM = new BlurProgram();
     }
+    */
 
     public static @NotNull Color getColor(@NotNull Color start, @NotNull Color end, float progress, boolean smooth) {
         if (!smooth)

@@ -24,7 +24,7 @@ public class TextureReloadListener implements SimpleResourceReloadListener<Void>
         Render2DEngine.shadowCache.clear();
         Render2DEngine.shadowCache1.clear();
         Core.HEADS.clear();
-        FontRenderers.reloadAll();
+        // FontRenderers.reloadAll(); // removed in 1.21.11
     }
 
     @Override

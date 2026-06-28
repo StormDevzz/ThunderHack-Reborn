@@ -60,7 +60,6 @@ public abstract class MixinGameRenderer {
         RenderSystem.getModelViewStack().pushMatrix().mul(matrixStack.peek().getPositionMatrix());
         matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(camera.getPitch()));
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(camera.getYaw() + 180.0f));
-        RenderSystem.applyModelViewMatrix();
 
         Render3DEngine.lastProjMat.set(new org.joml.Matrix4f());
         Render3DEngine.lastModMat.set(new org.joml.Matrix4f());
@@ -71,10 +70,9 @@ public abstract class MixinGameRenderer {
         Render3DEngine.onRender3D(matrixStack); // <- не двигать
 
         RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.applyModelViewMatrix();
     }
 
-    @Inject(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;renderHand(Lnet/minecraft/client/render/Camera;FLorg/joml/Matrix4f;)V", shift = At.Shift.AFTER))
+    @Inject(method = "renderWorld", at = @At("TAIL"))
     public void postRender3dHook(RenderTickCounter tickCounter, CallbackInfo ci) {
         if (Module.fullNullCheck()) return;
         Managers.SHADER.renderShaders();
@@ -86,44 +84,15 @@ public abstract class MixinGameRenderer {
         return MathHelper.lerp(delta, first, second);
     }
 
-    @Inject(method = "loadPrograms", at = @At(value = "RETURN"))
+    @Inject(method = "preloadPrograms", at = @At(value = "RETURN"))
     private void loadSatinPrograms(ResourceFactory factory, CallbackInfo ci) {
         ReloadableShaderEffectManager.INSTANCE.reload(factory);
     }
 
-    @Inject(method = "updateCrosshairTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;findCrosshairTarget(Lnet/minecraft/entity/Entity;DDF)Lnet/minecraft/util/hit/HitResult;"), cancellable = true)
-    private void onUpdateTargetedEntity(float tickDelta, CallbackInfo info) {
-        if (Module.fullNullCheck()) return;
-
-        /*
-        if (ModuleManager.aura.isEnabled() && Aura.target != null && mc.player.distanceTo(Aura.target) <= ModuleManager.aura.attackRange.getValue() && ModuleManager.aura.rotationMode.getValue() != Aura.Mode.None) {
-            mc.getProfiler().pop();
-            info.cancel();
-            //add vector from aura
-            mc.crosshairTarget = new EntityHitResult(Aura.target);
-        }
-         */
-
-        if (ModuleManager.freeCam.isEnabled()) {
-            mc.getProfiler().pop();
-            info.cancel();
-            mc.crosshairTarget = Managers.PLAYER.getRtxTarget(ModuleManager.freeCam.getFakeYaw(), ModuleManager.freeCam.getFakePitch(), ModuleManager.freeCam.getFakeX(), ModuleManager.freeCam.getFakeY(), ModuleManager.freeCam.getFakeZ());
-        }
-    }
-
-    @Inject(method = "findCrosshairTarget", at = @At("HEAD"), cancellable = true)
-    private void findCrosshairTargetHook(Entity camera, double blockInteractionRange, double entityInteractionRange, float tickDelta, CallbackInfoReturnable<HitResult> cir) {
-        if (ModuleManager.noEntityTrace.isEnabled() && (mc.player.getMainHandStack().isIn(ItemTags.PICKAXES) || !NoEntityTrace.ponly.getValue())) {
-            if (mc.player.getMainHandStack().isIn(ItemTags.SWORDS) && NoEntityTrace.noSword.getValue()) return;
-            double d = Math.max(blockInteractionRange, entityInteractionRange);
-            Vec3d vec3d = camera.getCameraPosVec(tickDelta);
-            HitResult hitResult = camera.raycast(d, tickDelta, false);
-            cir.setReturnValue(ensureTargetInRangeCustom(hitResult, vec3d, blockInteractionRange));
-        }
-    }
+    // updateCrosshairTarget and findCrosshairTarget were removed in 1.21.11, see NoEntityTrace mixin instead
 
     @Inject(method = "getBasicProjectionMatrix", at = @At("TAIL"), cancellable = true)
-    public void getBasicProjectionMatrixHook(double fov, CallbackInfoReturnable<Matrix4f> cir) {
+    public void getBasicProjectionMatrixHook(float fov, CallbackInfoReturnable<Matrix4f> cir) {
         if (ModuleManager.aspectRatio.isEnabled()) {
             MatrixStack matrixStack = new MatrixStack();
             matrixStack.peek().getPositionMatrix().identity();

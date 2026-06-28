@@ -110,10 +110,8 @@ public class LogoutSpots extends Module {
                 if (renderMode.is(RenderMode.Box)) {
                     Render3DEngine.drawBoxOutline(data.getBoundingBox(), color.getValue().getColorObject(), 2);
                 } else {
-                    PlayerEntityModel modelPlayer = new PlayerEntityModel(new EntityRendererFactory.Context(
-                            mc.getEntityRenderDispatcher(), mc.getItemRenderer(),
-                            mc.getBlockRenderManager(), mc.getEntityRenderDispatcher().getHeldItemRenderer(),
-                            mc.getResourceManager(), mc.getEntityModelLoader(), mc.textRenderer).getPart(EntityModelLayers.PLAYER), false);
+                    PlayerEntityModel modelPlayer = new PlayerEntityModel(
+                            mc.getLoadedEntityModels().getModelPart(EntityModelLayers.PLAYER), false);
                     modelPlayer.getHead().scale(new Vector3f(-0.3f, -0.3f, -0.3f));
 
                     Identifier skinTex = mc.getNetworkHandler().getPlayerListEntry(data.getUuid()) != null ? mc.getNetworkHandler().getPlayerListEntry(data.getUuid()).getSkinTextures().body().texturePath() : Identifier.of("textures/entity/steve.png");
@@ -162,9 +160,9 @@ public class LogoutSpots extends Module {
         modelBase.jacket.visible = true;
         modelBase.hat.visible = true;
 
-        double x = entity.getX() - mc.getEntityRenderDispatcher().camera.getPos().getX();
-        double y = entity.getY() - mc.getEntityRenderDispatcher().camera.getPos().getY();
-        double z = entity.getZ() - mc.getEntityRenderDispatcher().camera.getPos().getZ();
+        double x = entity.getX() - mc.getEntityRenderDispatcher().camera.getCameraPos().getX();
+        double y = entity.getY() - mc.getEntityRenderDispatcher().camera.getCameraPos().getY();
+        double z = entity.getZ() - mc.getEntityRenderDispatcher().camera.getCameraPos().getZ();
         // TODO: fix for MC 1.21.9 rendering
     }
 

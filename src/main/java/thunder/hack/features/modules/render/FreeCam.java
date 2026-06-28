@@ -60,8 +60,6 @@ public class FreeCam extends Module {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onSync(EventSync e) {
-        mc.player.setYaw(lockedYaw);
-        mc.player.setPitch(lockedPitch);
         // lastYaw/prevPitch removed in 1.21.9
 
         prevFakeYaw = fakeYaw;
@@ -115,8 +113,8 @@ public class FreeCam extends Module {
             prevFakeY = fakeY;
             prevFakeZ = fakeZ;
 
-            fakeX += motion[0];
-            fakeZ += motion[1];
+            fakeX += (forward * cos + strafe * sin) * speed.getValue();
+            fakeZ += (forward * sin - strafe * cos) * speed.getValue();
 
             if (mc.options.jumpKey.isPressed())
                 fakeY += hspeed.getValue();

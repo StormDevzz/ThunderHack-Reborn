@@ -12,7 +12,9 @@ import net.minecraft.item.BedItem;
 import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.item.Item;
+import net.minecraft.recipe.RecipeDisplayEntry;
+import net.minecraft.recipe.display.SlotDisplay;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Hand;
@@ -96,7 +98,7 @@ public final class AutoBed extends Module {
     public void onPlayerUpdate(PlayerUpdateEvent e) {
         target = findTarget();
 
-        if (mc.world.getDimension().bedWorks() && dimCheck.getValue()) {
+        if (!mc.world.getDimension().hasCeiling() && dimCheck.getValue()) {
             disable(isRu() ? "Кровати не взрываются в этом измерении!" : "Beds don't explode in this dimension!");
             return;
         }
@@ -157,7 +159,7 @@ public final class AutoBed extends Module {
 
         if (bestPos != null && placeTimer.passedMs(placeDelay.getValue()) && !(mc.world.getBlockState(bestPos.hitResult().getBlockPos().up()).getBlock() instanceof BedBlock)) {
             final float angle2 = InteractionUtility.calculateAngle(bestPos.hitResult.getBlockPos().toCenterPos(), bestPos.hitResult.getBlockPos().offset(bestPos.dir).toCenterPos())[0];
-            sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(angle2, 0, mc.player.isOnGround()));
+            sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(angle2, 0, mc.player.isOnGround(), false));
             float prevYaw = mc.player.getYaw();
             mc.player.setYaw(angle2);
             mc.player.lastYaw = angle2;
@@ -296,10 +298,17 @@ public final class AutoBed extends Module {
                     if (mc.player.currentScreenHandler instanceof CraftingScreenHandler craft) {
                         mc.player.getRecipeBook().setGuiOpen(craft.getCategory(), true);
                         for (RecipeResultCollection results : mc.player.getRecipeBook().getOrderedResults()) {
-                            for (RecipeEntry<?> recipe : results.getRecipes(true)) {
-                                if (recipe.value().getResult(results.getRegistryManager()).getItem() instanceof BedItem) {
+                            for (RecipeDisplayEntry entry : results.getAllRecipes()) {
+                                SlotDisplay slotDisplay = entry.display().result();
+                                Item item = null;
+                                if (slotDisplay instanceof SlotDisplay.ItemSlotDisplay isd) {
+                                    item = isd.item().value();
+                                } else if (slotDisplay instanceof SlotDisplay.StackSlotDisplay ssd) {
+                                    item = ssd.stack().getItem();
+                                }
+                                if (item instanceof BedItem) {
                                     for (int i = 0; i < bedsPerCraft.getValue(); i++)
-                                        mc.interactionManager.clickRecipe(mc.player.currentScreenHandler.syncId, recipe, false);
+                                        mc.interactionManager.clickRecipe(mc.player.currentScreenHandler.syncId, entry.id(), false);
                                     mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, 0, 0, SlotActionType.QUICK_MOVE, mc.player);
                                     break;
                                 }

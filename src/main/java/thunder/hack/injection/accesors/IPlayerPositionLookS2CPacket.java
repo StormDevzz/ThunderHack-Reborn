@@ -1,17 +1,5 @@
 package thunder.hack.injection.accesors;
 
-import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.gen.Accessor;
-
-@Mixin(PlayerPositionLookS2CPacket.class)
+// PlayerPositionLookS2CPacket is now a record in 1.21.11, mixin accessor disabled
 public interface IPlayerPositionLookS2CPacket {
-    @Mutable
-    @Accessor("yaw")
-    void setYaw(float yaw);
-
-    @Mutable
-    @Accessor("pitch")
-    void setPitch(float pitch);
 }

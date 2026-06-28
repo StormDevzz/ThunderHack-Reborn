@@ -1,11 +1,8 @@
 package thunder.hack.injection.accesors;
 
-import net.minecraft.client.render.RenderPhase;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
-
-@Mixin(RenderPhase.class)
+// RenderPhase was removed in 1.21.11, this accessor is disabled
 public interface IRenderPhaseMixin {
-    @Accessor("name")
-    String getName();
+    default String getName() {
+        return "";
+    }
 }

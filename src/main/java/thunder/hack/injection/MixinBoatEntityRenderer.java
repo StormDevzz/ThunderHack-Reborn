@@ -1,7 +1,8 @@
+// RaveX Team — code interaction (https://github.com/StormDevzz/RaveX)
 package thunder.hack.injection;
 
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.entity.AbstractBoatEntityRenderer;
+import net.minecraft.client.render.entity.BoatEntityRenderer;
 import net.minecraft.client.render.entity.state.BoatEntityRenderState;
 import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;

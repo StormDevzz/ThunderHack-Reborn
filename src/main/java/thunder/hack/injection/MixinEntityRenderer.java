@@ -19,12 +19,4 @@ import net.minecraft.entity.player.PlayerEntity;
 
 @Mixin(EntityRenderer.class)
 public abstract class MixinEntityRenderer<T extends Entity> {
-    @Inject(method = "renderLabelIfPresent", at = @At("HEAD"), cancellable = true)
-    private void renderLabelIfPresent(EntityRenderState state, MatrixStack matrices, OrderedRenderCommandQueue commandQueue, CameraRenderState cameraState, CallbackInfo ci) {
-        if (th$lastEntity instanceof ArmorStandEntity && ModuleManager.noRender.isEnabled() && ModuleManager.noRender.noArmorStands.getValue())
-            ci.cancel();
-
-        if (entity instanceof PlayerEntity && ModuleManager.nameTags.isEnabled())
-            info.cancel();
-    }
 }

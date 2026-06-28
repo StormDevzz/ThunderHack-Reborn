@@ -142,7 +142,7 @@ public final class AutoTotem extends Module {
         } else if (invResult.found()) {
             int slot = invResult.slot() >= 36 ? invResult.slot() - 36 : invResult.slot();
             if (!hotbarFallBack.getValue()) swapTo(slot);
-            else mc.interactionManager.pickFromInventory(slot);
+            else mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, 0, net.minecraft.screen.slot.SlotActionType.PICKUP, mc.player);
             delay = 20;
         }
     }
@@ -195,14 +195,14 @@ public final class AutoTotem extends Module {
 
                         sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
                         if (resetAttackCooldown.getValue())
-                            mc.player.resetLastAttackedTicks();
+mc.player.resetTicksSinceLastAttack();
                     }
                     case MatrixPick -> {
                         debug(slot + " pick");
-                        sendPacket(new PickFromInventoryC2SPacket(slot));
+                        mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, 0, SlotActionType.PICKUP, mc.player);
                         sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN, Direction.DOWN));
-                        int prevSlot = mc.player.getInventory().selectedSlot;
-                        Managers.ASYNC.run(() -> mc.player.getInventory().selectedSlot = prevSlot, 300);
+                        int prevSlot = mc.player.getInventory().getSelectedSlot();
+                        Managers.ASYNC.run(() -> mc.player.getInventory().setSelectedSlot(prevSlot), 300);
                     }
                     case NewVersion -> {
                         debug(slot + " swap");
@@ -218,7 +218,7 @@ public final class AutoTotem extends Module {
                 sendPacket(new UpdateSelectedSlotC2SPacket(prevCurrentItem));
                 mc.player.getInventory().setSelectedSlot(prevCurrentItem);
                 if (resetAttackCooldown.getValue())
-                    mc.player.resetLastAttackedTicks();
+                    mc.player.resetTicksSinceLastAttack();
             }
             delay = (int) (2 + (Managers.SERVER.getPing() / 25f));
         }
@@ -307,7 +307,7 @@ public final class AutoTotem extends Module {
                         else if (gapple.found() || offHandItem == Items.ENCHANTED_GOLDEN_APPLE)
                             item = Items.ENCHANTED_GOLDEN_APPLE;
                     } else {
-                        if (!mc.player.getItemCooldownManager().isCoolingDown(Items.SHIELD)) item = Items.SHIELD;
+                        if (!mc.player.getItemCooldownManager().isCoolingDown(new ItemStack(Items.SHIELD))) item = Items.SHIELD;
                         else {
                             if (crapple.found() || offHandItem == Items.GOLDEN_APPLE)
                                 item = Items.GOLDEN_APPLE;
@@ -336,7 +336,7 @@ public final class AutoTotem extends Module {
         if (onFall.getValue() && (getTriggerHealth()) - (((mc.player.fallDistance - 3) / 2F) + 3.5F) < 0.5)
             item = Items.TOTEM_OF_UNDYING;
 
-        if (onElytra.getValue() && mc.player.isFallFlying())
+        if (onElytra.getValue() && mc.player.isGliding())
             item = Items.TOTEM_OF_UNDYING;
 
         if (onCrystalInHand.getValue()) {

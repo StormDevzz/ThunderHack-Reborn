@@ -125,7 +125,9 @@ public class CreditsScreen extends Screen {
             NativeImageBackedTexture nIBT = getAvatarFromURL("https://cdn.discordapp.com/avatars/" + name + ".png?size=96");
 
             if (nIBT != null) {
-                return MinecraftClient.getInstance().getTextureManager().registerDynamicTexture("th-contributors-" + (int) MathUtility.random(0, 1000000), nIBT);
+                Identifier texId = Identifier.of("thunderhack", "contributors/" + (int) MathUtility.random(0, 1000000));
+                MinecraftClient.getInstance().getTextureManager().registerTexture(texId, nIBT);
+                return texId;
             } else {
                 return null;
             }
@@ -159,11 +161,14 @@ public class CreditsScreen extends Screen {
 
     public static NativeImage parseAvatar(NativeImage image) {
         NativeImage imgNew = new NativeImage(96, 96, true);
+        long ptr = ((thunder.hack.injection.accesors.INativeImage) (Object) image).getPointer();
+        java.nio.IntBuffer buffer = org.lwjgl.system.MemoryUtil.memIntBuffer(ptr, image.getWidth() * image.getHeight());
         for (int x = 0; x < 96; x++) {
             for (int y = 0; y < 96; y++) {
+                int pixel = buffer.get(y * image.getWidth() + x);
                 if (Math.hypot(x - 48, y - 48) > 45)
-                    imgNew.setColor(x, y, Render2DEngine.injectAlpha(new Color(image.getColor(x, y)), (int) ((float) (48 - Math.hypot(x - 48, y - 48)) / 3f * 255f)).getRGB());
-                else imgNew.setColor(x, y, image.getColor(x, y));
+                    imgNew.setColor(x, y, Render2DEngine.injectAlpha(new Color(pixel), (int) ((float) (48 - Math.hypot(x - 48, y - 48)) / 3f * 255f)).getRGB());
+                else imgNew.setColor(x, y, pixel);
             }
         }
         image.close();

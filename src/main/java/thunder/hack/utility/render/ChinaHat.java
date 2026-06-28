@@ -16,9 +16,9 @@ public final class ChinaHat {
         Vec3d tip = base.add(0, yOff + height, 0);
 
         stack.push();
-        double dx = base.x - mc.getEntityRenderDispatcher().camera.getPos().x;
-        double dy = base.y - mc.getEntityRenderDispatcher().camera.getPos().y;
-        double dz = base.z - mc.getEntityRenderDispatcher().camera.getPos().z;
+        double dx = base.x - mc.getEntityRenderDispatcher().camera.getCameraPos().x;
+        double dy = base.y - mc.getEntityRenderDispatcher().camera.getCameraPos().y;
+        double dz = base.z - mc.getEntityRenderDispatcher().camera.getCameraPos().z;
         stack.translate(dx, dy, dz);
 
         Matrix4f mat = stack.peek().getPositionMatrix();

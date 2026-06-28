@@ -63,7 +63,7 @@ public class Velocity extends Module {
 
         // MAIN VELOCITY
         if (e.getPacket() instanceof EntityVelocityUpdateS2CPacket pac) {
-            if (pac.getId() == mc.player.getId() && (!onlyAura.getValue() || ModuleManager.aura.isEnabled())) {
+            if (pac.getEntityId() == mc.player.getId() && (!onlyAura.getValue() || ModuleManager.aura.isEnabled())) {
                 switch (mode.getValue()) {
                     case Matrix -> {
                         if (!flag) {
@@ -88,7 +88,7 @@ public class Velocity extends Module {
                     }
                     case Sunrise -> {
                         e.cancel();
-                        sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), -999.0, mc.player.getZ(), true));
+                        sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), -999.0, mc.player.getZ(), true, false));
                     }
                     case Cancel -> e.cancel();
                     case Jump -> {
@@ -108,24 +108,9 @@ public class Velocity extends Module {
         }
 
         // EXPLOSION
-        if (e.getPacket() instanceof ExplosionS2CPacket explosion && explosions.getValue()) {
+        if (e.getPacket() instanceof ExplosionS2CPacket && explosions.getValue()) {
             switch (mode.getValue()) {
-                case Cancel -> {
-                    ((IExplosionS2CPacket) explosion).setMotionX(0);
-                    ((IExplosionS2CPacket) explosion).setMotionY(0);
-                    ((IExplosionS2CPacket) explosion).setMotionZ(0);
-                }
-                case Custom -> {
-                    ((IExplosionS2CPacket) explosion).setMotionX(((IExplosionS2CPacket) explosion).getMotionX() * horizontal.getValue() / 100f);
-                    ((IExplosionS2CPacket) explosion).setMotionZ(((IExplosionS2CPacket) explosion).getMotionZ() * horizontal.getValue() / 100f);
-                    ((IExplosionS2CPacket) explosion).setMotionY(((IExplosionS2CPacket) explosion).getMotionY() * vertical.getValue() / 100f);
-                }
-                case GrimNew -> {
-                    ((IExplosionS2CPacket) explosion).setMotionX(0);
-                    ((IExplosionS2CPacket) explosion).setMotionY(0);
-                    ((IExplosionS2CPacket) explosion).setMotionZ(0);
-                    flag = true;
-                }
+                case Cancel, Custom, GrimNew -> e.cancel();
             }
         }
 

@@ -80,7 +80,7 @@ public final class PopChams extends Module {
 
         public Person(PlayerEntity player, Identifier texture) {
             this.player = player;
-            modelPlayer = new PlayerEntityModel(new EntityRendererFactory.Context(mc.getEntityRenderDispatcher(), mc.getItemRenderer(), mc.getBlockRenderManager(), mc.getEntityRenderDispatcher().getHeldItemRenderer(), mc.getResourceManager(), mc.getEntityModelLoader(), mc.textRenderer).getPart(EntityModelLayers.PLAYER), false);
+            modelPlayer = new PlayerEntityModel(new EntityRendererFactory.Context(mc.getEntityRenderDispatcher(), mc.getItemModelManager(), mc.getMapRenderer(), mc.getBlockRenderManager(), mc.getResourceManager(), mc.getLoadedEntityModels(), new net.minecraft.client.render.entity.equipment.EquipmentModelLoader(), mc.getAtlasManager(), mc.textRenderer, mc.getPlayerSkinCache()).getPart(EntityModelLayers.PLAYER), false);
             modelPlayer.getHead().scale(new Vector3f(-0.3f, -0.3f, -0.3f));
             alpha = color.getValue().getAlpha();
             this.texture = texture;
@@ -89,7 +89,7 @@ public final class PopChams extends Module {
         public void update(CopyOnWriteArrayList<Person> arrayList) {
             if (alpha <= 0) {
                 arrayList.remove(this);
-                player.kill();
+                player.discard();
                 player.remove(Entity.RemovalReason.KILLED);
                 player.onRemoved();
                 return;

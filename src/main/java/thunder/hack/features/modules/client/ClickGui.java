@@ -4,12 +4,14 @@ import baritone.api.BaritoneAPI;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.util.Identifier;
 import thunder.hack.ThunderHack;
+import java.awt.Color;
 import thunder.hack.events.impl.EventSetting;
 import thunder.hack.gui.clickui.ClickGUI;
 import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
 import thunder.hack.setting.impl.BooleanSettingGroup;
+import thunder.hack.setting.impl.ColorSetting;
 
 public class ClickGui extends Module {
     public final Setting<Gradient> gradientMode = new Setting<>("Gradient", Gradient.LeftToRight);

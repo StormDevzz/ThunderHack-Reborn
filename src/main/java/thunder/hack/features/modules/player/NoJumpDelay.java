@@ -1,6 +1,5 @@
 package thunder.hack.features.modules.player;
 
-import thunder.hack.injection.accesors.ILivingEntity;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
 
@@ -13,8 +12,6 @@ public class NoJumpDelay extends Module {
 
     @Override
     public void onUpdate() {
-        if (((ILivingEntity)mc.player).getLastJumpCooldown() > delay.getValue()) {
-            ((ILivingEntity)mc.player).setLastJumpCooldown(delay.getValue());
-        }
+        // jumpingCooldown was removed in 1.21.11 - functionality disabled
     }
 }

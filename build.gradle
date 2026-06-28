@@ -1,5 +1,7 @@
+// RaveX Team — code interaction (https://github.com/StormDevzz/RaveX)
+
 plugins {
-	id 'fabric-loom' version '1.11-SNAPSHOT'
+	id 'fabric-loom' version '1.13.6'
 	id 'maven-publish'
 }
 

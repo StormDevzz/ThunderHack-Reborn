@@ -1,12 +1,14 @@
 package thunder.hack.injection;
 
 import com.mojang.authlib.GameProfile;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.entity.player.SkinTextures;
 import net.minecraft.util.AssetInfo;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,6 +26,9 @@ import java.util.Objects;
 @Mixin(PlayerListEntry.class)
 public class MixinPlayerListEntry {
 
+    @Shadow
+    private GameProfile profile;
+
     @Unique
     private boolean loadedCapeTexture;
 
@@ -37,8 +42,8 @@ public class MixinPlayerListEntry {
 
     @Inject(method = "getSkinTextures", at = @At("TAIL"), cancellable = true)
     private void getCapeTexture(CallbackInfoReturnable<SkinTextures> cir) {
-        if (ModuleManager.capes.isEnabled() && Objects.equals(profile.name(), MinecraftClient.getInstance().getSession().getUsername())) {
-            Identifier cape = Identifier.of("thunderhack", "textures/capes/" + Capes.mode.getValue().toString() + ".png");
+        if (ModuleManager.optifineCapes.isEnabled() && Objects.equals(profile.name(), MinecraftClient.getInstance().getSession().getUsername())) {
+            Identifier cape = Identifier.of("thunderhack", "textures/capes/starcape.png");
             SkinTextures prev = cir.getReturnValue();
             SkinTextures newTextures = new SkinTextures(prev.body(), new AssetInfo.TextureAssetInfo(cape), new AssetInfo.TextureAssetInfo(cape), prev.model(), prev.secure());
             cir.setReturnValue(newTextures);

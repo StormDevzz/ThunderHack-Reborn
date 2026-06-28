@@ -53,6 +53,6 @@ public class CandleHud extends HudElement {
     }
 
     private enum For {
-        Luck, Win, LowPing, AntiKick
+        Luck, Win, LowPing, AntiKick, SuperZOV
     }
 }

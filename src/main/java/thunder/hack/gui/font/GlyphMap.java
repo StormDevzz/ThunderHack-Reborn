@@ -29,7 +29,7 @@ class GlyphMap {
     private final Char2ObjectArrayMap<Glyph> glyphs = new Char2ObjectArrayMap<>();
     int width, height;
 
-    boolean generated = false;
+    static boolean generated = false;
 
     public GlyphMap(char from, char to, Font font, Identifier identifier, int padding) {
         this.fromIncl = from;
@@ -163,21 +163,8 @@ class GlyphMap {
             }
             NativeImageBackedTexture tex = new NativeImageBackedTexture(() -> "glyphmap", image);
             tex.upload();
-            if (RenderSystem.isOnRenderThread()) {
-                MinecraftClient.getInstance().getTextureManager().registerTexture(i, tex);
-                RenderSystem.setShaderTexture(0, tex.getGlTextureView());
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-                generated = true;
-            } else {
-                RenderSystem.queueFencedTask(() -> {
-                    MinecraftClient.getInstance().getTextureManager().registerTexture(i, tex);
-                    RenderSystem.setShaderTexture(0, tex.getGlTextureView());
-                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-                    generated = true;
-                });
-            }
+            MinecraftClient.getInstance().getTextureManager().registerTexture(i, tex);
+            generated = true;
         } catch (Throwable e) {
             e.printStackTrace();
         }

@@ -67,7 +67,7 @@ public class MiddleClick extends Module {
         if (mc.currentScreen == null) {
             HitResult target = mc.crosshairTarget;
 
-            if (mc.player.isFallFlying()) {
+            if (mc.player.isGliding()) {
                 if (mc.options.pickItemKey.isPressed())
                     onFlying.getValue().doAction(event);
                 state = onFlying.getValue().toString();
@@ -163,7 +163,7 @@ public class MiddleClick extends Module {
                 mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, epSlot, originalSlot, SlotActionType.SWAP, mc.player);
                 AsyncManager.sleep(delay);
                 if (ModuleManager.aura.isEnabled() && Aura.target != null)
-                    mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround()));
+                    mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround(), false));
                 InteractionUtility.sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
                 mc.player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
                 AsyncManager.sleep(delay);
@@ -248,7 +248,7 @@ public class MiddleClick extends Module {
         Pearl((EventSync e) -> {
             if (timer.every(500)) {
                 if (ModuleManager.aura.isEnabled() && Aura.target != null)
-                    mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround()));
+                    mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround(), false));
 
                 int epSlot1 = InventoryUtility.findItemInHotBar(Items.ENDER_PEARL).slot();
                 if (ModuleManager.middleClick.silent.getValue()) {

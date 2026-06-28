@@ -111,7 +111,7 @@ public class Particles extends Module {
         }
 
         if (FireFlies.getValue().isEnabled()) {
-            Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
+            Vec3d cameraPos = mc.gameRenderer.getCamera().getCameraPos();
             for (ParticleBase p : fireFlies) {
                 Vec3d worldPos = new Vec3d(p.posX, p.posY, p.posZ);
                 BlockHitResult rayHit = mc.world.raycast(new RaycastContext(cameraPos, worldPos, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player));

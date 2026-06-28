@@ -82,20 +82,7 @@ public class JumpCircle extends Module {
         GlStateManager._enableBlend();
         GlStateManager._blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE, GL11.GL_SRC_ALPHA, GL11.GL_ONE);
 
-        switch (mode.getValue()) {
-            case Portal -> {
-                AbstractTexture __tex = mc.getTextureManager().getTexture(TextureStorage.bubble);
-                if (__tex != null) RenderSystem.setShaderTexture(0, __tex.getGlTextureView());
-            }
-            case Default -> {
-                AbstractTexture __tex = mc.getTextureManager().getTexture(TextureStorage.default_circle);
-                if (__tex != null) RenderSystem.setShaderTexture(0, __tex.getGlTextureView());
-            }
-            case Custom -> {
-                AbstractTexture __tex = mc.getTextureManager().getTexture(Objects.requireNonNullElse(custom, TextureStorage.default_circle));
-                if (__tex != null) RenderSystem.setShaderTexture(0, __tex.getGlTextureView());
-            }
-        }
+        // RenderSystem.setShaderTexture disabled for 1.21.11
 
         //RenderSystem.setShader(RenderPipelines.POSITION_TEX_COLOR);
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -105,7 +92,7 @@ public class JumpCircle extends Module {
             float sizeAnim = circleScale.getValue() - (float) Math.pow(1 - ((c.timer.getPassedTimeMs() * (easeOut.getValue() ? 2f : 1f)) / 5000f), 4);
 
             stack.push();
-            stack.translate(c.pos().x - mc.gameRenderer.getCamera().getPos().getX(), c.pos().y - mc.gameRenderer.getCamera().getPos().getY(), c.pos().z - mc.gameRenderer.getCamera().getPos().getZ());
+            stack.translate(c.pos().x - mc.gameRenderer.getCamera().getCameraPos().getX(), c.pos().y - mc.gameRenderer.getCamera().getCameraPos().getY(), c.pos().z - mc.gameRenderer.getCamera().getCameraPos().getZ());
             stack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
             stack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(sizeAnim * rotateSpeed.getValue() * 1000f));
             float scale = sizeAnim * 2f;

@@ -141,7 +141,7 @@ public class LegacyHud extends Module {
 
     private static String biome() {
         if (mc.player == null || mc.world == null) return null;
-        Identifier id = mc.world.getRegistryManager().get(RegistryKeys.BIOME).getId(mc.world.getBiome(mc.player.getBlockPos()).value());
+        Identifier id = mc.world.getRegistryManager().getOrThrow(RegistryKeys.BIOME).getId(mc.world.getBiome(mc.player.getBlockPos()).value());
         if (id == null) return ("Unknown");
 
         return (Arrays.stream(id.getPath().split("_")).map(StringUtils::capitalize).collect(Collectors.joining(" ")));

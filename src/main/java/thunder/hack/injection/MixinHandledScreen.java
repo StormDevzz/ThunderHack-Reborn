@@ -148,8 +148,8 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
         }
     }
 
-    @Inject(method = "drawSlot(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/screen/slot/Slot;)V", at = @At("TAIL"))
-    protected void drawSlotHook(DrawContext context, Slot slot, CallbackInfo ci) {
+    @Inject(method = "drawSlot(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/screen/slot/Slot;II)V", at = @At("TAIL"))
+    protected void drawSlotHook(DrawContext context, Slot slot, int x, int y, CallbackInfo ci) {
         if (ModuleManager.serverHelper.isEnabled() && ModuleManager.serverHelper.aucHelper.getValue())
             ModuleManager.serverHelper.onRenderChest(context, slot);
     }
@@ -164,7 +164,7 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
             Item focusedItem = stack.getItem();
             if (focusedItem instanceof BlockItem bi && bi.getBlock() instanceof ShulkerBoxBlock) {
                 try {
-                    Color c = new Color(Objects.requireNonNull(ShulkerBoxBlock.getColor(stack.getItem())).getEntityColor());
+                    Color c = new Color(Objects.requireNonNull(((ShulkerBoxBlock) bi.getBlock()).getColor()).getEntityColor());
                     colors = new float[]{c.getRed() / 255f, c.getGreen() / 255f, c.getRed() / 255f, c.getAlpha() / 255f};
                 } catch (NullPointerException npe) {
                     colors = new float[]{1F, 1F, 1F};
@@ -196,7 +196,7 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
         int i = 0;
         for (ItemStack itemStack : itemStacks) {
             context.drawItem(itemStack, offsetX + 8 + i * 18, offsetY + 7 + row * 18);
-            context.drawItemInSlot(mc.textRenderer, itemStack, offsetX + 8 + i * 18, offsetY + 7 + row * 18);
+            context.drawItemWithoutEntity(itemStack, offsetX + 8 + i * 18, offsetY + 7 + row * 18);
 
             if (mouseX > offsetX + 8 + i * 18 && mouseX < offsetX + 28 + i * 18 && mouseY > offsetY + 7 + row * 18 && mouseY < offsetY + 27 + row * 18)
                 postRender = () -> context.drawTooltip(textRenderer, getTooltipFromItem(mc, itemStack), itemStack.getTooltipData(), mouseX, mouseY);

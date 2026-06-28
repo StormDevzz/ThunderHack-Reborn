@@ -22,7 +22,7 @@ public class MixinEndCrystalEntityRenderer {
     public void render(EndCrystalEntityRenderState endCrystalEntityRenderState, MatrixStack matrixStack, OrderedRenderCommandQueue orderedRenderCommandQueue, CameraRenderState cameraRenderState, CallbackInfo ci) {
         if(ModuleManager.chams.isEnabled() && ModuleManager.chams.crystals.getValue()) {
             ci.cancel();
-            ModuleManager.chams.renderCrystal(endCrystalEntityRenderState, matrixStack, 0, model);
+            ModuleManager.chams.renderCrystal(endCrystalEntityRenderState, matrixStack, 0, null);
         }
     }
 }

@@ -58,7 +58,7 @@ public class Shaders extends Module {
         if (mc.player == null)
             return false;
 
-        if (mc.player.squaredDistanceTo(entity.getPos()) > maxRange.getPow2Value())
+        if (mc.player.squaredDistanceTo(entity.getLerpedPos(1.0f)) > maxRange.getPow2Value())
             return false;
 
         if (entity instanceof PlayerEntity) {
@@ -82,7 +82,7 @@ public class Shaders extends Module {
 
     public void onRender3D(MatrixStack matrices) {
         if (hands.getValue())
-            Managers.SHADER.renderShader(() -> ((IGameRenderer) mc.gameRenderer).irenderHand(mc.gameRenderer.getCamera(), Render3DEngine.getTickDelta(), matrices.peek().getPositionMatrix()), handsMode.getValue());
+            Managers.SHADER.renderShader(() -> mc.gameRenderer.firstPersonRenderer.renderItem(Render3DEngine.getTickDelta(), matrices, mc.gameRenderer.getEntityRenderCommandQueue(), mc.player, 0xF000F0), handsMode.getValue());
     }
 
     @Override

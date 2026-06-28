@@ -1,5 +1,7 @@
 package thunder.hack.injection;
 
+// RaveX Team — code interaction (https://github.com/StormDevzz/RaveX)
+
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.render.fog.FogRenderer;
@@ -13,17 +15,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.modules.misc.Weather;
 import thunder.hack.features.modules.render.WorldTweaks;
+import thunder.hack.setting.impl.ColorSetting;
 
 @Mixin(FogRenderer.class)
 public class MixinBackgroundRenderer {
-    @Inject(method = "applyFog", at = @At("TAIL"))
-    private static void onApplyFog(Camera camera, BackgroundRenderer.FogType fogType, float viewDistance, boolean thickFog, float tickDelta, CallbackInfo info) {
-        if (ModuleManager.noRender.isEnabled() && ModuleManager.noRender.fog.getValue()) {
-            if (fogType == BackgroundRenderer.FogType.FOG_TERRAIN) {
-                RenderSystem.setShaderFogStart(viewDistance * 4);
-                RenderSystem.setShaderFogEnd(viewDistance * 4.25f);
-            }
-        }
 
     @Inject(method = "applyFog(Lnet/minecraft/client/render/Camera;IZLnet/minecraft/client/render/RenderTickCounter;FLnet/minecraft/client/world/ClientWorld;)Lorg/joml/Vector4f;", at = @At("RETURN"), cancellable = true)
     private void onApplyFog(Camera camera, int viewDistance, boolean thick, RenderTickCounter tickCounter, float skyDarkness, ClientWorld world, CallbackInfoReturnable<Vector4f> cir) {

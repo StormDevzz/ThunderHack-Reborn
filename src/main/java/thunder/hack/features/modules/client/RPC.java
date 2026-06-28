@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screen.multiplayer.AddServerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import thunder.hack.ThunderHack;
 import thunder.hack.core.Managers;
+import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
 import thunder.hack.utility.Timer;
@@ -19,8 +20,51 @@ import static thunder.hack.features.modules.client.ClientSettings.isRu;
 public final class RPC extends Module {
     private static final DiscordRPC rpc = DiscordRPC.INSTANCE;
 
-    public static Setting<RPCMode> rpcMode = new Setting<>("RPC Mode", RPCMode.Old);
+    public enum RPCMode {Old, New}
+    public enum Mode {Custom, MegaCute, Reborn}
+    public enum sMode {Custom, Stats, Version}
+    public enum NewImageType {Asset, Gif}
+    public enum GifChoice {Reborn, MegaCute, CPvP, Bald, FuckingHell, Jocker, Femboy, Zdarova, Secret, PoopBoob}
 
+    public enum NewImage {
+        Default("default"),
+        Kotost("kotost"),
+        Cuute("cuute"),
+        Cutefurry("cutefurry"),
+        Forreal("forreal"),
+        Furry1("furry1"),
+        Furry2("furry2"),
+        Ebat("ebat"),
+        Oooh("oooh"),
+        Pivo("pivo"),
+        Whenmem("whenmem"),
+        Ninja("ninja"),
+        Navalniylexa("navalniylexa"),
+        Depression("depression"),
+        Zeleboba("zeleboba"),
+        Akrien("akrien"),
+        Zeleboba1("zeleboba1"),
+        Nihua("nihua"),
+        Kotost1("kotost1"),
+        Vanya("vanya"),
+        Pyramids("pyramids"),
+        Vozduhan("vozduhan"),
+        Hvh("hvh"),
+        Standoff2("standoff2"),
+        Dog("dog"),
+        Tree("tree"),
+        Vitya("vitya"),
+        Fuck("fuck"),
+        Wypher("wypher"),
+        Wypher1("wypher1"),
+        Pretty("pretty");
+
+        private final String name;
+        NewImage(String name) { this.name = name; }
+        public String getName() { return name; }
+    }
+
+    public static Setting<RPCMode> rpcMode = new Setting<>("RPC Mode", RPCMode.Old);
     public static Setting<Mode> mode = new Setting<>("Picture", Mode.Reborn, v -> rpcMode.getValue() == RPCMode.Old);
     public static Setting<Boolean> showIP = new Setting<>("ShowIP", true, v -> rpcMode.getValue() == RPCMode.Old);
     public static Setting<sMode> smode = new Setting<>("StateMode", sMode.Stats, v -> rpcMode.getValue() == RPCMode.Old);
@@ -43,12 +87,25 @@ public final class RPC extends Module {
 
     public static DiscordRichPresence presence = new DiscordRichPresence();
     public static boolean started;
+    public static final String BUILD_VERSION;
+
+    static {
+        String v = ThunderHack.VERSION;
+        BUILD_VERSION = v.equals("0") ? ThunderHack.VERSION : v;
+    }
+
     static String String1 = "none";
     private final Timer timer_delay = new Timer();
+    private final Timer nTimer = new Timer();
     private static Thread thread;
+    private static String currentId = "";
     String slov;
+    String nSlov;
+    int nRandomInt;
     String[] rpc_perebor_en = {"Parkour", "Reporting cheaters", "Touching grass", "Asks how to bind", "Reporting bugs", "Watching Kilab"};
     String[] rpc_perebor_ru = {"Паркурит", "Репортит читеров", "Трогает траву", "Спрашивает как забиндить", "Репортит баги", "Смотрит Флюгера"};
+    String[] rpc_new_en = {"pasting", "making coffee", "smoking grass", "having fun", "idk", "breaking everything", "coding", "resting", "testing", "chilling", "exploring", "building", "farming", "raiding", "hunting"};
+    String[] rpc_new_ru = {"пастит", "делает кофеек", "травку курит", "развлекается", "хз", "ломает всё", "кодит", "отдыхает", "тестит", "чиллит", "исследует", "строит", "фермит", "рейдит", "охотится"};
     int randomInt;
 
     public RPC() {
@@ -97,6 +154,11 @@ public final class RPC extends Module {
 
     public void startRpc() {
         if (isDisabled()) return;
+        String targetId = rpcMode.getValue() == RPCMode.New ? "1505321724839858186" : "1093053626198523935";
+        if (started && !currentId.equals(targetId)) {
+            rpc.Discord_Shutdown();
+            started = false;
+        }
         if (!started) {
             started = true;
             currentId = targetId;
@@ -197,7 +259,7 @@ public final class RPC extends Module {
                     presence.button_url_1 = "https://github.com/Pan4ur/ThunderHack-Recode/";
 
                     switch (mode.getValue()) {
-                        case Recode -> presence.largeImageKey = "https://i.imgur.com/yY0z2Uq.gif";
+                        case Reborn -> presence.largeImageKey = "https://i.imgur.com/yY0z2Uq.gif";
                         case MegaCute ->
                                 presence.largeImageKey = "https://media1.tenor.com/images/6bcbfcc0be97d029613b54f97845bc59/tenor.gif?itemid=26823781";
                         case Custom -> {
@@ -237,49 +299,4 @@ public final class RPC extends Module {
         return result;
     }
 
-    public enum Mode {Custom, MegaCute, Recode}
-
-    public enum sMode {Custom, Stats, Version}
-
-    public enum NewImage {
-        Default("default"),
-        Kotost("kotost"),
-        Cuute("cuute"),
-        Cutefurry("cutefurry"),
-        Forreal("forreal"),
-        Furry1("furry1"),
-        Furry2("furry2"),
-        Ebat("ebat"),
-        Oooh("oooh"),
-        Pivo("pivo"),
-        Whenmem("whenmem"),
-        Ninja("ninja"),
-        Navalniylexa("navalniylexa"),
-        Depression("depression"),
-        Zeleboba("zeleboba"),
-        Akrien("akrien"),
-        Zeleboba1("zeleboba1"),
-        Nihua("nihua"),
-        Kotost1("kotost1"),
-        Vanya("vanya"),
-        Pyramids("pyramids"),
-        Vozduhan("vozduhan"),
-        Hvh("hvh"),
-        Standoff2("standoff2"),
-        Dog("dog"),
-        Tree("tree"),
-        Vitya("vitya"),
-        Fuck("fuck"),
-        Wypher("wypher"),
-        Wypher1("wypher1"),
-        Pretty("pretty");
-
-        private final String name;
-        NewImage(String name) { this.name = name; }
-        public String getName() { return name; }
-    }
-
-    public enum NewImageType {Asset, Gif}
-
-    public enum GifChoice {Reborn, MegaCute, CPvP, Bald, FuckingHell, Jocker, Femboy, Zdarova, Secret, PoopBoob}
 }

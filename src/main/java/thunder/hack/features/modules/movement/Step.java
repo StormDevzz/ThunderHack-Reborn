@@ -99,7 +99,7 @@ public class Step extends Module {
     }
 
     private void setStepHeight(float v) {
-        mc.player.getAttributeInstance(EntityAttributes.GENERIC_STEP_HEIGHT).setBaseValue(v);
+        mc.player.getAttributeInstance(EntityAttributes.STEP_HEIGHT).setBaseValue(v);
     }
 
     public enum Mode {NCP, VANILLA}

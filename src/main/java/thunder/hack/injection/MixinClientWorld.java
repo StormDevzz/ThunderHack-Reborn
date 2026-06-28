@@ -5,20 +5,16 @@ import net.minecraft.entity.Entity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import thunder.hack.ThunderHack;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventEntityRemoved;
 import thunder.hack.events.impl.EventEntitySpawn;
 import thunder.hack.events.impl.EventEntitySpawnPost;
 import thunder.hack.features.modules.Module;
-import thunder.hack.features.modules.render.WorldTweaks;
-import thunder.hack.setting.impl.ColorSetting;
 
 import static thunder.hack.features.modules.Module.mc;
 
@@ -51,14 +47,6 @@ public class MixinClientWorld {
         ThunderHack.EVENT_BUS.post(eer);
     }
 
-    @Inject(method = "getSkyColor", at = @At("HEAD"), cancellable = true)
-    private void getSkyColorHook(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
-        if (ModuleManager.worldTweaks.isEnabled() && WorldTweaks.fogModify.getValue().isEnabled()) {
-            ColorSetting c = WorldTweaks.fogColor.getValue();
-            cir.setReturnValue(new Vec3d(c.getGlRed(), c.getGlGreen(), c.getGlBlue()));
-        }
-    }
-
     @Inject(method = "playSound(DDDLnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FFZJ)V", at = @At("HEAD"), cancellable = true)
     private void playSoundHook(double x, double y, double z, SoundEvent event, SoundCategory category, float volume, float pitch, boolean useDistance, long seed, CallbackInfo ci) {
         if (ModuleManager.noRender.isEnabled() && ModuleManager.noRender.noWeather.getValue() && category == SoundCategory.WEATHER) {
@@ -66,7 +54,7 @@ public class MixinClientWorld {
             return;
         }
         if(ModuleManager.soundESP.isEnabled())
-            ModuleManager.soundESP.add(x, y, z, event.getId().toTranslationKey());
+            ModuleManager.soundESP.add(x, y, z, event.id().toString());
     }
 
 }

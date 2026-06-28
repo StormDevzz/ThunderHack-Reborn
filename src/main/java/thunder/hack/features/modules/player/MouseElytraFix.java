@@ -1,6 +1,8 @@
+// RaveX Team — code interaction (https://github.com/StormDevzz/RaveX)
 package thunder.hack.features.modules.player;
 
-import net.minecraft.item.ArmorItem;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
 import thunder.hack.features.modules.Module;
@@ -15,9 +17,11 @@ public class MouseElytraFix extends Module {
 
     @Override
     public void onUpdate() {
-        if (mc.player.currentScreenHandler.getCursorStack().getItem() instanceof ArmorItem armor && !ElytraSwap.swapping) {
-            if (delay.every(300) && armor.getType() == ArmorItem.Type.CHESTPLATE)
-                if (mc.player.getInventory().getArmorStack(2).getItem() == Items.ELYTRA) {
+        var cursorStack = mc.player.currentScreenHandler.getCursorStack();
+        var equippable = cursorStack.get(DataComponentTypes.EQUIPPABLE);
+        if (equippable != null && equippable.slot() == EquipmentSlot.CHEST && !ElytraSwap.swapping) {
+            if (delay.every(300))
+                if (mc.player.getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST).getItem() == Items.ELYTRA) {
                     mc.interactionManager.clickSlot(0, 6, 1, SlotActionType.PICKUP, mc.player);
                     int empty = findEmptySlot();
                     boolean needDrop = (empty == 999);

@@ -58,7 +58,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static net.minecraft.util.UseAction.BLOCK;
+
 import static net.minecraft.util.math.MathHelper.wrapDegrees;
 import static thunder.hack.features.modules.client.ClientSettings.isRu;
 import static thunder.hack.utility.math.MathUtility.random;
@@ -138,7 +138,43 @@ public class Aura extends Module {
     public final Setting<Float> attackBaseTime = new Setting<>("AttackBaseTime", 0f, 0f, 2f).addToGroup(advanced);
     public final Setting<Integer> attackTickLimit = new Setting<>("AttackTickLimit", 9, 0, 20).addToGroup(advanced);
 
+    /*   ALTERNATIVE ROTATIONS   */
+    public final Setting<SettingGroup> alternativeRotations = new Setting<>("Alternative", new SettingGroup(false, 0), v -> rotationMode.is(Mode.Alternative));
+    public final Setting<Float> altYawSpeed = new Setting<>("YawSpeed", 120f, 30f, 300f, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
+    public final Setting<Float> altPitchSpeed = new Setting<>("PitchSpeed", 80f, 20f, 200f, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
+    public final Setting<Float> altYawNoise = new Setting<>("YawNoise", 0.5f, 0f, 3f, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
+    public final Setting<Float> altPitchNoise = new Setting<>("PitchNoise", 0.5f, 0f, 3f, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
+    public final Setting<Float> altAimThreshold = new Setting<>("AimThreshold", 0.5f, 0f, 5f, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
+    public final Setting<Boolean> altDynamicFOV = new Setting<>("DynamicFOV", true, v -> rotationMode.is(Mode.Alternative)).addToGroup(alternativeRotations);
 
+    /*   INTERACT2 ROTATIONS   */
+    public final Setting<SettingGroup> interact2Settings = new Setting<>("Interact2", new SettingGroup(false, 0), v -> rotationMode.is(Mode.Interact2));
+    public final Setting<Integer> interact2Ticks = new Setting<>("Interact2Ticks", 5, 1, 20, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
+    public final Setting<Float> interact2YawSpeed = new Setting<>("YawSpeed", 180f, 30f, 360f, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
+    public final Setting<Float> interact2PitchSpeed = new Setting<>("PitchSpeed", 90f, 20f, 180f, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
+    public final Setting<Float> interact2Noise = new Setting<>("Noise", 0.5f, 0f, 3f, v -> rotationMode.is(Mode.Interact2)).addToGroup(interact2Settings);
+
+    /*   HVH ROTATIONS   */
+    public final Setting<SettingGroup> hvhSettings = new Setting<>("HvH", new SettingGroup(false, 0), v -> rotationMode.is(Mode.HvH));
+    public final Setting<Boolean> hvhInstantAim = new Setting<>("InstantAim", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
+    public final Setting<Float> hvhYawSpeed = new Setting<>("HvHYawSpeed", 300f, 100f, 500f, v -> rotationMode.is(Mode.HvH) && !hvhInstantAim.getValue()).addToGroup(hvhSettings);
+    public final Setting<Float> hvhPitchSpeed = new Setting<>("HvHPitchSpeed", 200f, 100f, 500f, v -> rotationMode.is(Mode.HvH) && !hvhInstantAim.getValue()).addToGroup(hvhSettings);
+    public final Setting<HvHTarget> hvhTargetPoint = new Setting<>("TargetPoint", HvHTarget.Head, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
+    public final Setting<Boolean> hvhIgnoreWalls = new Setting<>("IgnoreWalls", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
+    public final Setting<Boolean> hvhAntiResolve = new Setting<>("AntiResolve", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
+    public final Setting<Boolean> hvhIgnoreCooldown = new Setting<>("IgnoreCooldown", true, v -> rotationMode.is(Mode.HvH)).addToGroup(hvhSettings);
+
+    /*   CHINESE ROTATIONS   */
+    public final Setting<SettingGroup> chineseSettings = new Setting<>("Chinese", new SettingGroup(false, 0), v -> rotationMode.is(Mode.Chinese));
+    public final Setting<Float> chineseYawSpeed = new Setting<>("偏航速度", 220f, 30f, 360f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Float> chinesePitchSpeed = new Setting<>("俯仰速度", 160f, 20f, 240f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Float> chineseYawNoise = new Setting<>("偏航扰动", 1.2f, 0f, 5f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Float> chinesePitchNoise = new Setting<>("俯仰扰动", 0.8f, 0f, 5f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Boolean> chineseSmooth = new Setting<>("平滑过渡", true, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Float> chineseAimThreshold = new Setting<>("瞄准阈值", 0.3f, 0f, 3f, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<ChineseTargetPoint> chineseTargetPoint = new Setting<>("瞄准点", ChineseTargetPoint.Chest, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Boolean> chineseQiStyle = new Setting<>("气功风格", true, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
+    public final Setting<Integer> chineseInteractTicks = new Setting<>("交互持续", 5, 1, 20, v -> rotationMode.is(Mode.Chinese)).addToGroup(chineseSettings);
 
     /*   TARGETS   */
     public final Setting<SettingGroup> targets = new Setting<>("Targets", new SettingGroup(false, 0));
@@ -169,9 +205,11 @@ public class Aura extends Module {
     private int hitTicks;
     private int trackticks;
     private boolean lookingAtHitbox;
+    private int chineseTicks;
 
     private final Timer delayTimer = new Timer();
     private final Timer pauseTimer = new Timer();
+    private int autoJumpTicks;
 
     public Box resolvedBox;
     static boolean wasTargeted = false;
@@ -181,10 +219,10 @@ public class Aura extends Module {
     }
 
     private float getRange(){
-        return elytra.getValue() && mc.player.isFallFlying() ? elytraAttackRange.getValue() : attackRange.getValue();
+        return elytra.getValue() && mc.player.isGliding() ? elytraAttackRange.getValue() : attackRange.getValue();
     }
     private float getWallRange(){
-        return elytra.getValue() && mc.player != null && mc.player.isFallFlying() ? elytraWallRange.getValue() : wallRange.getValue();
+        return elytra.getValue() && mc.player != null && mc.player.isGliding() ? elytraWallRange.getValue() : wallRange.getValue();
     }
 
     public void auraLogic() {
@@ -251,7 +289,8 @@ public class Aura extends Module {
             if (ModuleManager.criticals.isEnabled()) {
                 ModuleManager.criticals.doCrit();
             } else if (smartCrit.getValue()) {
-                doAirCrit();
+                mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY() + 0.0625, mc.player.getZ(), false, false));
+                mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY(), mc.player.getZ(), false, false));
             }
         }
 
@@ -265,7 +304,7 @@ public class Aura extends Module {
     }
 
     private boolean @NotNull [] preAttack() {
-        boolean blocking = mc.player.isUsingItem() && mc.player.getActiveItem().getItem().getUseAction(mc.player.getActiveItem()) == BLOCK;
+        boolean blocking = mc.player.isBlocking();
         if (blocking && unpressShield.getValue())
             sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, Direction.DOWN));
 
@@ -274,7 +313,7 @@ public class Aura extends Module {
             disableSprint();
 
         if (rotationMode.is(Mode.Grim))
-            sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotationYaw, rotationPitch, mc.player.isOnGround()));
+            sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotationYaw, rotationPitch, mc.player.isOnGround(), false));
 
         return new boolean[]{blocking, sprint};
     }
@@ -287,7 +326,7 @@ public class Aura extends Module {
             sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.OFF_HAND, id, rotationYaw, rotationPitch));
 
         if (rotationMode.is(Mode.Grim))
-            sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround()));
+            sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround(), false));
     }
 
     private void disableSprint() {
@@ -423,13 +462,15 @@ public class Aura extends Module {
         rotationYaw = mc.player.getYaw();
         rotationPitch = mc.player.getPitch();
         delayTimer.reset();
+        chineseTicks = 0;
+        autoJumpTicks = 0;
     }
 
     private boolean autoCrit() {
         boolean reasonForSkipCrit =
                 !smartCrit.getValue()
                         || mc.player.getAbilities().flying
-                        || (mc.player.isFallFlying() || ModuleManager.elytraPlus.isEnabled())
+                        || (mc.player.isGliding() || ModuleManager.elytraPlus.isEnabled())
                         || mc.player.hasStatusEffect(StatusEffects.BLINDNESS)
                         || mc.player.hasStatusEffect(StatusEffects.SLOW_FALLING)
                         || mc.player.hasVehicle()
@@ -547,7 +588,7 @@ public class Aura extends Module {
     }
 
     public float getAttackCooldownProgressPerTick() {
-        return (float) (1.0 / mc.player.getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED) * (20.0 * ThunderHack.TICK_TIMER * (tpsSync.getValue() ? Managers.SERVER.getTPSFactor() : 1f)));
+        return (float) (1.0 / mc.player.getAttributeValue(EntityAttributes.ATTACK_SPEED) * (20.0 * ThunderHack.TICK_TIMER * (tpsSync.getValue() ? Managers.SERVER.getTPSFactor() : 1f)));
     }
 
     public float getAttackCooldown() {
@@ -844,7 +885,7 @@ public class Aura extends Module {
 
         Vec3d targetVec;
 
-        if (mc.player.isFallFlying() || ModuleManager.elytraPlus.isEnabled()) targetVec = target.getEyePos();
+        if (mc.player.isGliding() || ModuleManager.elytraPlus.isEnabled()) targetVec = target.getEyePos();
         else targetVec = getLegitLook(target);
 
         if (targetVec == null)
@@ -922,7 +963,7 @@ public class Aura extends Module {
     public float getSquaredRotateDistance() {
         float dst = getRange();
         dst += aimRange.getValue();
-        if ((mc.player.isFallFlying() || ModuleManager.elytraPlus.isEnabled()) && target != null) dst += 4f;
+        if ((mc.player.isGliding() || ModuleManager.elytraPlus.isEnabled()) && target != null) dst += 4f;
         if (ModuleManager.strafe.isEnabled()) dst += 4f;
         if (rotationMode.getValue() != Mode.Track || rayTrace.getValue() == RayTrace.OFF)
             dst = getRange();
@@ -1135,7 +1176,7 @@ public class Aura extends Module {
                 return true;
 
             if (onlyAngry.getValue())
-                return !he.isAngryAt(mc.player);
+                return true;
         }
 
         if (entity instanceof PlayerEntity && !Players.getValue()) return true;
@@ -1156,7 +1197,7 @@ public class Aura extends Module {
     }
 
     private boolean shouldRandomizeDelay() {
-        return randomHitDelay.getValue() && (mc.player.isOnGround() || mc.player.fallDistance < 0.12f || mc.player.isSwimming() || mc.player.isFallFlying());
+        return randomHitDelay.getValue() && (mc.player.isOnGround() || mc.player.fallDistance < 0.12f || mc.player.isSwimming() || mc.player.isGliding());
     }
 
     private boolean shouldRandomizeFallDistance() {

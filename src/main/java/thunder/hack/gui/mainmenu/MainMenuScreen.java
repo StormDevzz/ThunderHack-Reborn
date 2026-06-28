@@ -58,6 +58,15 @@ public class MainMenuScreen extends Screen {
         return INSTANCE;
     }
 
+    private void renderBackgroundNoBlur(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (mc.world == null) {
+            renderPanoramaBackground(context, delta);
+            renderDarkening(context);
+        } else {
+            renderInGameBackground(context);
+        }
+    }
+
     @Override
     public void tick() {
         ticksActive++;
@@ -78,7 +87,7 @@ public class MainMenuScreen extends Screen {
         float mainHeight = 140;
 
         // Render2DEngine.drawMainMenuShader(context.getMatrices(), 0, 0, halfOfWidth * 2f, halfOfHeight * 2);
-        renderBackground(context, mouseX, mouseY, delta);
+        renderBackgroundNoBlur(context, mouseX, mouseY, delta);
 
         Render2DEngine.drawHudBase(context.getMatrices(), mainX, mainY, mainWidth, mainHeight, 20);
 
@@ -98,16 +107,6 @@ public class MainMenuScreen extends Screen {
             String onlineUsers = String.format("online: %s%s", Formatting.DARK_GREEN, Managers.TELEMETRY.getOnlinePlayers().size());
 
             FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), onlineUsers, halfOfWidth, halfOfHeight * 2 - 15, Color.GREEN);
-
-            context.getMatrices().push();
-            context.getMatrices().translate(halfOfWidth - 10 - FontRenderers.sf_medium.getStringWidth(onlineUsers) / 2f, halfOfHeight * 2 - 17, 0);
-            Render2DEngine.drawBloom(context.getMatrices(), Render2DEngine.applyOpacity(Color.GREEN, 0.6f), 9f);
-            context.getMatrices().pop();
-
-            context.getMatrices().push();
-            context.getMatrices().translate(halfOfWidth - 10 - FontRenderers.sf_medium.getStringWidth(onlineUsers) / 2f, halfOfHeight * 2 - 17, 0);
-            Render2DEngine.drawBloom(context.getMatrices(), Render2DEngine.applyOpacity(Color.GREEN, (float) (0.5f + (Math.sin((double) System.currentTimeMillis() / 500)) / 2f)), 9f);
-            context.getMatrices().pop();
 
         }
 

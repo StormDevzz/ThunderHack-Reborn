@@ -1,5 +1,7 @@
 package thunder.hack.features.modules.misc;
 
+// RaveX Team — code interaction (https://github.com/StormDevzz/RaveX)
+
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.item.Items;
@@ -255,7 +257,9 @@ public class ChatUtils extends Module {
             if (pac.chatMessage().startsWith("/") || pac.chatMessage().startsWith(Managers.COMMAND.getPrefix()))
                 return;
 
+            // RaveX Team — code interaction
             String message = pac.chatMessage();
+            boolean changed = false;
             if (zov.getValue()) {
                 StringBuilder builder = new StringBuilder();
                 for (char Z : message.toCharArray()) {
@@ -282,7 +286,7 @@ public class ChatUtils extends Module {
                 }
                 message = builder.toString();
             }
-            if (translit.getValue())
+            if (translit.getValue()) {
                 message = transliterate(message);
                 changed = true;
             }

@@ -1,7 +1,6 @@
 package thunder.hack.gui.clickui;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -153,7 +152,7 @@ public class ClickGUI extends Screen {
         ClickGui.Image image = ModuleManager.clickGui.image.getValue();
 
         if (image != ClickGui.Image.None) {
-            RenderSystem.setShaderTexture(0, mc.getTextureManager().getTexture(image.file).getGlTextureView());
+            // RenderSystem.setShaderTexture disabled for 1.21.11
 
             Render2DEngine.renderTexture(context.getMatrices(),
 

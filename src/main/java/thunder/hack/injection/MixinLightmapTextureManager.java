@@ -1,6 +1,7 @@
 package thunder.hack.injection;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.dimension.DimensionType;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.modules.render.Fullbright;

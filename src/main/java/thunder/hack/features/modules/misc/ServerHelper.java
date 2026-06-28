@@ -76,6 +76,28 @@ public class ServerHelper extends Module {
 
     private boolean flag = false;
 
+    private boolean wasDead = false;
+    private final Setting<Boolean> autoKit = new Setting<>("AutoKit", false);
+    private final Setting<String> kitCommand = new Setting<>("KitCommand", "/kit");
+    private final Setting<Boolean> antiSpawnKill = new Setting<>("AntiSpawnKill", false);
+    private boolean hasSpawned = false;
+    private final Timer spawnTimer = new Timer();
+    private final Setting<Boolean> askGapple = new Setting<>("AskGapple", false);
+    private final Setting<Boolean> askSafeMove = new Setting<>("AskSafeMove", false);
+    private final Setting<Integer> askSafeTime = new Setting<>("AskSafeTime", 3, 1, 30);
+    private final Setting<Boolean> autoMessage = new Setting<>("AutoMessage", false);
+    private boolean hasSentMessage = false;
+    private final Timer messageTimer = new Timer();
+    private final Setting<Integer> messageDelay = new Setting<>("MessageDelay", 5, 1, 60);
+    private final Setting<String> messageText = new Setting<>("MessageText", "Hello!");
+    private final Setting<Boolean> coordLog = new Setting<>("CoordLog", false);
+    private final Timer coordTimer = new Timer();
+    private final Setting<Integer> coordLogInterval = new Setting<>("CoordLogInterval", 10, 1, 300);
+    private final Setting<Boolean> autoRocket = new Setting<>("AutoRocket", false);
+    private final Timer rocketTimer = new Timer();
+    private final Setting<Integer> rocketDelay = new Setting<>("RocketDelay", 3, 1, 30);
+    private final Setting<Boolean> rocketOnlyJump = new Setting<>("RocketOnlyJump", true);
+    private final Setting<Boolean> rocketOnlyRockets = new Setting<>("RocketOnlyRockets", true);
 
     @EventHandler
     public void onPacketReceive(PacketEvent.Receive event) {
@@ -313,7 +335,7 @@ public class ServerHelper extends Module {
         if (groupBy.is(GroupBy.Name)) {
             return stack.getName().getString();
         } else {
-            return stack.getTranslationKey();
+            return stack.getItem().getTranslationKey();
         }
     }
 

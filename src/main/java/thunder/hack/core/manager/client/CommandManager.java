@@ -17,7 +17,7 @@ public class CommandManager implements IManager {
     private String prefix = "@";
 
     private final CommandDispatcher<CommandSource> dispatcher = new CommandDispatcher<>();
-    private final CommandSource source = new ClientCommandSource(null, MinecraftClient.getInstance(), false);
+    private final CommandSource source = new ClientCommandSource(null, MinecraftClient.getInstance(), null);
     private final List<Command> commands = new ArrayList<>();
 
     public CommandManager() {

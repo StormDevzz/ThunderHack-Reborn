@@ -11,11 +11,6 @@ import java.io.InputStream;
 import java.net.URL;
 
 public final class OptifineCapes {
-    /**
-     * author: @dragonostic
-     * of-capes
-     */
-
     public interface ReturnCapeTexture {
         void response(Identifier id);
     }
@@ -66,10 +61,17 @@ public final class OptifineCapes {
         NativeImage imgNew = new NativeImage(imageWidth, imageHeight, true);
         for (int x = 0; x < imageSrcWidth; x++) {
             for (int y = 0; y < srcHeight; y++) {
-                imgNew.setColor(x, y, image.getColor(x, y));
+                int abgr = getNativeImagePixel(image, x, y);
+                imgNew.setColor(x, y, abgr);
             }
         }
         image.close();
         return imgNew;
+    }
+
+    private static int getNativeImagePixel(NativeImage img, int x, int y) {
+        long ptr = ((thunder.hack.injection.accesors.INativeImage) (Object) img).getPointer();
+        java.nio.IntBuffer buffer = org.lwjgl.system.MemoryUtil.memIntBuffer(ptr, img.getWidth() * img.getHeight());
+        return buffer.get(y * img.getWidth() + x);
     }
 }

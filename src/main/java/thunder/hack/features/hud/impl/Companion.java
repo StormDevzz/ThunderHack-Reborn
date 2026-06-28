@@ -4,6 +4,8 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Identifier;
+import org.joml.Matrix4f;
 import org.jetbrains.annotations.NotNull;
 import thunder.hack.core.Managers;
 import thunder.hack.events.impl.TotemPopEvent;

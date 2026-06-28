@@ -65,7 +65,7 @@ public class AutoArmor extends Module {
             int prot = getProtection(stack);
             if (prot > 0)
                 for (ArmorData e : armorList) {
-                    if (e.getEquipmentSlot() == (stack.getItem() instanceof ArmorItem ai ? ai.getSlotType() : EquipmentSlot.CHEST))
+                    if (e.getEquipmentSlot() == (stack.get(DataComponentTypes.EQUIPPABLE) != null ? stack.get(DataComponentTypes.EQUIPPABLE).slot() : EquipmentSlot.CHEST))
                         if (prot > e.getPrevProt() && prot > e.getNewProtection()) {
                             e.setNewSlot(i);
                             e.setNewProtection(prot);
@@ -107,14 +107,14 @@ public class AutoArmor extends Module {
         if (is.get(DataComponentTypes.EQUIPPABLE) != null || is.isOf(Items.ELYTRA)) {
             int prot = 0;
 
-            EquipmentSlot slot = is.getItem() instanceof ArmorItem ai ? ai.getSlotType() : EquipmentSlot.BODY;
+            EquipmentSlot slot = is.get(DataComponentTypes.EQUIPPABLE) != null ? is.get(DataComponentTypes.EQUIPPABLE).slot() : EquipmentSlot.BODY;
 
-            if (is.getItem() instanceof ElytraItem) {
-                if (!ElytraItem.isUsable(is))
+            if (is.contains(DataComponentTypes.GLIDER)) {
+                if (is.getDamage() >= is.getMaxDamage() - 1)
                     return 0;
 
                 boolean ePlus = elytraPriority.is(ElytraPriority.ElytraPlus) && (ModuleManager.elytraRecast.isEnabled() || ModuleManager.elytraPlus.isEnabled());
-                boolean ignore = elytraPriority.is(ElytraPriority.Ignore) && mc.player.getInventory().getStack(38).getItem() instanceof ElytraItem;
+                boolean ignore = elytraPriority.is(ElytraPriority.Ignore) && mc.player.getInventory().getStack(38).contains(DataComponentTypes.GLIDER);
 
                 if (ePlus || ignore || elytraPriority.is(ElytraPriority.Always))
                     prot = 999;
@@ -144,15 +144,12 @@ public class AutoArmor extends Module {
 
             if (is.hasEnchantments()) {
                 ItemEnchantmentsComponent enchants = EnchantmentHelper.getEnchantments(is);
+                var registry = mc.world.getRegistryManager();
 
-                //mc.world.getRegistryManager().get(Enchantments.BLAST_PROTECTION.getRegistryRef()).getEntry(Enchantments.BLAST_PROTECTION).get()
-                if (enchants.getEnchantments().contains(mc.world.getRegistryManager().get(Enchantments.PROTECTION.getRegistryRef()).getEntry(Enchantments.PROTECTION).get()))
-                    prot += enchants.getLevel(mc.world.getRegistryManager().get(Enchantments.PROTECTION.getRegistryRef()).getEntry(Enchantments.PROTECTION).get()) * protectionMultiplier;
+                prot += EnchantmentHelper.getLevel(registry.getOrThrow(Enchantments.PROTECTION.getRegistryRef()).getOrThrow(Enchantments.PROTECTION), is) * protectionMultiplier;
+                prot += EnchantmentHelper.getLevel(registry.getOrThrow(Enchantments.BLAST_PROTECTION.getRegistryRef()).getOrThrow(Enchantments.BLAST_PROTECTION), is) * blastMultiplier;
 
-                if (enchants.getEnchantments().contains(mc.world.getRegistryManager().get(Enchantments.BLAST_PROTECTION.getRegistryRef()).getEntry(Enchantments.BLAST_PROTECTION).get()))
-                    prot += enchants.getLevel(mc.world.getRegistryManager().get(Enchantments.BLAST_PROTECTION.getRegistryRef()).getEntry(Enchantments.BLAST_PROTECTION).get()) * blastMultiplier;
-
-                if (enchants.getEnchantments().contains(mc.world.getRegistryManager().get(Enchantments.BLAST_PROTECTION.getRegistryRef()).getEntry(Enchantments.BINDING_CURSE).get()) && ignoreCurse.getValue())
+                if (EnchantmentHelper.getLevel(registry.getOrThrow(Enchantments.BINDING_CURSE.getRegistryRef()).getOrThrow(Enchantments.BINDING_CURSE), is) > 0 && ignoreCurse.getValue())
                     prot = -999;
             }
 

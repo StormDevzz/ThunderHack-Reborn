@@ -1,5 +1,14 @@
 package thunder.hack.features.modules.render;
 
+import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.EntityPose;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RotationAxis;
+import net.minecraft.util.math.Vec3d;
+import thunder.hack.events.impl.EventHeldItemRenderer;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
 import thunder.hack.setting.impl.ColorSetting;
@@ -44,9 +53,9 @@ public class Chams extends Module {
         float k = abstractClientPlayerEntity.getPitch(h);
         float l;
         float m;
-        if (abstractClientPlayerEntity.isFallFlying()) {
+        if (abstractClientPlayerEntity.isGliding()) {
             setupTransforms(abstractClientPlayerEntity, matrixStack, f, g, h);
-            l = (float) abstractClientPlayerEntity.getFallFlyingTicks() + h;
+            l = (float) (abstractClientPlayerEntity.age) + h;
             m = MathHelper.clamp(l * l / 100.0F, 0.0F, 1.0F);
             if (!abstractClientPlayerEntity.isUsingRiptide()) {
                 matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(m * (-90.0F - k)));
@@ -110,7 +119,8 @@ public class Chams extends Module {
 
     @EventHandler
     public void onRenderHands(EventHeldItemRenderer e) {
-        if (handItems.getValue())
-            RenderSystem.setShaderColor(handItemsColor.getValue().getRed() / 255f, handItemsColor.getValue().getGreen() / 255f, handItemsColor.getValue().getBlue() / 255f, handItemsColor.getValue().getAlpha() / 255f);
+        if (handItems.getValue()) {
+            // shader color setting disabled for 1.21.11
+        }
     }
 }
