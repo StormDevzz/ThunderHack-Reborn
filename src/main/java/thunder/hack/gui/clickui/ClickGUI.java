@@ -1,6 +1,7 @@
 package thunder.hack.gui.clickui;
 
 import com.google.common.collect.Lists;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -152,19 +153,13 @@ public class ClickGUI extends Screen {
         ClickGui.Image image = ModuleManager.clickGui.image.getValue();
 
         if (image != ClickGui.Image.None) {
-            // RenderSystem.setShaderTexture disabled for 1.21.11
-
-            Render2DEngine.renderTexture(context.getMatrices(),
-
-                    mc.getWindow().getScaledWidth() - image.fileWidth * imageAnimation.getAnimationd(),
-                    mc.getWindow().getScaledHeight() - image.fileHeight,
-
-                    image.fileWidth,
-                    image.fileHeight,
-
-
-                    0, 0,
-                    image.fileWidth, image.fileHeight, image.fileWidth, image.fileHeight);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, image.file,
+                    (int) (mc.getWindow().getScaledWidth() - image.fileWidth * imageAnimation.getAnimationd()),
+                    (int) (mc.getWindow().getScaledHeight() - image.fileHeight),
+                    0f, 0f,
+                    image.fileWidth, image.fileHeight,
+                    image.fileWidth, image.fileHeight,
+                    -1);
         }
 
         if (closeAnimation <= 6) {
@@ -251,7 +246,7 @@ public class ClickGUI extends Screen {
 
         if (!HudElement.anyHovered && !ClickGUI.anyHovered)
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
-                GLFW.glfwSetCursor(mc.getWindow().getHandle(), GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR));
+                GLFW.glfwSetCursor(mc.getWindow().getHandle(), HudElement.getCursor(GLFW.GLFW_ARROW_CURSOR));
             }
         } finally {
             Render2DEngine.end();

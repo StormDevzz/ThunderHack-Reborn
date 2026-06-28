@@ -4,6 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import org.joml.Matrix3x2fStack;
 import org.lwjgl.glfw.GLFW;
 import thunder.hack.core.Managers;
+import thunder.hack.features.hud.HudElement;
 import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.gui.clickui.AbstractElement;
 import thunder.hack.gui.clickui.ClickGUI;
@@ -64,7 +65,7 @@ public class BooleanParentElement extends AbstractElement {
         if (Render2DEngine.isHovered(mouseX, mouseY, x + width - 36, y + height / 2 - 4, 15, 8)) {
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
                 GLFW.glfwSetCursor(mc.getWindow().getHandle(),
-                        GLFW.glfwCreateStandardCursor(GLFW.GLFW_HAND_CURSOR));
+                        HudElement.getCursor(GLFW.GLFW_HAND_CURSOR));
             }
             ClickGUI.anyHovered = true;
         }

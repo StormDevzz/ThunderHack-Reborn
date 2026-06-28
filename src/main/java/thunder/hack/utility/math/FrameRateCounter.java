@@ -1,17 +1,18 @@
 package thunder.hack.utility.math;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayDeque;
 
 public class FrameRateCounter {
     public static final FrameRateCounter INSTANCE = new FrameRateCounter();
-    final List<Long> records = new ArrayList<>();
+    final ArrayDeque<Long> records = new ArrayDeque<>(512);
     int fps = 5;
 
     public void recordFrame() {
         long c = System.currentTimeMillis();
-        records.add(c);
-        records.removeIf(aLong -> aLong + 1000 < System.currentTimeMillis());
+        long cutoff = c - 1000;
+        records.addLast(c);
+        while (!records.isEmpty() && records.peekFirst() < cutoff)
+            records.removeFirst();
         fps = Math.max(records.size(), 4);
     }
 

@@ -7,6 +7,7 @@ import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import thunder.hack.ThunderHack;
 import thunder.hack.core.Managers;
+import thunder.hack.features.hud.HudElement;
 import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.gui.clickui.AbstractElement;
 import thunder.hack.gui.clickui.ClickGUI;
@@ -67,7 +68,7 @@ public class SliderElement extends AbstractElement {
         if (Render2DEngine.isHovered(mouseX, mouseY, (x + 6), y + height - 7, width - 12, 3)) {
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
                 GLFW.glfwSetCursor(mc.getWindow().getHandle(),
-                        GLFW.glfwCreateStandardCursor(GLFW.GLFW_HRESIZE_CURSOR));
+                        HudElement.getCursor(GLFW.GLFW_HRESIZE_CURSOR));
             }
             ClickGUI.anyHovered = true;
         }

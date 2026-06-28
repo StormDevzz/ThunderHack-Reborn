@@ -124,10 +124,6 @@ public class ModuleButton extends AbstractButton {
                 Render2DEngine.popWindow();
             }
 
-            if (Render2DEngine.isHovered(mouseX, mouseY, x + 4, y + height - 12f, width - 8, height + (float) getElementsHeight())) {
-                Render2DEngine.drawBlurredShadow(context.getMatrices(), mouseX - 10, mouseY - 10, 20, 20, 40, HudEditor.getColor(270));
-            }
-
             int descOffset = getDescriptionOffset();
 
             for (AbstractElement element : elements) {
@@ -169,12 +165,6 @@ public class ModuleButton extends AbstractButton {
             if (!module.isEnabled())
                 Render2DEngine.draw2DGradientRect(context.getMatrices(), x + 4, y + height - 1f, x + 3f + width - 7f, 3f + y + height, Render2DEngine.applyOpacity(HudEditor.getColor(0), 0), HudEditor.getColor(0), Render2DEngine.applyOpacity(HudEditor.getColor(90), 0), HudEditor.getColor(90));
             Render2DEngine.popWindow();
-        } else {
-            if (hovered) {
-                Render2DEngine.addWindow(context, new Render2DEngine.Rectangle(x + 1, y, x + width - 2, y + height));
-                Render2DEngine.drawBlurredShadow(context.getMatrices(), mouseX - 10, mouseY - 10, 20, 20, 35, HudEditor.getColor(270));
-                Render2DEngine.popWindow();
-            }
         }
 
         category_animation = fast(category_animation, offsetY, 20);
@@ -206,6 +196,11 @@ public class ModuleButton extends AbstractButton {
                             Render2DEngine.applyOpacity(HudEditor.getColor(0), animation));
                 }
             }
+        }
+
+        if (hovered) {
+            Render2DEngine.drawRect(context.getMatrices(), x + 4f, y + 1f, width - 8, height - 2,
+                new Color(255, 255, 255, 25));
         }
 
         if (!module.getBind().getBind().equalsIgnoreCase("none") && !binding)

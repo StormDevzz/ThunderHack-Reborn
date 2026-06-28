@@ -4,6 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.StringHelper;
 import org.lwjgl.glfw.GLFW;
 import thunder.hack.ThunderHack;
+import thunder.hack.features.hud.HudElement;
 import thunder.hack.gui.clickui.AbstractElement;
 import thunder.hack.gui.clickui.ClickGUI;
 import thunder.hack.gui.font.FontRenderers;
@@ -32,7 +33,7 @@ public class StringElement extends AbstractElement {
         if (Render2DEngine.isHovered(mouseX, mouseY, getX() + 5, getY() + 2, getWidth() - 11f, 10)) {
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
                 GLFW.glfwSetCursor(mc.getWindow().getHandle(),
-                        GLFW.glfwCreateStandardCursor(GLFW.GLFW_IBEAM_CURSOR));
+                        HudElement.getCursor(GLFW.GLFW_IBEAM_CURSOR));
             }
             ClickGUI.anyHovered = true;
         }

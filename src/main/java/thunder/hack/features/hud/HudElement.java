@@ -25,6 +25,38 @@ public class HudElement extends Module {
     private float height, width;
     public static boolean anyHovered = false;
 
+    private static long arrowCursor = 0;
+    private static long handCursor = 0;
+    private static long crosshairCursor = 0;
+    private static long hResizeCursor = 0;
+    private static long iBeamCursor = 0;
+
+    public static long getCursor(int shape) {
+        return switch (shape) {
+            case GLFW.GLFW_ARROW_CURSOR -> {
+                if (arrowCursor == 0) arrowCursor = GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR);
+                yield arrowCursor;
+            }
+            case GLFW.GLFW_HAND_CURSOR -> {
+                if (handCursor == 0) handCursor = GLFW.glfwCreateStandardCursor(GLFW.GLFW_HAND_CURSOR);
+                yield handCursor;
+            }
+            case GLFW.GLFW_CROSSHAIR_CURSOR -> {
+                if (crosshairCursor == 0) crosshairCursor = GLFW.glfwCreateStandardCursor(GLFW.GLFW_CROSSHAIR_CURSOR);
+                yield crosshairCursor;
+            }
+            case GLFW.GLFW_HRESIZE_CURSOR -> {
+                if (hResizeCursor == 0) hResizeCursor = GLFW.glfwCreateStandardCursor(GLFW.GLFW_HRESIZE_CURSOR);
+                yield hResizeCursor;
+            }
+            case GLFW.GLFW_IBEAM_CURSOR -> {
+                if (iBeamCursor == 0) iBeamCursor = GLFW.glfwCreateStandardCursor(GLFW.GLFW_IBEAM_CURSOR);
+                yield iBeamCursor;
+            }
+            default -> 0;
+        };
+    }
+
     public HudElement(String name, int width, int height) {
         super(name, Category.HUD);
         this.height = height;
@@ -95,7 +127,7 @@ public class HudElement extends Module {
 
         if (isHovering() && (mc.currentScreen instanceof ChatScreen || mc.currentScreen instanceof HudEditorGui)) {
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
-                GLFW.glfwSetCursor(mc.getWindow().getHandle(), mouseState ? GLFW.glfwCreateStandardCursor(GLFW.GLFW_CROSSHAIR_CURSOR) : GLFW.glfwCreateStandardCursor(GLFW.GLFW_HAND_CURSOR));
+                GLFW.glfwSetCursor(mc.getWindow().getHandle(), mouseState ? getCursor(GLFW.GLFW_CROSSHAIR_CURSOR) : getCursor(GLFW.GLFW_HAND_CURSOR));
             }
             anyHovered = true;
         }

@@ -29,7 +29,7 @@ class GlyphMap {
     private final Char2ObjectArrayMap<Glyph> glyphs = new Char2ObjectArrayMap<>();
     int width, height;
 
-    static boolean generated = false;
+    boolean generated = false;
 
     public GlyphMap(char from, char to, Font font, Identifier identifier, int padding) {
         this.fromIncl = from;
@@ -164,7 +164,6 @@ class GlyphMap {
             NativeImageBackedTexture tex = new NativeImageBackedTexture(() -> "glyphmap", image);
             tex.upload();
             MinecraftClient.getInstance().getTextureManager().registerTexture(i, tex);
-            generated = true;
         } catch (Throwable e) {
             e.printStackTrace();
         }

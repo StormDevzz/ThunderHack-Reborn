@@ -13,6 +13,8 @@ import org.joml.Matrix4f;
 import java.awt.*;
 import java.io.Closeable;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -84,9 +86,13 @@ public class FontRenderer implements Closeable {
         return n * (int) Math.floor((double) x / (double) n);
     }
 
+    private static final Map<String, String> strippedCache = new ConcurrentHashMap<>();
+
     public static String stripControlCodes(String text) {
+        String cached = strippedCache.get(text);
+        if (cached != null) return cached;
         char[] chars = text.toCharArray();
-        StringBuilder f = new StringBuilder();
+        StringBuilder f = new StringBuilder(chars.length);
         for (int i = 0; i < chars.length; i++) {
             char c = chars[i];
             if (c == '§') {
@@ -95,7 +101,10 @@ public class FontRenderer implements Closeable {
             }
             f.append(c);
         }
-        return f.toString();
+        String result = f.toString();
+        if (strippedCache.size() > 2048) strippedCache.clear();
+        strippedCache.put(text, result);
+        return result;
     }
 
     private void sizeCheck() {

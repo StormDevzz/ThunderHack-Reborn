@@ -5,6 +5,7 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.StringHelper;
 import org.lwjgl.glfw.GLFW;
 import thunder.hack.ThunderHack;
+import thunder.hack.features.hud.HudElement;
 import thunder.hack.gui.clickui.AbstractButton;
 import thunder.hack.gui.clickui.ClickGUI;
 import thunder.hack.gui.font.FontRenderers;
@@ -28,7 +29,7 @@ public class SearchBar extends AbstractButton {
         if (Render2DEngine.isHovered(mouseX, mouseY, x, y, width, height)) {
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
                 GLFW.glfwSetCursor(mc.getWindow().getHandle(),
-                        GLFW.glfwCreateStandardCursor(GLFW.GLFW_IBEAM_CURSOR));
+                        HudElement.getCursor(GLFW.GLFW_IBEAM_CURSOR));
             }
             ClickGUI.anyHovered = true;
         }

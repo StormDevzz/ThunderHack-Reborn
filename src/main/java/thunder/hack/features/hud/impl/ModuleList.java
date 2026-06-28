@@ -12,6 +12,7 @@ import thunder.hack.setting.impl.ColorSetting;
 import thunder.hack.utility.render.Render2DEngine;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -31,54 +32,62 @@ public class ModuleList extends HudElement {
     public void onRender2D(DrawContext context) {
         super.onRender2D(context);
 
-        int stringWidth;
         boolean reverse = getPosX() > (mc.getWindow().getScaledWidth() / 2f);
-        int offset = 0;
-        float maxWidth = 0;
         float reversedX = getPosX();
 
         List<Module> list;
-
         try {
-            list = Managers.MODULE.getEnabledModules().stream().sorted(Comparator.comparing(module -> FontRenderers.modules.getStringWidth(module.getFullArrayString()) * -1)).toList();
+            list = Managers.MODULE.getEnabledModules().stream()
+                .filter(this::shouldRender)
+                .sorted(Comparator.comparing(module -> FontRenderers.modules.getStringWidth(module.getFullArrayString()) * -1))
+                .toList();
         } catch (IllegalArgumentException ex) {
             return;
         }
 
-        for (Module module : list) {
-            if (!shouldRender(module))
-                continue;
+        if (list.isEmpty()) return;
 
-            Color color1 = HudEditor.getColor(offset);
+        List<Entry> entries = new ArrayList<>(list.size());
+        float maxWidth = 0;
 
-            stringWidth = (int) (FontRenderers.modules.getStringWidth(module.getDisplayName() + Formatting.GRAY + ((module.getDisplayInfo() != null) ? (" [" + Formatting.WHITE + module.getDisplayInfo() + Formatting.GRAY + "]") : "")) + 3);
-
-            if (glow.getValue())
-                Render2DEngine.drawBlurredShadow(context.getMatrices(), reverse ? reversedX - stringWidth - 3 : getPosX(), getPosY() + offset - 1, stringWidth + 4, 9f, gste.getValue(), color1);
-
-            if (stringWidth > maxWidth)
-                maxWidth = stringWidth;
-
-            offset += 9;
+        for (int i = 0; i < list.size(); i++) {
+            Module module = list.get(i);
+            String text = module.getDisplayName() + Formatting.GRAY
+                + (module.getDisplayInfo() != null
+                    ? " [" + Formatting.WHITE + module.getDisplayInfo() + Formatting.GRAY + "]"
+                    : "");
+            int sw = (int) FontRenderers.modules.getStringWidth(text) + 3;
+            entries.add(new Entry(text, sw, HudEditor.getColor(i * 9)));
+            if (sw > maxWidth) maxWidth = sw;
         }
 
-        offset = 0;
+        for (int i = 0; i < entries.size(); i++) {
+            Entry e = entries.get(i);
+            int yOff = i * 9;
 
-        for (Module module : list) {
-            if (!shouldRender(module))
-                continue;
+            if (glow.getValue()) {
+                Render2DEngine.drawBlurredShadow(context.getMatrices(),
+                    reverse ? reversedX - e.width - 3 : getPosX(),
+                    getPosY() + yOff - 1,
+                    e.width + 4, 9f, gste.getValue(), e.color);
+            }
 
-            stringWidth = (int) (FontRenderers.modules.getStringWidth(module.getDisplayName() + Formatting.GRAY + ((module.getDisplayInfo() != null) ? (" [" + Formatting.WHITE + module.getDisplayInfo() + Formatting.GRAY + "]") : "")) + 3);
-            Color color1 = HudEditor.getColor(offset);
+            Render2DEngine.drawRound(context.getMatrices(),
+                reverse ? reversedX - e.width : getPosX(),
+                getPosY() + yOff,
+                e.width + 1.0f, 9.0f, 2.0f,
+                mode.getValue() == Mode.ColorRect ? e.color : color3.getValue().getColorObject());
 
-            Render2DEngine.drawRound(context.getMatrices(), reverse ? reversedX - stringWidth : getPosX(), getPosY() + offset, stringWidth + 1.0f, 9.0f, 2.0f, mode.getValue() == Mode.ColorRect ? color1 : color3.getValue().getColorObject());
-
-            FontRenderers.modules.drawString(context.getMatrices(), module.getDisplayName() + Formatting.GRAY + (module.getDisplayInfo() != null ? " [" + Formatting.WHITE + module.getDisplayInfo() + Formatting.GRAY + "]" : ""), reverse ? reversedX - stringWidth + 2.0f : getPosX() + 3.0f, getPosY() + 3.0f + offset, mode.getValue() == Mode.ColorRect ? -1 : color1.getRGB());
-
-            offset += 9;
+            FontRenderers.modules.drawString(context.getMatrices(), e.text,
+                reverse ? reversedX - e.width + 2.0f : getPosX() + 3.0f,
+                getPosY() + 3.0f + yOff,
+                mode.getValue() == Mode.ColorRect ? -1 : e.color.getRGB());
         }
-        setBounds(getPosX(), getPosY(),(int) maxWidth * (reverse ? -1 : 1), offset);
+
+        setBounds(getPosX(), getPosY(), (int) maxWidth * (reverse ? -1 : 1), entries.size() * 9);
     }
+
+    private record Entry(String text, int width, Color color) {}
 
     private boolean shouldRender(Module m) {
         return m.isDrawn() && (!hrender.getValue() || m.getCategory() != Category.RENDER) && (!hhud.getValue() || m.getCategory() != Category.HUD);
