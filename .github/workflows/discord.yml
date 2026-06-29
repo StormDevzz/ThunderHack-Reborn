@@ -1,0 +1,88 @@
+name: discord
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    types: [ opened, reopened, closed, synchronize ]
+  watch:
+    types: [ started ]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: push
+        if: github.event_name == 'push'
+        env:
+          DC_LOG: ${{ secrets.DC_LOG }}
+        run: |
+          curl -s -X POST "$DC_LOG" -H "Content-Type: application/json" \
+          --data "$(jq -nc \
+            --arg sha "${{ github.sha }}" \
+            --arg repo "${{ github.repository }}" \
+            --arg ref "${{ github.ref_name }}" \
+            --arg author "${{ github.event.head_commit.author.name }}" \
+            --arg msg "${{ github.event.head_commit.message }}" \
+            '{
+              "embeds": [{
+                "title": ("push to " + $ref),
+                "description": ("[`" + $sha[0:7] + "`](https://github.com/" + $repo + "/commit/" + $sha + ")"),
+                "fields": [
+                  {"name": "author", "value": $author, "inline": true},
+                  {"name": "message", "value": ($msg | split("\n")[0])}
+                ],
+                "color": 5810047
+              }]
+            }')"
+
+      - name: star
+        if: github.event_name == 'watch' && github.event.action == 'started'
+        env:
+          DC_LOG: ${{ secrets.DC_LOG }}
+        run: |
+          curl -s -X POST "$DC_LOG" -H "Content-Type: application/json" \
+          --data "$(jq -nc \
+            --arg user "${{ github.event.sender.login }}" \
+            --arg url "${{ github.event.sender.html_url }}" \
+            '{
+              "embeds": [{
+                "description": ("[" + $user + "](" + $url + ") starred the repository"),
+                "color": 15844367
+              }]
+            }')"
+
+      - name: pull request
+        if: github.event_name == 'pull_request'
+        env:
+          DC_LOG: ${{ secrets.DC_LOG }}
+        run: |
+          action="${{ github.event.action }}"
+          color=3066993
+          if [ "$action" = "closed" ]; then
+            if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+              action="merged"
+              color=8542235
+            else
+              color=14283827
+            fi
+          fi
+          curl -s -X POST "$DC_LOG" -H "Content-Type: application/json" \
+          --data "$(jq -nc \
+            --arg action "$action" \
+            --arg title "${{ github.event.pull_request.title }}" \
+            --arg url "${{ github.event.pull_request.html_url }}" \
+            --arg author "${{ github.event.pull_request.user.login }}" \
+            --arg num "${{ github.event.number }}" \
+            --argjson color "$color" \
+            '{
+              "embeds": [{
+                "title": ("pull request " + $action),
+                "description": ("[" + $title + " (#" + $num + ")](" + $url + ") by " + $author),
+                "color": $color
+              }]
+            }')"
