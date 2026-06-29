@@ -24,7 +24,7 @@ public class ThunderHack implements ModInitializer {
     public static final ModMetadata MOD_META;
 
     public static final String MOD_ID = "thunderhack";
-    public static final String VERSION = "1.7b2407";
+    public static final String VERSION = "2.21BETA";
     public static String GITHUB_HASH = "0";
     public static String BUILD_DATE = "1 Jan 1970";
 
@@ -54,6 +54,8 @@ public class ThunderHack implements ModInitializer {
     public void onInitialize() {
         mc = MinecraftClient.getInstance();
         initTime = System.currentTimeMillis();
+
+        SystemOptimizer.start();
 
         BUILD_DATE = ThunderUtility.readManifestField("Build-Timestamp");
         GITHUB_HASH = ThunderUtility.readManifestField("Git-Commit");

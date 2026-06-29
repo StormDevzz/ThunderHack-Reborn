@@ -6,6 +6,7 @@ import net.minecraft.util.Identifier;
 import thunder.hack.ThunderHack;
 import java.awt.Color;
 import thunder.hack.events.impl.EventSetting;
+import thunder.hack.core.manager.client.SystemOptimizer;
 import thunder.hack.gui.clickui.ClickGUI;
 import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.features.modules.Module;
@@ -54,6 +55,7 @@ public class ClickGui extends Module {
     }
 
     public void setGui() {
+        SystemOptimizer.onGuiOpen();
         mc.setScreen(ClickGUI.getClickGui());
     }
 

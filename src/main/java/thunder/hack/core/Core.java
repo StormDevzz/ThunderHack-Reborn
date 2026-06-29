@@ -25,6 +25,7 @@ import thunder.hack.ThunderHack;
 import thunder.hack.features.cmd.Command;
 import thunder.hack.core.manager.client.MacroManager;
 import thunder.hack.core.manager.client.ModuleManager;
+import thunder.hack.core.manager.client.SystemOptimizer;
 import thunder.hack.events.impl.*;
 import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.gui.notification.Notification;
@@ -134,8 +135,10 @@ public final class Core {
             }
         }
 
-        if (e.getPacket() instanceof GameJoinS2CPacket)
+        if (e.getPacket() instanceof GameJoinS2CPacket) {
             Managers.MODULE.onLogin();
+            SystemOptimizer.onWorldLoad();
+        }
 
         if (e.getPacket() instanceof PlayerPositionLookS2CPacket) {
             setBackTimer.reset();

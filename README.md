@@ -41,13 +41,13 @@
 ## Информация / Information
 
 **RU:**
-- **Версия Minecraft:** `Fabric` 1.21 / 1.21.1
+- **Версия Minecraft:** `Fabric` 1.21.11
 - **Кнопка открытия ClickGui:** `P`
 - **Префикс команд:** `@`
 - **Средняя кнопка мыши** по модулю назначает бинд
 
 **EN:**
-- **Minecraft version:** `Fabric` 1.21 / 1.21.1
+- **Minecraft version:** `Fabric` 1.21.11
 - **Default ClickGui keybind:** `P`
 - **Default prefix:** `@`
 - **Middle click** a module to bind it
@@ -61,22 +61,22 @@
 ## Зависимости / Dependencies
 
 **RU:**
-- **Minecraft:** 1.21.4 (Fabric)
+- **Minecraft:** 1.21.11 (Fabric)
 - **Fabric Loader:** >= 0.16.10
-- **Fabric API:** 0.119.2+1.21.4
-- **Satin (Ladysnake):** 3.0.0-alpha.1 -- библиотека для шейдеров и пост-эффектов
+- **Fabric API:** 0.141.4+1.21.11
+
 - **Orbit (MeteorDevelopment):** 0.2.3 -- EventBus
 - **Netty:** 4.1.90.Final (netty-handler-proxy, netty-codec-socks) -- прокси для соксов
-- **Baritone (опционально):** 1.21.4-SNAPSHOT -- путь-поиск для AutoMine/AutoWalk
+- **Baritone (опционально):** 1.21.11-SNAPSHOT -- путь-поиск для AutoMine/AutoWalk
 
 **EN:**
-- **Minecraft:** 1.21.4 (Fabric)
+- **Minecraft:** 1.21.11 (Fabric)
 - **Fabric Loader:** >= 0.16.10
-- **Fabric API:** 0.119.2+1.21.4
-- **Satin (Ladysnake):** 3.0.0-alpha.1 -- shader and post-processing library
+- **Fabric API:** 0.141.4+1.21.11
+
 - **Orbit (MeteorDevelopment):** 0.2.3 -- EventBus
 - **Netty:** 4.1.90.Final (netty-handler-proxy, netty-codec-socks) -- SOCKS proxy support
-- **Baritone (optional):** 1.21.4-SNAPSHOT -- pathfinding for AutoMine/AutoWalk
+- **Baritone (optional):** 1.21.11-SNAPSHOT -- pathfinding for AutoMine/AutoWalk
 
 ---
 

@@ -143,6 +143,7 @@ public class ClickGUI extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        HudEditor.clearColorCache();
         Render2DEngine.begin(context);
         try {
         // if (ModuleManager.clickGui.blur.getValue())

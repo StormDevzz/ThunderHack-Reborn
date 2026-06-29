@@ -7,8 +7,9 @@ import net.minecraft.scoreboard.ScoreboardObjective;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.hud.impl.Hotbar;
-import thunder.hack.gui.windows.WindowsScreen;
 import thunder.hack.features.modules.Module;
+import thunder.hack.features.modules.client.HudEditor;
+import thunder.hack.gui.windows.WindowsScreen;
 import thunder.hack.utility.render.Render2DEngine;
 import net.minecraft.client.gui.hud.InGameHud;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,6 +25,7 @@ public abstract class MixinInGameHud {
     @Inject(at = @At(value = "HEAD"), method = "render")
     public void renderHook(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         if(Module.fullNullCheck()) return;
+        HudEditor.clearColorCache();
         Render2DEngine.begin(context);
         try {
             Managers.MODULE.onRender2D(context);

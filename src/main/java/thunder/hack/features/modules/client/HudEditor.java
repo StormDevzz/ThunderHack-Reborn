@@ -7,6 +7,8 @@ import thunder.hack.setting.impl.ColorSetting;
 import thunder.hack.utility.render.Render2DEngine;
 
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class HudEditor extends Module {
     public static final Setting<Boolean> sticky = new Setting<>("Sticky", true);
@@ -29,22 +31,37 @@ public final class HudEditor extends Module {
     public static final Setting<Float> blurOpacity = new Setting<>("BlurOpacity", 0.55f, 0f, 1f);
     public static final Setting<Float> blurStrength = new Setting<>("BlurStrength", 20f, 5f, 50f);
 
+    private static final Map<Integer, Color> colorCache = new HashMap<>();
+    private static long lastColorCacheTime = 0;
+
     public HudEditor() {
         super("HudEditor", Module.Category.CLIENT);
     }
 
+    /** Clear the per-frame colour cache. Call once per render frame. */
+    public static void clearColorCache() {
+        colorCache.clear();
+    }
+
     public static Color getColor(int count) {
-        return switch (colorMode.getValue()) {
-            case Sky -> Render2DEngine.skyRainbow(colorSpeed.getValue(), count);
-            case LightRainbow -> Render2DEngine.rainbow(colorSpeed.getValue(), count, .6f, 1, 1);
-            case Rainbow -> Render2DEngine.rainbow(colorSpeed.getValue(), count, 1f, 1, 1);
-            case Fade -> Render2DEngine.fade(colorSpeed.getValue(), count, hcolor1.getValue().getColorObject(), 1);
+        long now = System.currentTimeMillis();
+        // Cache lives for 50ms (~3 frames at 60fps) then auto-clears
+        if (now - lastColorCacheTime > 50) {
+            colorCache.clear();
+            lastColorCacheTime = now;
+        }
+
+        return colorCache.computeIfAbsent(count, c -> switch (colorMode.getValue()) {
+            case Sky -> Render2DEngine.skyRainbow(colorSpeed.getValue(), c);
+            case LightRainbow -> Render2DEngine.rainbow(colorSpeed.getValue(), c, .6f, 1, 1);
+            case Rainbow -> Render2DEngine.rainbow(colorSpeed.getValue(), c, 1f, 1, 1);
+            case Fade -> Render2DEngine.fade(colorSpeed.getValue(), c, hcolor1.getValue().getColorObject(), 1);
             case DoubleColor ->
-                    Render2DEngine.TwoColoreffect(hcolor1.getValue().getColorObject(), acolor.getValue().getColorObject(), colorSpeed.getValue(), count);
+                    Render2DEngine.TwoColoreffect(hcolor1.getValue().getColorObject(), acolor.getValue().getColorObject(), colorSpeed.getValue(), c);
             case Analogous ->
-                    Render2DEngine.interpolateColorsBackAndForth(colorSpeed.getValue(), count, hcolor1.getValue().getColorObject(), Render2DEngine.getAnalogousColor(acolor.getValue().getColorObject()), true);
+                    Render2DEngine.interpolateColorsBackAndForth(colorSpeed.getValue(), c, hcolor1.getValue().getColorObject(), Render2DEngine.getAnalogousColor(acolor.getValue().getColorObject()), true);
             default -> hcolor1.getValue().getColorObject();
-        };
+        });
     }
 
     @Override

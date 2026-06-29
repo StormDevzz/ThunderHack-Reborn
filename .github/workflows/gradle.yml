@@ -51,7 +51,7 @@ jobs:
           mkdir -p ./build/bundle
           cp ./build/libs/*.jar ./build/bundle/
 
-          FABRIC_VERSION="0.133.11+1.21.9"
+          FABRIC_VERSION="0.141.4+1.21.11"
           curl -sL -o ./build/bundle/fabric-api-$FABRIC_VERSION.jar \
             "https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/$FABRIC_VERSION/fabric-api-$FABRIC_VERSION.jar"
 
@@ -87,7 +87,7 @@ jobs:
           | | |
           |---|---|
           | Version | \`$VERSION\` |
-          | Minecraft | 1.21.9 |
+          | Minecraft | 1.21.11 |
           | Branch | ${{ github.ref_name }} |
           | Author | ${{ steps.commit.outputs.author }} |
           | Date | ${{ steps.commit.outputs.date }} |
@@ -115,7 +115,7 @@ jobs:
 
           ## Included in this release
           - ThunderHack-Reborn jar
-          - Fabric API 0.133.11+1.21.9 (drop into mods/)
+          - Fabric API 0.141.4+1.21.11 (drop into mods/)
 
           ## Required
           - Fabric Loader 0.17.2+ (install via Fabric Installer) 
