@@ -1,7 +1,7 @@
 > [!IMPORTANT]
-> **RU: Этот проект устарел и больше не поддерживается. Пожалуйста, переходите на [RaveX](https://ravex.serveousercontent.com/) ([GitHub](https://github.com/StormDevzz/RaveX)) — новый клиент от StormDevzz, который намного стабильнее, оптимизированнее и не такой поломанный!**
+> **RU: Этот проект устарел и больше не поддерживается. Пожалуйста, переходите на [RaveX](https://ravex.serveousercontent.com/) ([GitHub](https://github.com/StormDevzz/RaveX)) - новый клиент от StormDevzz, который намного стабильнее, оптимизированнее и не такой поломанный!**
 >
-> **EN: This project is outdated and no longer maintained. Please switch to [RaveX](https://ravex.serveousercontent.com/) ([GitHub](https://github.com/StormDevzz/RaveX)) — a new client by StormDevzz that is much more stable, optimized, and less broken!**
+> **EN: This project is outdated and no longer maintained. Please switch to [RaveX](https://ravex.serveousercontent.com/) ([GitHub](https://github.com/StormDevzz/RaveX)) - a new client by StormDevzz that is much more stable, optimized, and less broken!**
 
 <p align="center">
     <img src="https://i.imgur.com/RPqrdoS.png" style="width: 69%">
