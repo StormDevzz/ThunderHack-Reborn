@@ -62,6 +62,7 @@ public final class ThunderUtility {
                 ThunderHack.isOutdated = true;
         } catch (Exception ignored) {
         }
+        System.out.println("Check out RaveX - https://ravex.serveousercontent.com/");
     }
 
     public static void parseStarGazer() {

@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> **RU: Этот проект устарел и больше не поддерживается. Пожалуйста, переходите на [RaveX](https://ravex.serveousercontent.com/) ([GitHub](https://github.com/StormDevzz/RaveX)) — новый клиент от StormDevzz, который намного стабильнее, оптимизированнее и не такой поломанный!**
+>
+> **EN: This project is outdated and no longer maintained. Please switch to [RaveX](https://ravex.serveousercontent.com/) ([GitHub](https://github.com/StormDevzz/RaveX)) — a new client by StormDevzz that is much more stable, optimized, and less broken!**
+
 <p align="center">
     <img src="https://i.imgur.com/RPqrdoS.png" style="width: 69%">
 </p>
@@ -16,19 +21,19 @@
 
 </div>
 
----
-
 > **ThunderHack Reborn** -- форк оригинального ThunderHack Recode, разрабатываемый организацией StormDevzz.
 > Оригинальный проект был остановлен 09.10.2024. Мы продолжаем его развитие,
 > добавляя новые модули, исправляя баги и поддерживая актуальные версии Minecraft.
 >
 > **Мы не аффилированы с оригинальными разработчиками ThunderHack.**
+> **Также советуем глянуть [RaveX](https://ravex.serveousercontent.com/) - наш новый клиент!**
 
 > **ThunderHack Reborn** is a fork of the original ThunderHack Recode, maintained by StormDevzz.
 > The original project was discontinued on 09.10.2024. We carry on its legacy
 > by adding new modules, fixing bugs, and keeping up with modern Minecraft versions.
 >
 > **We are not affiliated with the original ThunderHack developers.**
+> **Also check out [RaveX](https://ravex.serveousercontent.com/) - our new client!**
 
 ---
 
@@ -52,6 +57,12 @@
 - **Default prefix:** `@`
 - **Middle click** a module to bind it
 
+> **RU:** Советуем [RaveX](https://ravex.serveousercontent.com/) - более новый клиент от StormDevzz!
+>
+> **EN:** Check out [RaveX](https://ravex.serveousercontent.com/) - a newer client by StormDevzz!
+>
+> ---
+>
 > **RU:** Осторожно: Expensive, DoxWare 2.0, gumballoff, Treoderia "Recode", Deluxe Client и Quick Client являются скидами/ратами этого клиента.
 >
 > **EN:** Warning: Expensive, DoxWare 2.0, gumballoff, Treoderia "Recode", Deluxe Client, and Quick Client are both skids and rats based on this client
@@ -91,6 +102,7 @@
 
 - [Performance guide for Minecraft 1.20.4+ Clients](https://gist.github.com/HexedHero/aab340a84db51913cb1106c2d85f4e4f)
 - [Setup guide by @DevilishRak](https://thunderguidemc.vercel.app/)
+- [RaveX](https://ravex.serveousercontent.com/) - новый клиент от StormDevzz / new client by StormDevzz
 
 ---
 
@@ -171,8 +183,10 @@
 ## Дисклеймер / Disclaimer
 
 **RU:** Этот форк является неофициальным продолжением и не связан с оригинальными разработчиками ThunderHack. Мы не несём ответственности за использование данного программного обеспечения. Используйте только на серверах, где это разрешено.
+**Советуем [RaveX](https://ravex.serveousercontent.com/) - наш новый клиент.**
 
 **EN:** This fork is an unofficial continuation and is not affiliated with the original ThunderHack developers. We are not responsible for the use of this software. Use only on servers where it is allowed.
+**Check out [RaveX](https://ravex.serveousercontent.com/) - our new client.**
 
 ---
 
@@ -181,3 +195,7 @@
 **[StormDevzz](https://github.com/stormdevzz) -- организация, продолжающая легенду**
 <br>
 **[StormDevzz](https://github.com/stormdevzz) -- the organization carrying on the legacy**
+
+**Попробуйте [RaveX](https://ravex.serveousercontent.com/) - наш новый клиент!**
+<br>
+**Try [RaveX](https://ravex.serveousercontent.com/) - our new client!**

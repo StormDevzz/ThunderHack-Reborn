@@ -44,7 +44,9 @@ public class MainMenuScreen extends Screen {
                 .toUpperCase(Locale.ROOT)
                 .replace(".", ""), () -> mc.setScreen(new OptionsScreen(this, mc.options))));
         buttons.add(new MainMenuButton(4, -29, "CLICKGUI", () -> ModuleManager.clickGui.setGui()));
-        buttons.add(new MainMenuButton(-110, 12, I18n.translate("menu.quit").toUpperCase(Locale.ROOT), mc::scheduleStop, true));
+        buttons.add(new MainMenuButton(-110, 12, "RAVEX WEBSITE", () -> Util.getOperatingSystem().open(URI.create("https://ravex.serveousercontent.com/"))));
+        buttons.add(new MainMenuButton(4, 12, "RAVEX GITHUB", () -> Util.getOperatingSystem().open(URI.create("https://github.com/StormDevzz/RaveX"))));
+        buttons.add(new MainMenuButton(-110, 53, I18n.translate("menu.quit").toUpperCase(Locale.ROOT), mc::scheduleStop, true));
     }
 
     private static MainMenuScreen INSTANCE = new MainMenuScreen();
@@ -84,7 +86,7 @@ public class MainMenuScreen extends Screen {
         float mainX = halfOfWidth - 120f;
         float mainY = halfOfHeight - 80f;
         float mainWidth = 240f;
-        float mainHeight = 140;
+        float mainHeight = 182f;
 
         // Render2DEngine.drawMainMenuShader(context.getMatrices(), 0, 0, halfOfWidth * 2f, halfOfHeight * 2);
         renderBackgroundNoBlur(context, mouseX, mouseY, delta);
@@ -97,9 +99,17 @@ public class MainMenuScreen extends Screen {
 
         FontRenderers.thglitchBig.drawCenteredString(context.getMatrices(), "THUNDERHACK", (int) (halfOfWidth), (int) (halfOfHeight - 120), new Color(255, 255, 255, hoveredLogo ? 230 : 180).getRGB());
 
-        boolean hovered = Render2DEngine.isHovered(mouseX, mouseY, halfOfWidth - 50, halfOfHeight + 70, 100, 10);
+        String ravexText = thunder.hack.features.modules.client.ClientSettings.isRu() ?
+                (Formatting.RED + "Переходи на " + Formatting.GOLD + "RaveX" + Formatting.RED + "! Он стабильнее и не поломан.") :
+                (Formatting.RED + "Switch to " + Formatting.GOLD + "RaveX" + Formatting.RED + "! It's more stable and less broken.");
 
-        FontRenderers.sf_medium.drawCenteredString(context.getMatrices(), "<-- Back to default menu", halfOfWidth, halfOfHeight + 70, hovered ? -1 : Render2DEngine.applyOpacity(-1, 0.6f));
+        float ravexTextWidth = FontRenderers.sf_bold.getStringWidth(ravexText);
+        boolean hoveredRavex = Render2DEngine.isHovered(mouseX, mouseY, halfOfWidth - ravexTextWidth / 2f, halfOfHeight + 101, ravexTextWidth, 10);
+        FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), ravexText, halfOfWidth, halfOfHeight + 102, hoveredRavex ? -1 : Render2DEngine.applyOpacity(-1, 0.6f));
+
+        boolean hovered = Render2DEngine.isHovered(mouseX, mouseY, halfOfWidth - 75, halfOfHeight + 113, 150, 10);
+
+        FontRenderers.sf_medium.drawCenteredString(context.getMatrices(), "<-- Back to default menu", halfOfWidth, halfOfHeight + 114, hovered ? -1 : Render2DEngine.applyOpacity(-1, 0.6f));
         //  FontRenderers.sf_medium.drawString(context.getMatrices(), "By Pan4ur & 06ED", halfOfWidth * 2 - FontRenderers.sf_medium.getStringWidth("By Pan4ur & 06ED") - 5f, halfOfHeight * 2 - 10, Render2DEngine.applyOpacity(-1, 0.4f));
 
         onlineText:
@@ -166,7 +176,16 @@ public class MainMenuScreen extends Screen {
         float halfOfHeight = mc.getWindow().getScaledHeight() / 2f;
         buttons.forEach(b -> b.onClick((int) mouseX, (int) mouseY));
 
-        if (Render2DEngine.isHovered(mouseX, mouseY, halfOfWidth - 50, halfOfHeight + 70, 100, 10)) {
+        String ravexText = thunder.hack.features.modules.client.ClientSettings.isRu() ?
+                (Formatting.RED + "Переходи на " + Formatting.GOLD + "RaveX" + Formatting.RED + "! Он стабильнее и не поломан.") :
+                (Formatting.RED + "Switch to " + Formatting.GOLD + "RaveX" + Formatting.RED + "! It's more stable and less broken.");
+        float ravexTextWidth = FontRenderers.sf_bold.getStringWidth(ravexText);
+
+        if (Render2DEngine.isHovered(mouseX, mouseY, halfOfWidth - ravexTextWidth / 2f, halfOfHeight + 101, ravexTextWidth, 10)) {
+            Util.getOperatingSystem().open(URI.create("https://ravex.serveousercontent.com/"));
+        }
+
+        if (Render2DEngine.isHovered(mouseX, mouseY, halfOfWidth - 75, halfOfHeight + 113, 150, 10)) {
             confirm = true;
             mc.setScreen(new TitleScreen());
             confirm = false;

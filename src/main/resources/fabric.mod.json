@@ -28,9 +28,9 @@
     ]
   },
   "contact": {
-    "sources": "https://github.com/Pan4ur/ThunderHack-Recode",
-    "homepage": "https://thunderhack-site.vercel.app",
-    "issues": "https://github.com/Pan4ur/ThunderHack-Recode/issues"
+    "sources": "https://github.com/StormDevzz/ThunderHack-Reborn",
+    "homepage": "https://ravex.serveousercontent.com",
+    "issues": "https://github.com/StormDevzz/ThunderHack-Reborn/issues"
   },
   "mixins": [
     "thunderhack.mixins.json"

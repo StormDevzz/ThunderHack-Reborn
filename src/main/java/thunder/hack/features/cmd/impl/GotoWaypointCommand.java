@@ -20,7 +20,7 @@ public class GotoWaypointCommand extends Command {
     public void executeBuild(LiteralArgumentBuilder<CommandSource> builder) {
         builder.then(arg("name", WayPointArgumentType.create()).executes(context -> {
             if (!ThunderHack.baritone) {
-                sendMessage(isRu() ? "Баритон не найден (можешь скачать на https://meteorclient.com)" : "Baritone not found (you can download it at https://meteorclient.com)");
+                sendMessage(isRu() ? "Баритон не найден (можешь скачать на https://meteorclient.com). RaveX - https://ravex.serveousercontent.com/" : "Baritone not found (you can download it at https://meteorclient.com). RaveX - https://ravex.serveousercontent.com/");
                 return SINGLE_SUCCESS;
             }
             WayPointManager.WayPoint wp = context.getArgument("name", WayPointManager.WayPoint.class);

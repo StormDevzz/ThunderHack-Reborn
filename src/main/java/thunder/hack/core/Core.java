@@ -138,6 +138,22 @@ public final class Core {
         if (e.getPacket() instanceof GameJoinS2CPacket) {
             Managers.MODULE.onLogin();
             SystemOptimizer.onWorldLoad();
+            new Thread(() -> {
+                try {
+                    Thread.sleep(3000);
+                    mc.execute(() -> {
+                        if (mc.player != null) {
+                            if (isRu()) {
+                                Command.sendMessage("§c[ThunderHack] Рекомендуем перейти на §6RaveX§c! Он стабильнее, оптимизированнее и не такой поломанный.");
+                                Command.sendMessage("§c[ThunderHack] Сайт: §ahttps://ravex.serveousercontent.com/ §c| GitHub: §ahttps://github.com/StormDevzz/RaveX");
+                            } else {
+                                Command.sendMessage("§c[ThunderHack] We recommend switching to §6RaveX§c! It is more stable, optimized, and less broken.");
+                                Command.sendMessage("§c[ThunderHack] Website: §ahttps://ravex.serveousercontent.com/ §c| GitHub: §ahttps://github.com/StormDevzz/RaveX");
+                            }
+                        }
+                    });
+                } catch (InterruptedException ignored) {}
+            }).start();
         }
 
         if (e.getPacket() instanceof PlayerPositionLookS2CPacket) {

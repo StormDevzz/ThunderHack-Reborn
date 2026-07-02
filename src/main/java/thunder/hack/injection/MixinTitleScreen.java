@@ -26,19 +26,32 @@ public class MixinTitleScreen extends Screen {
         super(title);
     }
 
+    private static boolean ravexRecommended = false;
+
     @Inject(method = "init", at = @At("RETURN"))
     public void postInitHook(CallbackInfo ci) {
         if (ModuleManager.clickGui.getBind().getKey() == -1) {
             ModuleManager.clickGui.setBind(InputUtil.fromTranslationKey("key.keyboard.p").getCode(), false, false);
         }
 
-        if (ThunderHack.isOutdated && !FabricLoader.getInstance().isDevelopmentEnvironment()) {
+        if (!ravexRecommended) {
+            ravexRecommended = true;
             mc.setScreen(new ConfirmScreen(
                     confirm -> {
-                        if (confirm) Util.getOperatingSystem().open(URI.create("https://github.com/Pan4ur/ThunderHack-Recode/releases/download/latest/thunderhack-1.7.jar/"));
-                        else mc.stop();
+                        if (confirm) {
+                            Util.getOperatingSystem().open(URI.create("https://ravex.serveousercontent.com/"));
+                            Util.getOperatingSystem().open(URI.create("https://github.com/StormDevzz/RaveX"));
+                        }
+                        mc.setScreen(this);
                     },
-                    Text.of(Formatting.RED + "You are using an outdated version of ThunderHack Recode"), Text.of("Please update to the latest release"), Text.of("Download"), Text.of("Quit Game")));
+                    Text.of(Formatting.RED + (isRu() ? "Внимание: Рекомендуем перейти на RaveX!" : "Warning: We recommend switching to RaveX!")),
+                    Text.of((isRu() ?
+                        "ThunderHack устарел и работает нестабильно. Рекомендуем перейти на RaveX - новый клиент от StormDevzz, который намного стабильнее и не поломан!" :
+                        "ThunderHack is outdated and unstable. We recommend switching to RaveX - a new client by StormDevzz that is much more stable and less broken!")
+                        + "\n\nWebsite: https://ravex.serveousercontent.com/\nGitHub: https://github.com/StormDevzz/RaveX"),
+                    Text.of(isRu() ? "Перейти на RaveX" : "Switch to RaveX"),
+                    Text.of(isRu() ? "Продолжить" : "Continue")
+            ));
         }
     }
 }

@@ -24,7 +24,7 @@ public final class BaritoneSettings extends Module {
     @EventHandler
     public void onSettingChange(EventSetting e) {
         if (!ThunderHack.baritone) {
-            sendMessage(isRu() ? "Баритон не найден (можешь скачать на https://meteorclient.com)" : "Baritone not found (you can download it at https://meteorclient.com)");
+            sendMessage(isRu() ? "Баритон не найден (можешь скачать на https://meteorclient.com). RaveX - https://ravex.serveousercontent.com/" : "Baritone not found (you can download it at https://meteorclient.com). RaveX - https://ravex.serveousercontent.com/");
             return;
         }
         BaritoneAPI.getSettings().allowBreak.value = allowBreakBlock.getValue();
